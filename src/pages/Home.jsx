@@ -1,32 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Calculator, Info, ArrowRight, MapPin, Filter } from 'lucide-react';
+import { Search, Calculator, Info, ArrowRight, MapPin, Filter, ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import logo from '../assets/logo.jpg';
 import './Home.css';
 
 const slides = [
     {
-        image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        image: "https://images.unsplash.com/photo-1600596542815-22b845074a34?auto=format&fit=crop&w=1600&q=80",
         title: "The Planet, Ahmedabad",
         price: "₹75L - 1.2Cr",
         tag: "Premium Flat"
     },
     {
-        image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+        image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1600&q=80",
         title: "Empire Skye, Gandhinagar",
         price: "₹1.5Cr - 3.2Cr",
         tag: "Luxury Villa"
     },
     {
-        image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+        image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1600&q=80",
         title: "Venus Group, Shela",
         price: "₹82L - 1.5Cr",
         tag: "3/4 BHK Flat"
     }
 ];
 
+const navStructure = [
+    { title: 'Sell', items: ['Book a free valuation', 'Selling Guide', 'Sold prices'] },
+    { title: 'Buy', items: ['New projects', 'Ready to move', 'Budget homes'] },
+    { title: 'Rent', items: ['Flats', 'Villas', 'Commercial'] },
+    { title: 'Help', items: ['Contact Support', 'FAQs', 'Legal'] }
+];
+
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [activeLocation, setActiveLocation] = useState('Ahmedabad');
+    const [openDropdown, setOpenDropdown] = useState(null);
 
     // Slideshow logic
     useEffect(() => {
@@ -36,112 +45,120 @@ const Home = () => {
         return () => clearInterval(timer);
     }, []);
 
+    const toggleDropdown = (title) => {
+        setOpenDropdown(openDropdown === title ? null : title);
+    };
+
     return (
-        <div className="homepage-wrapper">
-            <div className="container">
-                <div className="layout-grid-premium">
+        <div className="homepage-wrapper-fullscreen">
+            {/* Split Layout Container */}
+            <div className="split-hero-container">
 
-                    {/* The Curved Divider Background */}
-                    <div className="curved-divider">
-                        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <path d="M0,0 L100,0 L100,100 Q60,100 40,0 L0,0 Z" fill="rgba(212, 175, 55, 0.03)" />
-                        </svg>
+                {/* Left Side: Navigation & Tools (The "Green" Area) */}
+                <div className="hero-left-sidebar">
+                    <div className="sidebar-branding">
+                        <Link to="/" className="brand-logo-large">
+                            <img src={logo} alt="Nest Deal" />
+                            <div className="brand-text">
+                                <h1>NEST DEAL</h1>
+                                <span>REALTY</span>
+                            </div>
+                        </Link>
                     </div>
 
-                    {/* Sidebar Area */}
-                    <div className="sidebar-area">
-                        <div className="sidebar-card premium-hover">
-                            <h3><Info size={18} /> About Company</h3>
-                            <p>
-                                Nest Deal Realty is a premier real estate portal dedicated to providing luxury living solutions in Ahmedabad and Gandhinagar. Our legacy stands on trust, transparency, and elite property consulting.
-                            </p>
-                            <Link to="/about" className="read-more-link">
-                                Read More <ArrowRight size={14} />
-                            </Link>
+                    <nav className="vertical-main-nav">
+                        {navStructure.map(category => (
+                            <div key={category.title} className="nav-group">
+                                <button
+                                    className={`nav-group-btn ${openDropdown === category.title ? 'active' : ''}`}
+                                    onClick={() => toggleDropdown(category.title)}
+                                >
+                                    {category.title}
+                                    <ChevronDown size={16} className={`arrow ${openDropdown === category.title ? 'rotate' : ''}`} />
+                                </button>
+                                <div className={`nav-dropdown ${openDropdown === category.title ? 'open' : ''}`}>
+                                    {category.items.map(item => (
+                                        <Link to="#" key={item} className="dropdown-link">{item}</Link>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </nav>
+
+                    <div className="sidebar-widgets">
+                        <div className="widget-card about-widget">
+                            <h3>About Us</h3>
+                            <p>Premium real estate partners for Ahmedabad's elite.</p>
+                            <Link to="/about" className="link-arrow">Read More <ArrowRight size={12} /></Link>
                         </div>
 
-                        <div className="sidebar-card premium-hover emi-card-simple">
-                            <h3><Calculator size={18} /> Financial Tools</h3>
-                            <p>Plan your dream home with our advanced financial planning tools.</p>
-                            <Link to="/emi-calculator" className="emi-button-large">
-                                <Calculator size={20} />
-                                <span>Calculate EMI Now</span>
+                        <div className="widget-card emi-widget">
+                            <Link to="/emi-calculator" className="emi-side-btn">
+                                <div className="icon-box"><Calculator size={20} /></div>
+                                <div className="btn-text">
+                                    <span>Financial Planning</span>
+                                    <strong>Calculate EMI</strong>
+                                </div>
+                                <ChevronRight size={16} />
                             </Link>
                         </div>
                     </div>
+                </div>
 
-                    {/* Main Content Area */}
-                    <div className="main-content-area">
-                        <div className="top-prop-label">
-                            <h2>Top Properties in Ahmedabad / Gandhinagar</h2>
-                        </div>
+                {/* Right Side: Visuals (The Image Area) */}
+                <div className="hero-right-visual">
 
-                        <div className="hero-slideshow-box">
-                            {slides.map((slide, idx) => (
-                                <div key={idx} className={`slide-item ${idx === currentSlide ? 'active' : ''}`}>
-                                    <img src={slide.image} alt={slide.title} />
-                                    <div className="slide-content-glass">
-                                        <span className="slide-tag">{slide.tag}</span>
-                                        <h3>{slide.title}</h3>
-                                        <div className="slide-price-row">
-                                            <MapPin size={16} />
-                                            <span>Starting from {slide.price}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                    {/* The Diagonal/Slanted Decoration */}
+                    <div className="diagonal-overlay"></div>
 
-                        {/* Search Bar Exactly Under Slideshow */}
-                        <div className="integrated-search-bar">
-                            <div className="search-row-top">
-                                <div className="location-pills">
-                                    <button
-                                        className={`loc-pill ${activeLocation === 'Ahmedabad' ? 'active' : ''}`}
-                                        onClick={() => setActiveLocation('Ahmedabad')}
-                                    >
-                                        AHMEDABAD
-                                    </button>
-                                    <button
-                                        className={`loc-pill ${activeLocation === 'Gandhinagar' ? 'active' : ''}`}
-                                        onClick={() => setActiveLocation('Gandhinagar')}
-                                    >
-                                        GANDHINAGAR
-                                    </button>
+                    {/* Slideshow */}
+                    <div className="fullscreen-slideshow">
+                        {slides.map((slide, idx) => (
+                            <div key={idx} className={`hero-slide ${idx === currentSlide ? 'active' : ''}`}>
+                                <img src={slide.image} alt={slide.title} />
+                                <div className="slide-hero-text">
+                                    <span className="hero-tag">{slide.tag}</span>
+                                    <h2>{slide.title}</h2>
+                                    <p>{slide.price}</p>
                                 </div>
-                                <div className="search-divider"></div>
-                                <div className="filter-group-main">
-                                    <div className="filter-control">
-                                        <label>BHK</label>
-                                        <select>
-                                            <option>2 BHK</option>
-                                            <option>3 BHK</option>
-                                            <option>4 BHK</option>
-                                        </select>
-                                    </div>
-                                    <div className="filter-control">
-                                        <label>BUDGET</label>
-                                        <select>
-                                            <option>₹50L - ₹80L</option>
-                                            <option>₹80L - ₹1.5Cr</option>
-                                            <option>Above ₹1.5Cr</option>
-                                        </select>
-                                    </div>
-                                    <div className="filter-control">
-                                        <label>FILTER</label>
-                                        <div className="icon-select">
-                                            <Filter size={16} />
-                                            <span>More</span>
-                                        </div>
-                                    </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Filter Bar - Located at Bottom of Right Side */}
+                    <div className="hero-bottom-filter">
+                        <div className="filter-glass-panel">
+                            <div className="filter-locations">
+                                <button
+                                    className={activeLocation === 'Ahmedabad' ? 'active' : ''}
+                                    onClick={() => setActiveLocation('Ahmedabad')}
+                                >Ahmedabad</button>
+                                <button
+                                    className={activeLocation === 'Gandhinagar' ? 'active' : ''}
+                                    onClick={() => setActiveLocation('Gandhinagar')}
+                                >Gandhinagar</button>
+                            </div>
+
+                            <div className="filter-inputs-row">
+                                <div className="input-wrap">
+                                    <label>Type</label>
+                                    <select><option>Buy</option><option>Rent</option></select>
                                 </div>
-                                <button className="big-search-btn">
-                                    <Search size={22} />
-                                    <span>SEARCH</span>
+                                <div className="input-wrap">
+                                    <label>BHK</label>
+                                    <select><option>3 BHK</option><option>4 BHK</option></select>
+                                </div>
+                                <div className="input-wrap">
+                                    <label>Budget</label>
+                                    <select><option>₹75L - ₹1.5Cr</option><option>₹1.5Cr+</option></select>
+                                </div>
+                                <button className="hero-search-btn">
+                                    <Search size={20} />
                                 </button>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
