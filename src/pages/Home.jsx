@@ -145,21 +145,23 @@ const Home = () => {
                                 </div>
                                 {activeSearchDropdown === 'bhk' && (
                                     <div className="dropdown-menu-search bhk-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        {['1', '2', '3', '4', '5'].map(bhk => (
-                                            <label key={bhk} className="checkbox-item" onClick={(e) => e.stopPropagation()}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedBHK.includes(bhk)}
-                                                    onChange={() => {
+                                        <div className="bhk-options-grid">
+                                            {['1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK'].map(bhk => (
+                                                <div
+                                                    key={bhk}
+                                                    className={`bhk-option-btn ${selectedBHK.includes(bhk) ? 'active' : ''}`}
+                                                    onClick={() => {
                                                         const newSel = selectedBHK.includes(bhk)
                                                             ? selectedBHK.filter(b => b !== bhk)
                                                             : [...selectedBHK, bhk];
                                                         setSelectedBHK(newSel);
                                                     }}
-                                                />
-                                                {bhk} BHK
-                                            </label>
-                                        ))}
+                                                >
+                                                    {bhk}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="bhk-footer" onClick={() => setSelectedBHK([])}>Clear All</div>
                                     </div>
                                 )}
                             </div>
