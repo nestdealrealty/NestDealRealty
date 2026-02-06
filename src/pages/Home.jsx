@@ -97,36 +97,62 @@ const Home = () => {
                     </div>
 
                     {/* Filter Bar - Located at Bottom of Right Side */}
+                    {/* Filter Bar - Matches User Screenshot */}
                     <div className="hero-bottom-filter">
-                        <div className="filter-glass-panel">
-                            <div className="filter-locations">
-                                <button
-                                    className={activeLocation === 'Ahmedabad' ? 'active' : ''}
-                                    onClick={() => setActiveLocation('Ahmedabad')}
-                                >Ahmedabad</button>
-                                <button
-                                    className={activeLocation === 'Gandhinagar' ? 'active' : ''}
-                                    onClick={() => setActiveLocation('Gandhinagar')}
-                                >Gandhinagar</button>
+                        <div className="advanced-search-container">
+
+                            {/* City Selection */}
+                            <div className="search-field-group">
+                                <label>Select City</label>
+                                <div className="field-control">
+                                    <span>{activeLocation}</span>
+                                    <ChevronDown size={14} />
+                                </div>
                             </div>
 
-                            <div className="filter-inputs-row">
-                                <div className="input-wrap">
-                                    <label>Type</label>
-                                    <select><option>Buy</option><option>Rent</option></select>
+                            <div className="search-divider-v"></div>
+
+                            {/* Text Search */}
+                            <div className="search-field-group wide">
+                                <label>Search By</label>
+                                <input type="text" placeholder="Area / project / builder" />
+                            </div>
+
+                            <div className="search-divider-v"></div>
+
+                            {/* BHK Selection */}
+                            <div className="search-field-group">
+                                <label>Select BHK</label>
+                                <div className="field-control">
+                                    <span>BHK</span>
+                                    <ChevronDown size={14} />
                                 </div>
-                                <div className="input-wrap">
-                                    <label>BHK</label>
-                                    <select><option>3 BHK</option><option>4 BHK</option></select>
+                            </div>
+
+                            <div className="search-divider-v"></div>
+
+                            {/* Budget Selection */}
+                            <div className="search-field-group">
+                                <label>Select Budget</label>
+                                <div className="field-control">
+                                    <span>Budget</span>
+                                    <ChevronDown size={14} />
                                 </div>
-                                <div className="input-wrap">
-                                    <label>Budget</label>
-                                    <select><option>₹75L - ₹1.5Cr</option><option>₹1.5Cr+</option></select>
-                                </div>
-                                <button className="hero-search-btn">
-                                    <Search size={20} />
+                            </div>
+
+                            <div className="search-divider-v"></div>
+
+                            {/* Actions */}
+                            <div className="search-actions-group">
+                                <button className="filter-text-btn">
+                                    <Filter size={16} />
+                                    <span>Filter</span>
+                                </button>
+                                <button className="search-submit-btn">
+                                    Search
                                 </button>
                             </div>
+
                         </div>
                     </div>
 
