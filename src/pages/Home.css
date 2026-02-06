@@ -439,3 +439,157 @@
         grid-template-columns: 1fr 1fr;
     }
 }
+/* SEARCH DROPDOWNS */
+.search-field-group {
+    position: relative; /* Anchor for absolute dropdowns */
+}
+
+.dropdown-menu-search {
+    position: absolute;
+    top: 110%; /* Just below the trigger */
+    left: 0;
+    min-width: 200px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    padding: 10px;
+    z-index: 100;
+    border: 1px solid #eee;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dd-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #444;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.dd-item:hover {
+    background: #f5f5f5;
+    color: #000;
+}
+
+.dd-item.selected {
+    background: var(--accent);
+    color: black;
+    font-weight: 600;
+}
+
+
+/* BHK Dropdown Specifics */
+.bhk-dropdown .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #444;
+}
+
+.bhk-dropdown .checkbox-item:hover {
+    background: #f9f9f9;
+}
+
+.bhk-dropdown input[type='checkbox'] {
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
+}
+
+/* Budget Dropdown Specifics */
+.budget-dropdown {
+    min-width: 280px;
+}
+
+.budget-dropdown .range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
+}
+
+.budget-dropdown .range-inputs input {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 10px;
+    width: 100%;
+    font-size: 0.9rem;
+}
+
+.budget-suggestions .dd-item {
+    font-size: 0.9rem;
+}
+
+/* Filter Panel Specifics */
+.filter-dropdown-panel {
+    right: 0;
+    left: auto; /* Align to right */
+    width: 300px;
+    padding: 20px;
+}
+
+.filter-dropdown-panel h4 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    color: #222;
+}
+
+.filter-section {
+    margin-bottom: 20px;
+}
+
+.filter-section label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #666;
+}
+
+.radio-group, .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.radio-group label, .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: normal;
+    color: #333;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.apply-btn {
+    width: 100%;
+    background: #000;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.apply-btn:hover {
+    background: #333;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+    transition: transform 0.2s;
+}
+

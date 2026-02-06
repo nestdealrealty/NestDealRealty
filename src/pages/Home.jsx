@@ -35,7 +35,19 @@ const navStructure = [
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [activeLocation, setActiveLocation] = useState('Ahmedabad');
-    const [openDropdown, setOpenDropdown] = useState(null);
+    const [openDropdown, setOpenDropdown] = useState(null); // For header nav if needed, but we used it for sidebar before.
+
+    // New States for Search Bar Interactivity
+    const [activeSearchDropdown, setActiveSearchDropdown] = useState(null); // 'city', 'bhk', 'budget', 'filter'
+    const [selectedBHK, setSelectedBHK] = useState([]);
+    const [selectedBudget, setSelectedBudget] = useState('');
+
+    const toggleSearchDropdown = (name) => {
+        setActiveSearchDropdown(activeSearchDropdown === name ? null : name);
+    };
+
+    // Close dropdowns when clicking outside (simple implementation: overlay or background click)
+    // For now, we rely on the toggle. 
 
     // Slideshow logic
     useEffect(() => {
@@ -98,16 +110,23 @@ const Home = () => {
 
                     {/* Filter Bar - Located at Bottom of Right Side */}
                     {/* Filter Bar - Matches User Screenshot */}
+                    {/* Filter Bar - Matches User Screenshot */}
                     <div className="hero-bottom-filter">
                         <div className="advanced-search-container">
 
                             {/* City Selection */}
-                            <div className="search-field-group">
+                            <div className="search-field-group" onClick={() => toggleSearchDropdown('city')}>
                                 <label>Select City</label>
                                 <div className="field-control">
                                     <span>{activeLocation}</span>
-                                    <ChevronDown size={14} />
+                                    <ChevronDown size={14} className={activeSearchDropdown === 'city' ? 'rotate-180' : ''} />
                                 </div>
+                                {activeSearchDropdown === 'city' && (
+                                    <div className="dropdown-menu-search city-dropdown" onClick={(e) => e.stopPropagation()}>
+                                        <div className={`dd-item ${activeLocation === 'Ahmedabad' ? 'selected' : ''}`} onClick={() => { setActiveLocation('Ahmedabad'); toggleSearchDropdown(null); }}>Ahmedabad</div>
+                                        <div className={`dd-item ${activeLocation === 'Gandhinagar' ? 'selected' : ''}`} onClick={() => { setActiveLocation('Gandhinagar'); toggleSearchDropdown(null); }}>Gandhinagar</div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="search-divider-v"></div>
@@ -121,33 +140,80 @@ const Home = () => {
                             <div className="search-divider-v"></div>
 
                             {/* BHK Selection */}
-                            <div className="search-field-group">
+                            <div className="search-field-group" onClick={() => toggleSearchDropdown('bhk')}>
                                 <label>Select BHK</label>
                                 <div className="field-control">
-                                    <span>BHK</span>
-                                    <ChevronDown size={14} />
+                                    <span>{selectedBHK.length > 0 ? `${selectedBHK.join(', ')} BHK` : 'BHK'}</span>
+                                    <ChevronDown size={14} className={activeSearchDropdown === 'bhk' ? 'rotate-180' : ''} />
                                 </div>
+                                {activeSearchDropdown === 'bhk' && (
+                                    <div className="dropdown-menu-search bhk-dropdown" onClick={(e) => e.stopPropagation()}>
+                                        {['1', '2', '3', '4', '5+'].map(bhk => (
+                                            <label key={bhk} className="checkbox-item" onClick={(e) => e.stopPropagation()}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedBHK.includes(bhk)}
+                                                    onChange={() => {
+                                                        const newSel = selectedBHK.includes(bhk)
+                                                            ? selectedBHK.filter(b => b !== bhk)
+                                                            : [...selectedBHK, bhk];
+                                                        setSelectedBHK(newSel);
+                                                    }}
+                                                />
+                                                {bhk} BHK
+                                            </label>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="search-divider-v"></div>
 
                             {/* Budget Selection */}
-                            <div className="search-field-group">
+                            <div className="search-field-group" onClick={() => toggleSearchDropdown('budget')}>
                                 <label>Select Budget</label>
                                 <div className="field-control">
-                                    <span>Budget</span>
-                                    <ChevronDown size={14} />
+                                    <span>{selectedBudget || 'Budget'}</span>
+                                    <ChevronDown size={14} className={activeSearchDropdown === 'budget' ? 'rotate-180' : ''} />
                                 </div>
+                                {activeSearchDropdown === 'budget' && (
+                                    <div className="dropdown-menu-search budget-dropdown" onClick={(e) => e.stopPropagation()}>
+                                        <div className="range-inputs">
+                                            <input type="text" placeholder="Min" onClick={(e) => e.stopPropagation()} />
+                                            <span>-</span>
+                                            <input type="text" placeholder="Max" onClick={(e) => e.stopPropagation()} />
+                                        </div>
+                                        <div className="budget-suggestions">
+                                            <div className="dd-item" onClick={() => { setSelectedBudget('Under 50L'); toggleSearchDropdown(null); }}>Under ₹50L</div>
+                                            <div className="dd-item" onClick={() => { setSelectedBudget('50L - 1Cr'); toggleSearchDropdown(null); }}>₹50L - ₹1Cr</div>
+                                            <div className="dd-item" onClick={() => { setSelectedBudget('1Cr - 2Cr'); toggleSearchDropdown(null); }}>₹1Cr - ₹2Cr</div>
+                                            <div className="dd-item" onClick={() => { setSelectedBudget('2Cr+'); toggleSearchDropdown(null); }}>₹2Cr+</div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="search-divider-v"></div>
 
                             {/* Actions */}
                             <div className="search-actions-group">
-                                <button className="filter-text-btn">
+                                <button className="filter-text-btn" onClick={() => toggleSearchDropdown('filter')}>
                                     <Filter size={16} />
                                     <span>Filter</span>
                                 </button>
+                                {activeSearchDropdown === 'filter' && (
+                                    <div className="dropdown-menu-search filter-dropdown-panel" onClick={(e) => e.stopPropagation()}>
+                                        <h4>More Filters</h4>
+                                        <div className="filter-section">
+                                            <label>Possession Status</label>
+                                            <div className="radio-group">
+                                                <label><input type="radio" name="possession" /> Ready to Move</label>
+                                                <label><input type="radio" name="possession" /> Under Construction</label>
+                                            </div>
+                                        </div>
+                                        <button className="apply-btn" onClick={() => toggleSearchDropdown(null)}>Apply Filters</button>
+                                    </div>
+                                )}
                                 <button className="search-submit-btn">
                                     Search
                                 </button>
