@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Calculator, Info, ArrowRight, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { Search, Calculator, Info, ArrowRight, MapPin, Filter } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './Home.css';
 
 const slides = [
@@ -25,19 +26,7 @@ const slides = [
 
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [loanAmount, setLoanAmount] = useState(5000000);
-    const [tenure, setTenure] = useState(20);
-    const [interest, setInterest] = useState(8.5);
-    const [monthlyEmi, setMonthlyEmi] = useState(0);
-
-    // EMI Calculation logic
-    useEffect(() => {
-        const p = loanAmount;
-        const r = interest / 12 / 100;
-        const n = tenure * 12;
-        const emi = (p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-        setMonthlyEmi(Math.round(emi));
-    }, [loanAmount, tenure, interest]);
+    const [activeLocation, setActiveLocation] = useState('Ahmedabad');
 
     // Slideshow logic
     useEffect(() => {
@@ -50,123 +39,108 @@ const Home = () => {
     return (
         <div className="homepage-wrapper">
             <div className="container">
-                <div className="layout-grid">
-                    {/* Left Sidebar Sections */}
-                    <div className="sidebar-section">
-                        <div className="sidebar-card">
+                <div className="layout-grid-premium">
+
+                    {/* The Curved Divider Background */}
+                    <div className="curved-divider">
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <path d="M0,0 L100,0 L100,100 Q60,100 40,0 L0,0 Z" fill="rgba(212, 175, 55, 0.03)" />
+                        </svg>
+                    </div>
+
+                    {/* Sidebar Area */}
+                    <div className="sidebar-area">
+                        <div className="sidebar-card premium-hover">
                             <h3><Info size={18} /> About Company</h3>
                             <p>
-                                Nest Deal Realty is a premier real estate portal dedicated to providing luxury living solutions in Ahmedabad and Gandhinagar. With over 15 years of excellence, we specialize in high-end residential and commercial properties.
+                                Nest Deal Realty is a premier real estate portal dedicated to providing luxury living solutions in Ahmedabad and Gandhinagar. Our legacy stands on trust, transparency, and elite property consulting.
                             </p>
-                            <a href="#" style={{ color: 'var(--accent)', fontSize: '0.85rem', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <Link to="/about" className="read-more-link">
                                 Read More <ArrowRight size={14} />
-                            </a>
+                            </Link>
                         </div>
 
-                        <div className="sidebar-card">
-                            <h3><Calculator size={18} /> EMI Calculator</h3>
-                            <div className="emi-inputs">
-                                <div className="input-group-home">
-                                    <label>Amount (₹)</label>
-                                    <input
-                                        type="number"
-                                        value={loanAmount}
-                                        onChange={(e) => setLoanAmount(Number(e.target.value))}
-                                    />
-                                </div>
-                                <div className="input-group-home">
-                                    <label>Tenure (Years)</label>
-                                    <input
-                                        type="number"
-                                        value={tenure}
-                                        onChange={(e) => setTenure(Number(e.target.value))}
-                                    />
-                                </div>
-                                <div className="input-group-home">
-                                    <label>Interest (%)</label>
-                                    <input
-                                        type="number"
-                                        value={interest}
-                                        step="0.1"
-                                        onChange={(e) => setInterest(Number(e.target.value))}
-                                    />
-                                </div>
-                            </div>
-                            <div className="emi-result">
-                                <span className="emi-value">₹{monthlyEmi.toLocaleString()}</span>
-                                <span className="emi-label">Estimated Monthly EMI</span>
-                            </div>
+                        <div className="sidebar-card premium-hover emi-card-simple">
+                            <h3><Calculator size={18} /> Financial Tools</h3>
+                            <p>Plan your dream home with our advanced financial planning tools.</p>
+                            <Link to="/emi-calculator" className="emi-button-large">
+                                <Calculator size={20} />
+                                <span>Calculate EMI Now</span>
+                            </Link>
                         </div>
                     </div>
 
                     {/* Main Content Area */}
-                    <div className="main-content-home">
-                        <div className="top-prop-heading">
+                    <div className="main-content-area">
+                        <div className="top-prop-label">
                             <h2>Top Properties in Ahmedabad / Gandhinagar</h2>
                         </div>
 
-                        <div className="slideshow-container">
+                        <div className="hero-slideshow-box">
                             {slides.map((slide, idx) => (
                                 <div key={idx} className={`slide-item ${idx === currentSlide ? 'active' : ''}`}>
                                     <img src={slide.image} alt={slide.title} />
-                                    <div className="slide-overlay">
-                                        <span className="developer-tag" style={{ background: 'var(--accent)', color: 'black', padding: '4px 12px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase' }}>
-                                            {slide.tag}
-                                        </span>
+                                    <div className="slide-content-glass">
+                                        <span className="slide-tag">{slide.tag}</span>
                                         <h3>{slide.title}</h3>
-                                        <p style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.2rem', color: 'var(--accent-orange)' }}>
-                                            <MapPin size={18} /> Starting from {slide.price}
-                                        </p>
+                                        <div className="slide-price-row">
+                                            <MapPin size={16} />
+                                            <span>Starting from {slide.price}</span>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    </div>
-                </div>
 
-                {/* Bottom Filter Section */}
-                <div className="filter-search-section">
-                    <div className="filter-grid-home">
-                        <div className="filter-item">
-                            <label>Location</label>
-                            <select>
-                                <option>Ahmedabad</option>
-                                <option>Gandhinagar</option>
-                                <option>Shela</option>
-                                <option>SG Highway</option>
-                            </select>
+                        {/* Search Bar Exactly Under Slideshow */}
+                        <div className="integrated-search-bar">
+                            <div className="search-row-top">
+                                <div className="location-pills">
+                                    <button
+                                        className={`loc-pill ${activeLocation === 'Ahmedabad' ? 'active' : ''}`}
+                                        onClick={() => setActiveLocation('Ahmedabad')}
+                                    >
+                                        AHMEDABAD
+                                    </button>
+                                    <button
+                                        className={`loc-pill ${activeLocation === 'Gandhinagar' ? 'active' : ''}`}
+                                        onClick={() => setActiveLocation('Gandhinagar')}
+                                    >
+                                        GANDHINAGAR
+                                    </button>
+                                </div>
+                                <div className="search-divider"></div>
+                                <div className="filter-group-main">
+                                    <div className="filter-control">
+                                        <label>BHK</label>
+                                        <select>
+                                            <option>2 BHK</option>
+                                            <option>3 BHK</option>
+                                            <option>4 BHK</option>
+                                        </select>
+                                    </div>
+                                    <div className="filter-control">
+                                        <label>BUDGET</label>
+                                        <select>
+                                            <option>₹50L - ₹80L</option>
+                                            <option>₹80L - ₹1.5Cr</option>
+                                            <option>Above ₹1.5Cr</option>
+                                        </select>
+                                    </div>
+                                    <div className="filter-control">
+                                        <label>FILTER</label>
+                                        <div className="icon-select">
+                                            <Filter size={16} />
+                                            <span>More</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button className="big-search-btn">
+                                    <Search size={22} />
+                                    <span>SEARCH</span>
+                                </button>
+                            </div>
                         </div>
-                        <div className="filter-item">
-                            <label>Property Type</label>
-                            <select>
-                                <option>Residential Flat</option>
-                                <option>Luxury Villa</option>
-                                <option>Commercial Office</option>
-                                <option>Penthouse</option>
-                            </select>
-                        </div>
-                        <div className="filter-item">
-                            <label>Budget</label>
-                            <select>
-                                <option>₹50L - ₹80L</option>
-                                <option>₹80L - ₹1.5Cr</option>
-                                <option>₹1.5Cr - ₹3Cr</option>
-                                <option>Above ₹3Cr</option>
-                            </select>
-                        </div>
-                        <div className="filter-item">
-                            <label>BHK</label>
-                            <select>
-                                <option>2 BHK</option>
-                                <option>3 BHK</option>
-                                <option>4 BHK</option>
-                                <option>5+ BHK</option>
-                            </select>
-                        </div>
-                        <button className="search-main-btn">
-                            <Search size={20} />
-                            Search Properties
-                        </button>
                     </div>
                 </div>
             </div>

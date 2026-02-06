@@ -4,6 +4,7 @@ import Header from './components/Header';
 import Home from './pages/Home';
 import PropertyDetails from './pages/PropertyDetails';
 import AdminDashboard from './pages/AdminDashboard';
+import EmiCalculator from './pages/EmiCalculator';
 import Footer from './components/Footer';
 import './index.css';
 
@@ -20,6 +21,7 @@ function App() {
             {/* Fallback route for demo purposes if they click any property */}
             <Route path="/property" element={<PropertyDetails />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/emi-calculator" element={<EmiCalculator />} />
           </Routes>
         </main>
         <Footer />
