@@ -16,12 +16,14 @@
 }
 
 /* --- Left Sidebar (Now an Overlay) --- */
+/* --- Left Sidebar (Now an Overlay) --- */
 .hero-left-sidebar {
     position: absolute;
     top: 0;
     left: 0;
-    width: 60vw;
-    /* Reach roughly 60% across to sit between Logo and Sell */
+    width: 35vw;
+    /* Narrower width to start between Logo "Realty" and "Sell" */
+    min-width: 420px;
     height: 100%;
     z-index: 10;
     background: transparent;
