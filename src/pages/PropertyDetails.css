@@ -31,7 +31,7 @@
 .gallery-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    /* Large image takes 2 parts, small images take 1 part */
+    /* Large image takes 2 parts, small images take 1 partS */
     gap: 12px;
     max-height: 400px;
     margin-bottom: 30px;
