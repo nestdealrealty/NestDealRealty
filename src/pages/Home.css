@@ -690,51 +690,102 @@
 }
 
 .property-card-reel {
-    height: 300px;
-    /* Fixed height for uniformity */
+    height: auto;
+    min-height: 140px;
     background: #151515;
     border-radius: 12px;
     scroll-snap-align: start;
     flex-shrink: 0;
     position: relative;
     overflow: hidden;
-    border: 1px solid transparent;
+    border: 1px solid #222;
     transition: all 0.3s ease;
     cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    padding: 10px;
+    gap: 12px;
 }
 
 .property-card-reel:hover {
     border-color: var(--accent);
-    box-shadow: 0 5px 15px rgba(255, 166, 0, 0.1);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+    transform: scale(1.02);
+    background: #1a1a1a;
 }
 
-.property-card-reel img {
+.card-reel-image {
+    width: 40%;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.card-reel-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: brightness(0.8);
     transition: transform 0.5s ease;
 }
 
-.property-card-reel:hover img {
-    transform: scale(1.05);
-    filter: brightness(1);
+.property-card-reel:hover .card-reel-image img {
+    transform: scale(1.1);
 }
 
-.reel-card-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(to top, black, transparent);
+.card-reel-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.reel-prop-title {
+    font-size: 1rem;
     color: white;
+    font-weight: 700;
+    margin: 0 0 4px 0;
 }
 
-.reel-card-overlay span {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #ddd;
+.reel-prop-builder {
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.reel-prop-specs {
+    font-size: 0.8rem;
+    color: #bbb;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 15px;
+}
+
+.reel-prop-specs .dot {
+    color: var(--accent);
+    font-size: 1.2rem;
+    line-height: 0;
+}
+
+.reel-prop-price {
+    font-size: 1.1rem;
+    color: var(--accent);
+    font-weight: 800;
+}
+
+/* Specific Mobile Layout for Cards inside Columns */
+@media (max-width: 600px) {
+    .property-card-reel {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .card-reel-image {
+        width: 100%;
+        height: 150px;
+    }
 }
 
 /* See All Button */

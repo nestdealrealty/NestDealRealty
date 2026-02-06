@@ -67,41 +67,41 @@ const Home = () => {
             id: 'flats',
             title: 'Flats',
             items: [
-                { id: 1, image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80', label: 'Luxury Apartment' },
-                { id: 2, image: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?auto=format&fit=crop&w=400&q=80', label: 'Sky-High Living' },
-                { id: 3, image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80', label: 'Modern Interiors' },
-                { id: 4, image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=400&q=80', label: 'City View' },
-                { id: 5, image: 'https://images.unsplash.com/photo-1502005229762-cf1afd38088d?auto=format&fit=crop&w=400&q=80', label: 'Cozy Spaces' },
+                { id: 1, image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80', listingTitle: 'Trident Experia', builder: 'A. Shridhar', config: '3 BHK Flat', location: 'Vaishnodevi, Ahmedabad', price: '₹ 76.00 L' },
+                { id: 2, image: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?auto=format&fit=crop&w=400&q=80', listingTitle: 'Sky City', builder: 'Goyal & Co', config: '4 BHK Flat', location: 'Shela, Ahmedabad', price: '₹ 1.25 Cr' },
+                { id: 3, image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80', listingTitle: 'The Metallis', builder: 'Daanish Info', config: '3 BHK Flat', location: 'S.G Highway', price: '₹ 95.00 L' },
+                { id: 4, image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=400&q=80', listingTitle: 'Orchid Legacy', builder: 'Goyal & Co', config: '3 BHK Flat', location: 'Applewoods, SP Ring Rd', price: '₹ 88.50 L' },
+                { id: 5, image: 'https://images.unsplash.com/photo-1502005229762-cf1afd38088d?auto=format&fit=crop&w=400&q=80', listingTitle: 'Shivalik Sharda', builder: 'Shivalik Group', config: '4 BHK Flat', location: 'Ambawadi', price: '₹ 2.40 Cr' },
             ]
         },
         {
             id: 'bungalows',
             title: 'Bungalows',
             items: [
-                { id: 1, image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b91d?auto=format&fit=crop&w=400&q=80', label: 'Private Villa' },
-                { id: 2, image: 'https://images.unsplash.com/photo-1600596542815-22b845074a34?auto=format&fit=crop&w=400&q=80', label: 'Garden Home' },
-                { id: 3, image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80', label: 'Estate Living' },
-                { id: 4, image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80', label: 'Modern Bungalow' },
+                { id: 1, image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b91d?auto=format&fit=crop&w=400&q=80', listingTitle: 'Adani Shantigram', builder: 'Adani Realty', config: '4 BHK Villa', location: 'S.G Highway', price: '₹ 3.50 Cr' },
+                { id: 2, image: 'https://images.unsplash.com/photo-1600596542815-22b845074a34?auto=format&fit=crop&w=400&q=80', listingTitle: 'Arvind Uplands', builder: 'Arvind SmartSpaces', config: '5 BHK Villa', location: 'Rancharda', price: '₹ 5.20 Cr' },
+                { id: 3, image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80', listingTitle: 'Gulmohar Greens', builder: 'Gulmohar', config: '3 BHK Villa', location: 'Sanand Road', price: '₹ 2.10 Cr' },
+                { id: 4, image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80', listingTitle: 'Bakeri Serenity', builder: 'Bakeri Group', config: '3 BHK Bungalow', location: 'Vejalpur', price: '₹ 2.75 Cr' },
             ]
         },
         {
             id: 'commercial',
             title: 'Commercial',
             items: [
-                { id: 1, image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80', label: 'Office Space' },
-                { id: 2, image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80', label: 'Corporate Hub' },
-                { id: 3, image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=400&q=80', label: 'Showroom' },
-                { id: 4, image: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=400&q=80', label: 'Co-working' },
+                { id: 1, image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80', listingTitle: 'Mondeal Heights', builder: 'HN Safal', config: 'Office Space', location: 'S.G Highway', price: '₹ 65.00 L' },
+                { id: 2, image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80', listingTitle: 'Westgate', builder: 'True Value', config: 'Corporate Office', location: 'S.G Highway', price: '₹ 1.10 Cr' },
+                { id: 3, image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=400&q=80', listingTitle: 'Titanium City', builder: 'Goyal & Co', config: 'Shop / Showroom', location: 'Prahladnagar', price: '₹ 2.50 Cr' },
+                { id: 4, image: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=400&q=80', listingTitle: 'Privilon', builder: 'Safal', config: 'Retail Space', location: 'Iscon Cross Rd', price: '₹ 1.80 Cr' },
             ]
         },
         {
             id: 'plots',
             title: 'Plots',
             items: [
-                { id: 1, image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=400&q=80', label: 'Green Land' },
-                { id: 2, image: 'https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?auto=format&fit=crop&w=400&q=80', label: 'Investment Plot' },
-                { id: 3, image: 'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=400&q=80', label: 'Farm House' },
-                { id: 4, image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80', label: 'Scenic View' },
+                { id: 1, image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=400&q=80', listingTitle: 'Glade One', builder: 'Arvind', config: 'Golf Plot', location: 'Sanand', price: '₹ 1.50 Cr' },
+                { id: 2, image: 'https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?auto=format&fit=crop&w=400&q=80', listingTitle: 'Kensville Golf', builder: 'Savvy', config: 'Residenital Plot', location: 'Bavla Rd', price: '₹ 85.00 L' },
+                { id: 3, image: 'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=400&q=80', listingTitle: 'Forest Hills', builder: 'Ganesh Housing', config: 'Farm Plot', location: 'Thol', price: '₹ 2.25 Cr' },
+                { id: 4, image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80', listingTitle: 'Suramya Abode', builder: 'Synthite', config: 'Weekend Home Plot', location: 'Rancharda', price: '₹ 3.00 Cr' },
             ]
         },
     ];
@@ -368,9 +368,18 @@ const Home = () => {
                             <div className="reel-container">
                                 {category.items.map((item) => (
                                     <div key={item.id} className="property-card-reel">
-                                        <img src={item.image} alt={item.label} loading="lazy" />
-                                        <div className="reel-card-overlay">
-                                            <span>{item.label}</span>
+                                        <div className="card-reel-image">
+                                            <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                        </div>
+                                        <div className="card-reel-details">
+                                            <h4 className="reel-prop-title">{item.listingTitle}</h4>
+                                            <span className="reel-prop-builder">{item.builder}</span>
+                                            <div className="reel-prop-specs">
+                                                <span>{item.config}</span>
+                                                <span className="dot">•</span>
+                                                <span>{item.location}</span>
+                                            </div>
+                                            <div className="reel-prop-price">{item.price}</div>
                                         </div>
                                     </div>
                                 ))}
