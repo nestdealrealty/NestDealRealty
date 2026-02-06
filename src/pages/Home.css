@@ -215,18 +215,18 @@
 }
 
 /* Diagonal Overlay Effect */
+/* Diagonal Overlay Effect - Now Curved */
 .diagonal-overlay {
     position: absolute;
     top: 0;
     left: -1px;
-    /* Slight overlap to prevent gaps */
-    width: 150px;
+    width: 100px;
     height: 100%;
     background: #0f1c16;
-    /* Same as sidebar background */
-    clip-path: polygon(0 0, 100% 0, 0 100%);
+    /* Create a convex semi-circle curve */
+    border-top-right-radius: 100% 50%;
+    border-bottom-right-radius: 100% 50%;
     z-index: 5;
-    /* This creates the sharp slash effect */
 }
 
 /* Fullscreen Slideshow */
