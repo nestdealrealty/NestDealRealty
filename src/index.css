@@ -2,21 +2,28 @@
 
 :root {
   --primary: #1B4D3E;
-  /* Dark Green from logo */
-  --primary-dark: #143d31;
-  --primary-light: #e8f0ed;
-  --secondary: #1B4D3E;
+  /* Original Dark Green */
+  --primary-dark: #0a1f18;
+  /* Near Black Green for BG */
+  --primary-glow: rgba(27, 77, 62, 0.3);
+  --secondary: #0D1612;
+  /* Darker Surface */
   --accent: #D4AF37;
-  /* Gold from logo */
-  --accent-dark: #B8952B;
-  --bg-light: #f9fafb;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
+  /* Gold */
+  --accent-orange: #F2994A;
+  /* Orange accent */
+  --accent-glow: rgba(212, 175, 55, 0.2);
+  --text-main: #FFFFFF;
+  --text-muted: #A0AEC0;
+  --bg-dark: #070B09;
+  --bg-card: #121A16;
+  --border-color: rgba(212, 175, 55, 0.15);
+  /* Subtle Gold border */
   --white: #ffffff;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --radius: 12px;
+  --shadow: 0 4px 20px -1px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 15px var(--accent-glow);
+  --radius: 16px;
   --header-height: 80px;
 }
 
@@ -28,7 +35,7 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--bg-light);
+  background-color: var(--bg-dark);
   color: var(--text-main);
   line-height: 1.5;
   overflow-x: hidden;
