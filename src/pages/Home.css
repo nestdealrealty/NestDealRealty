@@ -1,6 +1,7 @@
 /* --- MAIN CONTAINER --- */
 .homepage-wrapper-fullscreen {
-    height: calc(100vh - 80px); /* Subtract header height */
+    height: calc(100vh - 80px);
+    /* Subtract header height */
     width: 100vw;
     overflow: hidden;
     background: var(--bg-dark);
@@ -8,7 +9,8 @@
 }
 
 .split-hero-container {
-    position: relative; /* Changed from flex */
+    position: relative;
+    /* Changed from flex */
     height: 100%;
     width: 100%;
 }
@@ -18,13 +20,17 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 450px; /* Wider to accommodate curve start */
+    width: 60vw;
+    /* Reach roughly 60% across to sit between Logo and Sell */
     height: 100%;
     z-index: 10;
-    background: transparent; /* Transparent container */
+    background: transparent;
+    /* Transparent container */
     padding: 60px 40px;
     display: flex;
     flex-direction: column;
+    pointer-events: none;
+    /* Let clicks pass through empty areas */
 }
 
 /* The Green Curved Background Shape */
@@ -36,10 +42,12 @@
     width: 100%;
     height: 100%;
     background: #0f1c16;
-    z-index: -1; /* Behind sidebar content */
-    /* Custom Curve */
-    clip-path: path('M 0 0 H 420 C 420 250 350 550 0 100% V 0 Z');
-    box-shadow: 10px 0 30px rgba(0,0,0,0.5); 
+    z-index: -1;
+    /* Create a large Arc from Top-Right to Bottom-Left */
+    border-bottom-right-radius: 100% 100%;
+    box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.3);
+    pointer-events: auto;
+    /* Re-enable clicks on the green part */
 }
 
 .sidebar-widgets-top {
@@ -49,8 +57,11 @@
     margin-top: 20px;
     position: relative;
     z-index: 2;
-    max-width: 300px; /* Limit content width so it fits in the curve */
+    max-width: 350px;
+    /* Keep content compact on the left safe zone */
+    pointer-events: auto;
 }
+
 /* Sidebar Branding */
 .sidebar-branding {
     margin-bottom: 50px;
@@ -244,7 +255,7 @@
     right: 50px;
     text-align: right;
     z-index: 2;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .slide-hero-text h2 {
@@ -278,21 +289,24 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    z-index: 50; /* Higher than sidebar or image */
+    z-index: 50;
+    /* Higher than sidebar or image */
     padding: 0;
 }
 
 .advanced-search-container {
     background: white;
     width: 90%;
-    max-width: 1200px; /* Centered max width */
-    margin: 0 auto 30px auto; /* Centered with bottom margin */
+    max-width: 1200px;
+    /* Centered max width */
+    margin: 0 auto 30px auto;
+    /* Centered with bottom margin */
     border-radius: 12px;
     padding: 10px;
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
 .search-field-group {
@@ -312,6 +326,7 @@
     flex: 1.5;
     cursor: text;
 }
+
 .search-field-group.wide:hover {
     background: transparent;
 }
@@ -404,7 +419,8 @@
 
 .dropdown-menu-search {
     position: absolute;
-    bottom: 115%; /* Open UPWARDS */
+    bottom: 115%;
+    /* Open UPWARDS */
     top: auto;
     left: 0;
     min-width: 200px;
@@ -412,7 +428,8 @@
     border-radius: 8px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     padding: 10px;
-    z-index: 1000; /* High Z-index */
+    z-index: 1000;
+    /* High Z-index */
     border: 1px solid #eee;
     animation: fadeIn 0.2s ease-out;
 }
@@ -459,7 +476,8 @@
 .bhk-options-grid {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap; /* Allow wrapping if needed, but intended for single row */
+    flex-wrap: wrap;
+    /* Allow wrapping if needed, but intended for single row */
 }
 
 .bhk-option-btn {
@@ -831,4 +849,3 @@
 .apply-btn:hover {
     background: #333;
 }
-
