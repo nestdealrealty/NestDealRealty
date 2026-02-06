@@ -35,19 +35,22 @@ const navStructure = [
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [activeLocation, setActiveLocation] = useState('Ahmedabad');
-    const [openDropdown, setOpenDropdown] = useState(null); // For header nav if needed, but we used it for sidebar before.
 
-    // New States for Search Bar Interactivity
-    const [activeSearchDropdown, setActiveSearchDropdown] = useState(null); // 'city', 'bhk', 'budget', 'filter'
+    // Search States
+    const [activeSearchDropdown, setActiveSearchDropdown] = useState(null); // 'city', 'bhk', 'budget', 'filter-modal'
+    const [budgetOpen, setBudgetOpen] = useState(null); // 'min', 'max' inside the budget dropdown
+
     const [selectedBHK, setSelectedBHK] = useState([]);
-    const [selectedBudget, setSelectedBudget] = useState('');
+    const [selectedBudget, setSelectedBudget] = useState({ min: '', max: '' });
 
     const toggleSearchDropdown = (name) => {
-        setActiveSearchDropdown(activeSearchDropdown === name ? null : name);
+        if (name === activeSearchDropdown) {
+            setActiveSearchDropdown(null);
+        } else {
+            setActiveSearchDropdown(name);
+            setBudgetOpen(null); // Reset sub-dropdowns
+        }
     };
-
-    // Close dropdowns when clicking outside (simple implementation: overlay or background click)
-    // For now, we rely on the toggle. 
 
     // Slideshow logic
     useEffect(() => {
@@ -57,16 +60,14 @@ const Home = () => {
         return () => clearInterval(timer);
     }, []);
 
-    const toggleDropdown = (title) => {
-        setOpenDropdown(openDropdown === title ? null : title);
-    };
+    const priceOptions = ['₹ 20 Lac', '₹ 25 Lac', '₹ 30 Lac', '₹ 35 Lac', '₹ 40 Lac', '₹ 50 Lac', '₹ 75 Lac', '₹ 1 Cr', '₹ 1.5 Cr', '₹ 2 Cr+'];
 
     return (
         <div className="homepage-wrapper-fullscreen">
-            {/* Split Layout Container */}
+            {/* Split Hero */}
             <div className="split-hero-container">
 
-                {/* Left Side: Navigation & Tools (The "Green" Area) */}
+                {/* Left Sidebar */}
                 <div className="hero-left-sidebar">
                     <div className="sidebar-widgets-top">
                         <div className="widget-card about-widget">
@@ -88,10 +89,8 @@ const Home = () => {
                     </div>
                 </div>
 
-                {/* Right Side: Visuals (The Image Area) */}
+                {/* Right Visuals */}
                 <div className="hero-right-visual">
-
-                    {/* The Diagonal/Slanted Decoration */}
                     <div className="diagonal-overlay"></div>
 
                     {/* Slideshow */}
@@ -108,13 +107,11 @@ const Home = () => {
                         ))}
                     </div>
 
-                    {/* Filter Bar - Located at Bottom of Right Side */}
-                    {/* Filter Bar - Matches User Screenshot */}
-                    {/* Filter Bar - Matches User Screenshot */}
+                    {/* Search Bar */}
                     <div className="hero-bottom-filter">
                         <div className="advanced-search-container">
 
-                            {/* City Selection */}
+                            {/* City */}
                             <div className="search-field-group" onClick={() => toggleSearchDropdown('city')}>
                                 <label>Select City</label>
                                 <div className="field-control">
@@ -139,7 +136,7 @@ const Home = () => {
 
                             <div className="search-divider-v"></div>
 
-                            {/* BHK Selection */}
+                            {/* BHK */}
                             <div className="search-field-group" onClick={() => toggleSearchDropdown('bhk')}>
                                 <label>Select BHK</label>
                                 <div className="field-control">
@@ -148,7 +145,7 @@ const Home = () => {
                                 </div>
                                 {activeSearchDropdown === 'bhk' && (
                                     <div className="dropdown-menu-search bhk-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        {['1', '2', '3', '4', '5+'].map(bhk => (
+                                        {['1', '2', '3', '4', '5'].map(bhk => (
                                             <label key={bhk} className="checkbox-item" onClick={(e) => e.stopPropagation()}>
                                                 <input
                                                     type="checkbox"
@@ -169,25 +166,49 @@ const Home = () => {
 
                             <div className="search-divider-v"></div>
 
-                            {/* Budget Selection */}
+                            {/* Budget - UPDATED with Min/Max Lists */}
                             <div className="search-field-group" onClick={() => toggleSearchDropdown('budget')}>
                                 <label>Select Budget</label>
                                 <div className="field-control">
-                                    <span>{selectedBudget || 'Budget'}</span>
+                                    <span>{selectedBudget.min || 'Min'} - {selectedBudget.max || 'Max'}</span>
                                     <ChevronDown size={14} className={activeSearchDropdown === 'budget' ? 'rotate-180' : ''} />
                                 </div>
                                 {activeSearchDropdown === 'budget' && (
                                     <div className="dropdown-menu-search budget-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        <div className="range-inputs">
-                                            <input type="text" placeholder="Min" onClick={(e) => e.stopPropagation()} />
+                                        <div className="budget-range-wrapper">
+                                            {/* Min Selector */}
+                                            <div className="budget-select-box" onClick={() => setBudgetOpen(budgetOpen === 'min' ? null : 'min')}>
+                                                <span>{selectedBudget.min || 'Min'}</span>
+                                                <ChevronDown size={14} />
+                                                {budgetOpen === 'min' && (
+                                                    <div className="price-dropdown-list">
+                                                        {priceOptions.map(price => (
+                                                            <div key={price} className="price-option" onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedBudget({ ...selectedBudget, min: price });
+                                                                setBudgetOpen(null);
+                                                            }}>{price}</div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                             <span>-</span>
-                                            <input type="text" placeholder="Max" onClick={(e) => e.stopPropagation()} />
-                                        </div>
-                                        <div className="budget-suggestions">
-                                            <div className="dd-item" onClick={() => { setSelectedBudget('Under 50L'); toggleSearchDropdown(null); }}>Under ₹50L</div>
-                                            <div className="dd-item" onClick={() => { setSelectedBudget('50L - 1Cr'); toggleSearchDropdown(null); }}>₹50L - ₹1Cr</div>
-                                            <div className="dd-item" onClick={() => { setSelectedBudget('1Cr - 2Cr'); toggleSearchDropdown(null); }}>₹1Cr - ₹2Cr</div>
-                                            <div className="dd-item" onClick={() => { setSelectedBudget('2Cr+'); toggleSearchDropdown(null); }}>₹2Cr+</div>
+                                            {/* Max Selector */}
+                                            <div className="budget-select-box" onClick={() => setBudgetOpen(budgetOpen === 'max' ? null : 'max')}>
+                                                <span>{selectedBudget.max || 'Max'}</span>
+                                                <ChevronDown size={14} />
+                                                {budgetOpen === 'max' && (
+                                                    <div className="price-dropdown-list">
+                                                        {priceOptions.map(price => (
+                                                            <div key={price} className="price-option" onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedBudget({ ...selectedBudget, max: price });
+                                                                setBudgetOpen(null);
+                                                            }}>{price}</div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -195,32 +216,91 @@ const Home = () => {
 
                             <div className="search-divider-v"></div>
 
-                            {/* Actions */}
+                            {/* Actions & Filters */}
                             <div className="search-actions-group">
-                                <button className="filter-text-btn" onClick={() => toggleSearchDropdown('filter')}>
+                                <button className="filter-text-btn" onClick={() => toggleSearchDropdown('filter-modal')}>
                                     <Filter size={16} />
                                     <span>Filter</span>
                                 </button>
-                                {activeSearchDropdown === 'filter' && (
-                                    <div className="dropdown-menu-search filter-dropdown-panel" onClick={(e) => e.stopPropagation()}>
-                                        <h4>More Filters</h4>
-                                        <div className="filter-section">
-                                            <label>Possession Status</label>
-                                            <div className="radio-group">
-                                                <label><input type="radio" name="possession" /> Ready to Move</label>
-                                                <label><input type="radio" name="possession" /> Under Construction</label>
-                                            </div>
-                                        </div>
-                                        <button className="apply-btn" onClick={() => toggleSearchDropdown(null)}>Apply Filters</button>
-                                    </div>
-                                )}
-                                <button className="search-submit-btn">
-                                    Search
-                                </button>
+                                <button className="search-submit-btn">Search</button>
                             </div>
-
                         </div>
                     </div>
+
+                    {/* Full Screen Filter Modal */}
+                    {activeSearchDropdown === 'filter-modal' && (
+                        <div className="filter-modal-overlay" onClick={() => toggleSearchDropdown(null)}>
+                            <div className="filter-modal-container" onClick={(e) => e.stopPropagation()}>
+                                <div className="filter-modal-header">
+                                    <button onClick={() => toggleSearchDropdown(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><ChevronDown size={20} style={{ transform: 'rotate(90deg)' }} /></button>
+                                    <h2>Filters</h2>
+                                </div>
+                                <div className="filter-modal-body">
+                                    {/* City Tabs */}
+                                    <div className="filter-section-modal">
+                                        <h3>Search City</h3>
+                                        <div className="modal-city-tabs">
+                                            <button className={`modal-city-tab ${activeLocation === 'Ahmedabad' ? 'active' : ''}`} onClick={() => setActiveLocation('Ahmedabad')}>Ahmedabad</button>
+                                            <button className={`modal-city-tab ${activeLocation === 'Gandhinagar' ? 'active' : ''}`} onClick={() => setActiveLocation('Gandhinagar')}>Gandhinagar</button>
+                                        </div>
+                                    </div>
+
+                                    {/* Locality Search */}
+                                    <div className="filter-section-modal">
+                                        <h3>Search Locality / Project / Builder</h3>
+                                        <div className="modal-search-input">
+                                            <Search size={18} />
+                                            <input type="text" placeholder="Search Locality / Project / Builder" />
+                                        </div>
+                                    </div>
+
+                                    {/* Property Type */}
+                                    <div className="filter-section-modal">
+                                        <h3>Property Type <span className="clear-btn">Clear All</span></h3>
+                                        <div className="chip-group">
+                                            {['Flat', 'Duplex', 'Penthouse', 'Villa', 'Plot'].map(type => (
+                                                <button key={type} className="chip-btn"><span>+</span> {type}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* BHK */}
+                                    <div className="filter-section-modal">
+                                        <h3>BHK <span className="clear-btn">Clear All</span></h3>
+                                        <div className="chip-group">
+                                            {['1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK'].map(bhk => (
+                                                <button key={bhk} className="chip-btn"><span>+</span> {bhk}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Budget (Reused Logic in Modal if needed, but simplified for UI demo) */}
+                                    <div className="filter-section-modal">
+                                        <h3>Budget <span className="clear-btn">Clear All</span></h3>
+                                        <div className="budget-range-wrapper">
+                                            <div className="budget-select-box"><span>Min</span> <ChevronDown size={14} /></div>
+                                            <span>-</span>
+                                            <div className="budget-select-box"><span>Max</span> <ChevronDown size={14} /></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Possession */}
+                                    <div className="filter-section-modal">
+                                        <h3>Possession <span className="clear-btn">Clear All</span></h3>
+                                        <div className="chip-group">
+                                            {['Ready to Move', 'Upto 1 Year', 'Upto 2 Years', '2+ Years'].map(p => (
+                                                <button key={p} className="chip-btn"><span>+</span> {p}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="filter-modal-footer">
+                                    <button className="btn-clear">Clear All</button>
+                                    <button className="btn-apply" onClick={() => toggleSearchDropdown(null)}>Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                 </div>
             </div>

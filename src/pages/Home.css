@@ -593,3 +593,236 @@
     transition: transform 0.2s;
 }
 
+
+/* FILTER MODAL OVERLAY */
+.filter-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.filter-modal-container {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    height: 85vh;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.filter-modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.filter-modal-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.filter-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* Modal Sections */
+.filter-section-modal {
+    margin-bottom: 25px;
+}
+
+.filter-section-modal h3 {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 12px;
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+}
+
+.filter-section-modal h3 span.clear-btn {
+    color: var(--accent-orange);
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+/* City Tabs */
+.modal-city-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.modal-city-tab {
+    padding: 8px 20px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: #f9f9f9;
+    color: #444;
+}
+
+.modal-city-tab.active {
+    background: #e6f7ff;
+    border-color: #1890ff;
+    color: #1890ff;
+}
+
+/* Search Input inside Modal */
+.modal-search-input {
+    background: #f5f5f5;
+    padding: 12px 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #666;
+}
+
+.modal-search-input input {
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+    width: 100%;
+    color: #222;
+}
+
+/* Toggle Chips (BHK, Type, etc) */
+.chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.chip-btn {
+    padding: 8px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.chip-btn:hover {
+    border-color: #bbb;
+}
+
+.chip-btn.selected {
+    background: #f0f7ff;
+    border-color: #1890ff;
+    color: #1890ff;
+}
+
+/* Budget Min/Max specific styles */
+.budget-range-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.budget-select-box {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    background: white;
+}
+
+.budget-select-box span {
+    font-size: 0.9rem;
+    color: #444;
+}
+
+/* Scrollable Price List */
+.price-dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    z-index: 50;
+    margin-top: 5px;
+}
+
+.price-option {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+.price-option:hover {
+    background: #f0f7ff;
+}
+
+/* Footer */
+.filter-modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 15px;
+}
+
+.btn-clear {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-apply {
+    flex: 1;
+    padding: 12px;
+    background: #111;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
