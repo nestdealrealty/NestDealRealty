@@ -26,15 +26,13 @@
     color: var(--secondary);
 }
 
-.logo-icon {
-    width: 40px;
-    height: 40px;
-    background-color: var(--primary);
-    color: var(--white);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
+.logo-img {
+    height: 55px;
+    width: 55px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
 }
 
 .nav-list {
@@ -156,7 +154,7 @@
 .btn-primary:hover {
     background-color: var(--primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 4px 12px rgba(27, 77, 62, 0.3);
 }
 
 .header-actions {

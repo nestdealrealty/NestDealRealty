@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronDown, Search, Heart, User, Menu, X, ArrowRight } from 'lucide-react';
 import './Header.css';
+import logo from '../assets/logo.jpg';
 
 const navItems = [
     {
@@ -60,10 +62,10 @@ const Header = () => {
     return (
         <header className="header">
             <div className="container header-container">
-                <div className="logo">
-                    <div className="logo-icon">N</div>
-                    <span>Nest Deal</span>
-                </div>
+                <Link to="/" className="logo">
+                    <img src={logo} alt="Nest Deal Realty" className="logo-img" />
+                    <span>Nest Deal Realty</span>
+                </Link>
 
                 <nav className={`nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
                     <ul className="nav-list">

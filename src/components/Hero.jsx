@@ -4,6 +4,27 @@ import { ArrowRight, MapPin, ChevronDown, SlidersHorizontal, ChevronLeft, Search
 
 const Hero = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [activeDropdown, setActiveDropdown] = useState(null); // 'city', 'bhk', 'budget'
+    const [selectedCity, setSelectedCity] = useState('Ahmedabad');
+    const [selectedBHK, setSelectedBHK] = useState([]);
+    const [minBudget, setMinBudget] = useState('Min');
+    const [maxBudget, setMaxBudget] = useState('Max');
+
+    const toggleDropdown = (name) => {
+        setActiveDropdown(activeDropdown === name ? null : name);
+    };
+
+    const budgetOptions = [
+        '₹ 20 Lac', '₹ 25 Lac', '₹ 30 Lac', '₹ 35 Lac', '₹ 40 Lac', '₹ 45 Lac',
+        '₹ 50 Lac', '₹ 60 Lac', '₹ 70 Lac', '₹ 80 Lac', '₹ 90 Lac', '₹ 1 Cr'
+    ];
+
+    const maxBudgetOptions = [
+        '₹ 4.5 Cr', '₹ 5 Cr', '₹ 5.6 Cr', '₹ 6 Cr', '₹ 6.7 Cr', '₹ 7 Cr', '₹ 7.8 Cr', '₹ 8 Cr', '₹ 9 Cr', '₹ 10 Cr'
+    ];
+
+    const [openMin, setOpenMin] = useState(false);
+    const [openMax, setOpenMax] = useState(false);
 
     return (
         <div className="hero">
@@ -21,11 +42,19 @@ const Hero = () => {
                     </p>
 
                     <div className="hero-search-bar">
-                        <div className="search-section city-section">
+                        {/* City Section */}
+                        <div className="search-section city-section" onClick={() => toggleDropdown('city')}>
                             <label>Select City</label>
                             <div className="dropdown-trigger">
-                                Ahmedabad <ChevronDown size={14} />
+                                {selectedCity} <ChevronDown size={14} className={activeDropdown === 'city' ? 'rotate' : ''} />
                             </div>
+
+                            {activeDropdown === 'city' && (
+                                <div className="dropdown-menu city-menu">
+                                    <div className="dropdown-option" onClick={() => setSelectedCity('Ahmedabad')}>Ahmedabad</div>
+                                    <div className="dropdown-option" onClick={() => setSelectedCity('Gandhinagar')}>Gandhinagar</div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="divider"></div>
@@ -37,20 +66,84 @@ const Hero = () => {
 
                         <div className="divider"></div>
 
-                        <div className="search-section bhk-section">
+                        {/* BHK Section */}
+                        <div className="search-section bhk-section" onClick={() => toggleDropdown('bhk')}>
                             <label>Select BHK</label>
                             <div className="dropdown-trigger">
-                                BHK <ChevronDown size={14} />
+                                {selectedBHK.length > 0 ? selectedBHK.join(', ') : 'BHK'} <ChevronDown size={14} className={activeDropdown === 'bhk' ? 'rotate' : ''} />
                             </div>
+
+                            {activeDropdown === 'bhk' && (
+                                <div className="dropdown-menu bhk-menu" onClick={(e) => e.stopPropagation()}>
+                                    <div className="bhk-grid">
+                                        {[1, 2, 3, 4, 5, 6, 7].map(num => (
+                                            <div
+                                                key={num}
+                                                className={`bhk-option ${selectedBHK.includes(`${num} BHK`) ? 'active' : ''}`}
+                                                onClick={() => {
+                                                    const val = `${num} BHK`;
+                                                    setSelectedBHK(prev =>
+                                                        prev.includes(val) ? prev.filter(i => i !== val) : [...prev, val]
+                                                    );
+                                                }}
+                                            >
+                                                {num} BHK
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="dropdown-footer">
+                                        <button className="clear-btn" onClick={() => setSelectedBHK([])}>Clear All</button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="divider"></div>
 
-                        <div className="search-section budget-section">
+                        {/* Budget Section */}
+                        <div className="search-section budget-section" onClick={() => toggleDropdown('budget')}>
                             <label>Select Budget</label>
                             <div className="dropdown-trigger">
-                                Budget <ChevronDown size={14} />
+                                {minBudget !== 'Min' || maxBudget !== 'Max' ? `${minBudget} - ${maxBudget}` : 'Budget'}
+                                <ChevronDown size={14} className={activeDropdown === 'budget' ? 'rotate' : ''} />
                             </div>
+
+                            {activeDropdown === 'budget' && (
+                                <div className="dropdown-menu budget-menu" onClick={(e) => e.stopPropagation()}>
+                                    <div className="budget-selection-top">
+                                        <div className="budget-box">
+                                            <div className="budget-value" onClick={() => { setOpenMin(!openMin); setOpenMax(false); }}>
+                                                {minBudget} <ChevronDown size={14} />
+                                            </div>
+                                            {openMin && (
+                                                <div className="budget-list">
+                                                    <div className="opt" onClick={() => { setMinBudget('Min'); setOpenMin(false); }}>Min</div>
+                                                    {budgetOptions.map(opt => (
+                                                        <div key={opt} className="opt" onClick={() => { setMinBudget(opt); setOpenMin(false); }}>{opt}</div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <span className="dash">-</span>
+                                        <div className="budget-box">
+                                            <div className="budget-value" onClick={() => { setOpenMax(!openMax); setOpenMin(false); }}>
+                                                {maxBudget} <ChevronDown size={14} />
+                                            </div>
+                                            {openMax && (
+                                                <div className="budget-list">
+                                                    <div className="opt" onClick={() => { setMaxBudget('Max'); setOpenMax(false); }}>Max</div>
+                                                    {maxBudgetOptions.map(opt => (
+                                                        <div key={opt} className="opt" onClick={() => { setMaxBudget(opt); setOpenMax(false); }}>{opt}</div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="dropdown-footer">
+                                        <button className="clear-btn" onClick={() => { setMinBudget('Min'); setMaxBudget('Max'); setOpenMin(false); setOpenMax(false); }}>Clear All</button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="divider"></div>

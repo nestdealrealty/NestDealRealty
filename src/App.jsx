@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Home from './pages/Home';
 import PropertyDetails from './pages/PropertyDetails';
+import AdminDashboard from './pages/AdminDashboard';
+import Footer from './components/Footer';
 import './index.css';
 
 function App() {
@@ -16,14 +18,10 @@ function App() {
             <Route path="/property/:id" element={<PropertyDetails />} />
             {/* Fallback route for demo purposes if they click any property */}
             <Route path="/property" element={<PropertyDetails />} />
+            <Route path="/admin" element={<AdminDashboard />} />
           </Routes>
-
-          <footer style={{ padding: '60px 0', backgroundColor: '#0f172a', color: 'white', textAlign: 'center', marginTop: 'auto' }}>
-            <div className="container">
-              <p>&copy; 2026 Nest Deal. All rights reserved.</p>
-            </div>
-          </footer>
         </main>
+        <Footer />
       </div>
     </Router>
   );

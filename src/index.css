@@ -1,13 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary: #10b981; /* Green */
-  --primary-dark: #059669;
-  --primary-light: #d1fae5;
-  --secondary: #0f172a; /* Dark Blue/Gray */
-  --accent: #f59e0b; /* Orange/Gold */
-  --bg-light: #f8fafc;
-  --text-main: #1e293b;
+  --primary: #1B4D3E;
+  /* Dark Green from logo */
+  --primary-dark: #143d31;
+  --primary-light: #e8f0ed;
+  --secondary: #1B4D3E;
+  --accent: #D4AF37;
+  /* Gold from logo */
+  --accent-dark: #B8952B;
+  --bg-light: #f9fafb;
+  --text-main: #0f172a;
   --text-muted: #64748b;
   --white: #ffffff;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -31,7 +34,11 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, h4, .font-heading {
+h1,
+h2,
+h3,
+h4,
+.font-heading {
   font-family: 'Outfit', sans-serif;
 }
 

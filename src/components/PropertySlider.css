@@ -49,7 +49,7 @@
     background-color: var(--primary);
     color: var(--white);
     border-color: var(--primary);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 4px 12px rgba(27, 77, 62, 0.2);
 }
 
 .slider-wrapper {
@@ -138,8 +138,8 @@
 
 .bhk {
     font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--primary);
+    font-weight: 700;
+    color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
