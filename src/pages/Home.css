@@ -1083,3 +1083,87 @@
 .apply-btn:hover {
     background: #333;
 }
+/* --- HELP SECTION --- */
+.help-section-container {
+    background-color: #0f1c16; /* Dark Green background matching sidebar for consistency */
+    padding: 80px 5%;
+    text-align: center;
+    border-top: 1px solid #222;
+}
+
+.help-header h2 {
+    font-size: 2rem;
+    color: white; 
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.help-header p {
+    color: #ccc;
+    margin-bottom: 50px;
+    font-size: 1rem;
+}
+
+.help-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+.help-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.help-icon {
+    color: #4cd964; /* Vibrant Green similar to image */
+    margin-bottom: 20px;
+}
+
+.help-card h3 {
+    font-size: 1.2rem;
+    color: #4cd964; /* Green Title */
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.help-card p {
+    font-size: 0.9rem;
+    color: #aaa;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    min-height: 80px; /* Align buttons */
+}
+
+.help-btn {
+    padding: 10px 24px;
+    border: 1px solid #4cd964; /* Green border */
+    border-radius: 30px; /* Pill shape */
+    background: transparent;
+    color: #4cd964;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.help-btn:hover {
+    background: #4cd964;
+    color: black;
+    box-shadow: 0 0 15px rgba(76, 217, 100, 0.4);
+}
+
+@media (max-width: 1024px) {
+    .help-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .help-grid {
+        grid-template-columns: 1fr;
+    }
+}
+

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter } from 'lucide-react';
+import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter, Tag, Key, Briefcase } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
 import './Home.css';
@@ -389,6 +389,48 @@ const Home = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+            </div>
+
+            {/* Help Section */}
+            <div className="help-section-container">
+                <div className="help-header">
+                    <h2>How Nest Deal Realty can help you</h2>
+                    <p>We offer a comprehensive service with thousands of local property experts.</p>
+                </div>
+
+                <div className="help-grid">
+                    {/* Buying */}
+                    <div className="help-card">
+                        <div className="help-icon"><Search size={32} /></div>
+                        <h3>Buying</h3>
+                        <p>Looking to buy? Nest Deal has thousands of properties for sale and will help find you your new home.</p>
+                        <button className="help-btn">Property search</button>
+                    </div>
+
+                    {/* Selling */}
+                    <div className="help-card">
+                        <div className="help-icon"><Tag size={32} /></div>
+                        <h3>Selling</h3>
+                        <p>If you're thinking of selling soon or just curious about what your home might be worth.</p>
+                        <button className="help-btn">Selling your home</button>
+                    </div>
+
+                    {/* Renting */}
+                    <div className="help-card">
+                        <div className="help-icon"><Key size={32} /></div>
+                        <h3>Renting</h3>
+                        <p>We have rental properties nationwide, with a wealth of experience in finding tenants their perfect home.</p>
+                        <button className="help-btn">Rental properties</button>
+                    </div>
+
+                    {/* Landlords */}
+                    <div className="help-card">
+                        <div className="help-icon"><Briefcase size={32} /></div>
+                        <h3>Landlords</h3>
+                        <p>As a letting agent, we understand your rental needs and will work with you to get the best result.</p>
+                        <button className="help-btn">Letting your property</button>
+                    </div>
                 </div>
             </div>
 
