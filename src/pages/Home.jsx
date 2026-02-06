@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Calculator, Info, ArrowRight, MapPin, Filter, ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
+import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
 import './Home.css';
@@ -92,7 +92,7 @@ const Home = () => {
                             <Link to="/about" className="link-arrow">Read More <ArrowRight size={12} /></Link>
                         </div>
 
-                        <div className="widget-card emi-widget">
+                        <div className="widget-card emi-widget shadow-glow">
                             <Link to="/emi-calculator" className="emi-side-btn">
                                 <div className="icon-box"><Calculator size={20} /></div>
                                 <div className="btn-text">
