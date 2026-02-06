@@ -18,9 +18,9 @@ const Footer = () => {
                         Your trusted partner in finding the perfect home. We provide premium real estate services with a focus on luxury, comfort, and value.
                     </p>
                     <div className="social-links">
-                        <a href="#"><Facebook size={20} /></a>
+                        <a href="https://www.facebook.com/profile.php?id=61587367330916" target="_blank" rel="noopener noreferrer"><Facebook size={20} /></a>
                         <a href="#"><Twitter size={20} /></a>
-                        <a href="#"><Instagram size={20} /></a>
+                        <a href="https://www.instagram.com/nestdealrealty/" target="_blank" rel="noopener noreferrer"><Instagram size={20} /></a>
                         <a href="#"><Linkedin size={20} /></a>
                     </div>
                 </div>
