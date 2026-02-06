@@ -598,8 +598,189 @@
     cursor: hidden;
 }
 
-.apply-btn:hover {
-    background: #333;
+/* --- EXPLORE SECTION --- */
+.explore-ahmedabad-section {
+    background-color: #050505;
+    /* Deep rich black */
+    padding: 80px 5%;
+    position: relative;
+    border-top: 1px solid #111;
+}
+
+.explore-header-container {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.explore-header-container h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.explore-header-container .header-divider {
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    margin: 0 auto;
+    border-radius: 2px;
+}
+
+/* 4-Column Grid */
+.explore-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+}
+
+.explore-column {
+    background: #0a0a0a;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    height: 650px;
+    /* Fixed height for the reel effect */
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.explore-column:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.column-header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.column-header h3 {
+    font-size: 1.1rem;
+    color: #ddd;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Vertical Reel Scrolling */
+.reel-container {
+    flex: 1;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Hide scrollbar */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE 10+ */
+}
+
+.reel-container::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+}
+
+.property-card-reel {
+    height: 300px;
+    /* Fixed height for uniformity */
+    background: #151515;
+    border-radius: 12px;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.property-card-reel:hover {
+    border-color: var(--accent);
+    box-shadow: 0 5px 15px rgba(255, 166, 0, 0.1);
+}
+
+.property-card-reel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.8);
+    transition: transform 0.5s ease;
+}
+
+.property-card-reel:hover img {
+    transform: scale(1.05);
+    filter: brightness(1);
+}
+
+.reel-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(to top, black, transparent);
+    color: white;
+}
+
+.reel-card-overlay span {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #ddd;
+}
+
+/* See All Button */
+.column-footer {
+    padding: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.see-all-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    text-align: center;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.see-all-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: black;
+    box-shadow: 0 0 15px rgba(255, 166, 0, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .explore-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .explore-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .explore-column {
+        height: 500px;
+    }
 }
 
 .rotate-180 {
