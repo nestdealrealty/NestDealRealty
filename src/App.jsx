@@ -7,6 +7,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Footer from './components/Footer';
 import './index.css';
 
+// Nest Deal Realty - v1.1.0
 function App() {
   return (
     <Router>
