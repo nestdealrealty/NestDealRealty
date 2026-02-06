@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown } from 'lucide-react';
+import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
 import './Home.css';
