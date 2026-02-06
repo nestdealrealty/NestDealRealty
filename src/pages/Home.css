@@ -128,17 +128,70 @@
     transform: translateY(-5px);
 }
 
-.about-widget h3 {
-    font-size: 1.2rem;
-    margin-bottom: 10px;
+/* --- Valuation Widget --- */
+.valuation-widget {
+    background: transparent;
+    text-align: left;
+    padding: 20px 0;
+    /* Keep some padding if needed, but reset horizontal */
+}
+
+.valuation-widget h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 8px;
     color: white;
 }
 
-.about-widget p {
+.valuation-widget .rating-text {
+    font-size: 0.85rem;
+    color: #ccc;
+    margin-bottom: 12px;
+}
+
+.trust-badges {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.trust-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
     font-size: 0.9rem;
-    color: var(--text-muted);
-    line-height: 1.5;
-    margin-bottom: 15px;
+    color: white;
+}
+
+.book-valuation-btn {
+    width: 100%;
+    background-color: #ff8c00;
+    color: white;
+    font-weight: 700;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background 0.2s;
+}
+
+.book-valuation-btn:hover {
+    background-color: #e07b00;
+}
+
+.online-val-link {
+    font-size: 0.8rem;
+    color: #bbb;
+    text-align: center;
+}
+
+.online-val-link a {
+    color: white;
+    text-decoration: underline;
 }
 
 .link-arrow {
@@ -1083,9 +1136,11 @@
 .apply-btn:hover {
     background: #333;
 }
+
 /* --- HELP SECTION --- */
 .help-section-container {
-    background-color: #0f1c16; /* Dark Green background matching sidebar for consistency */
+    background-color: #0f1c16;
+    /* Dark Green background matching sidebar for consistency */
     padding: 80px 5%;
     text-align: center;
     border-top: 1px solid #222;
@@ -1093,7 +1148,7 @@
 
 .help-header h2 {
     font-size: 2rem;
-    color: white; 
+    color: white;
     margin-bottom: 10px;
     font-weight: 700;
 }
@@ -1119,13 +1174,15 @@
 }
 
 .help-icon {
-    color: #4cd964; /* Vibrant Green similar to image */
+    color: #4cd964;
+    /* Vibrant Green similar to image */
     margin-bottom: 20px;
 }
 
 .help-card h3 {
     font-size: 1.2rem;
-    color: #4cd964; /* Green Title */
+    color: #4cd964;
+    /* Green Title */
     margin-bottom: 15px;
     font-weight: 700;
 }
@@ -1135,13 +1192,16 @@
     color: #aaa;
     line-height: 1.6;
     margin-bottom: 25px;
-    min-height: 80px; /* Align buttons */
+    min-height: 80px;
+    /* Align buttons */
 }
 
 .help-btn {
     padding: 10px 24px;
-    border: 1px solid #4cd964; /* Green border */
-    border-radius: 30px; /* Pill shape */
+    border: 1px solid #4cd964;
+    /* Green border */
+    border-radius: 30px;
+    /* Pill shape */
     background: transparent;
     color: #4cd964;
     font-weight: 600;
@@ -1166,4 +1226,3 @@
         grid-template-columns: 1fr;
     }
 }
-

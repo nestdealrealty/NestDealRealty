@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter, Tag, Key, Briefcase } from 'lucide-react';
+import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter, Tag, Key, Briefcase, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
 import './Home.css';
@@ -115,10 +115,14 @@ const Home = () => {
                     {/* Left Sidebar */}
                     <div className="hero-left-sidebar">
                         <div className="sidebar-widgets-top">
-                            <div className="widget-card about-widget">
-                                <h3>About Us</h3>
-                                <p>Premium real estate partners for Ahmedabad's elite.</p>
-                                <Link to="/about" className="link-arrow">Read More <ArrowRight size={12} /></Link>
+                            <div className="widget-card valuation-widget">
+                                <h3>Get the best price for your property</h3>
+                                <p className="rating-text">Rated Excellent with over 44,000 reviews</p>
+                                <div className="trust-badges">
+                                    <div className="trust-item"><Star size={16} fill="#00b67a" stroke="none" /> <span>Trustpilot</span></div>
+                                </div>
+                                <button className="book-valuation-btn">Book a free valuation</button>
+                                <p className="online-val-link">Or start with an <a href="#">online valuation</a></p>
                             </div>
 
                             <div className="widget-card emi-widget shadow-glow">
