@@ -228,83 +228,85 @@ const Home = () => {
                             <button className="search-submit-btn">Search</button>
                         </div>
                     </div>
-                    {/* Full Screen Filter Modal */}
-                    {activeSearchDropdown === 'filter-modal' && (
-                        <div className="filter-modal-overlay" onClick={() => toggleSearchDropdown(null)}>
-                            <div className="filter-modal-container" onClick={(e) => e.stopPropagation()}>
-                                <div className="filter-modal-header">
-                                    <button onClick={() => toggleSearchDropdown(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><ChevronDown size={20} style={{ transform: 'rotate(90deg)' }} /></button>
-                                    <h2>Filters</h2>
-                                </div>
-                                <div className="filter-modal-body">
-                                    {/* City Tabs */}
-                                    <div className="filter-section-modal">
-                                        <h3>Search City</h3>
-                                        <div className="modal-city-tabs">
-                                            <button className={`modal-city-tab ${activeLocation === 'Ahmedabad' ? 'active' : ''}`} onClick={() => setActiveLocation('Ahmedabad')}>Ahmedabad</button>
-                                            <button className={`modal-city-tab ${activeLocation === 'Gandhinagar' ? 'active' : ''}`} onClick={() => setActiveLocation('Gandhinagar')}>Gandhinagar</button>
-                                        </div>
-                                    </div>
+                </div>
 
-                                    {/* Locality Search */}
-                                    <div className="filter-section-modal">
-                                        <h3>Search Locality / Project / Builder</h3>
-                                        <div className="modal-search-input">
-                                            <Search size={18} />
-                                            <input type="text" placeholder="Search Locality / Project / Builder" />
-                                        </div>
-                                    </div>
-
-                                    {/* Property Type */}
-                                    <div className="filter-section-modal">
-                                        <h3>Property Type <span className="clear-btn">Clear All</span></h3>
-                                        <div className="chip-group">
-                                            {['Flat', 'Duplex', 'Penthouse', 'Villa', 'Plot'].map(type => (
-                                                <button key={type} className="chip-btn"><span>+</span> {type}</button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* BHK */}
-                                    <div className="filter-section-modal">
-                                        <h3>BHK <span className="clear-btn">Clear All</span></h3>
-                                        <div className="chip-group">
-                                            {['1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK'].map(bhk => (
-                                                <button key={bhk} className="chip-btn"><span>+</span> {bhk}</button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Budget */}
-                                    <div className="filter-section-modal">
-                                        <h3>Budget <span className="clear-btn">Clear All</span></h3>
-                                        <div className="budget-range-wrapper">
-                                            <div className="budget-select-box"><span>Min</span> <ChevronDown size={14} /></div>
-                                            <span>-</span>
-                                            <div className="budget-select-box"><span>Max</span> <ChevronDown size={14} /></div>
-                                        </div>
-                                    </div>
-
-                                    {/* Possession */}
-                                    <div className="filter-section-modal">
-                                        <h3>Possession <span className="clear-btn">Clear All</span></h3>
-                                        <div className="chip-group">
-                                            {['Ready to Move', 'Upto 1 Year', 'Upto 2 Years', '2+ Years'].map(p => (
-                                                <button key={p} className="chip-btn"><span>+</span> {p}</button>
-                                            ))}
-                                        </div>
+                {/* Full Screen Filter Modal */}
+                {activeSearchDropdown === 'filter-modal' && (
+                    <div className="filter-modal-overlay" onClick={() => toggleSearchDropdown(null)}>
+                        <div className="filter-modal-container" onClick={(e) => e.stopPropagation()}>
+                            <div className="filter-modal-header">
+                                <button onClick={() => toggleSearchDropdown(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><ChevronDown size={20} style={{ transform: 'rotate(90deg)' }} /></button>
+                                <h2>Filters</h2>
+                            </div>
+                            <div className="filter-modal-body">
+                                {/* City Tabs */}
+                                <div className="filter-section-modal">
+                                    <h3>Search City</h3>
+                                    <div className="modal-city-tabs">
+                                        <button className={`modal-city-tab ${activeLocation === 'Ahmedabad' ? 'active' : ''}`} onClick={() => setActiveLocation('Ahmedabad')}>Ahmedabad</button>
+                                        <button className={`modal-city-tab ${activeLocation === 'Gandhinagar' ? 'active' : ''}`} onClick={() => setActiveLocation('Gandhinagar')}>Gandhinagar</button>
                                     </div>
                                 </div>
-                                <div className="filter-modal-footer">
-                                    <button className="btn-clear">Clear All</button>
-                                    <button className="btn-apply" onClick={() => toggleSearchDropdown(null)}>Apply</button>
+
+                                {/* Locality Search */}
+                                <div className="filter-section-modal">
+                                    <h3>Search Locality / Project / Builder</h3>
+                                    <div className="modal-search-input">
+                                        <Search size={18} />
+                                        <input type="text" placeholder="Search Locality / Project / Builder" />
+                                    </div>
+                                </div>
+
+                                {/* Property Type */}
+                                <div className="filter-section-modal">
+                                    <h3>Property Type <span className="clear-btn">Clear All</span></h3>
+                                    <div className="chip-group">
+                                        {['Flat', 'Duplex', 'Penthouse', 'Villa', 'Plot'].map(type => (
+                                            <button key={type} className="chip-btn"><span>+</span> {type}</button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* BHK */}
+                                <div className="filter-section-modal">
+                                    <h3>BHK <span className="clear-btn">Clear All</span></h3>
+                                    <div className="chip-group">
+                                        {['1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK'].map(bhk => (
+                                            <button key={bhk} className="chip-btn"><span>+</span> {bhk}</button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Budget */}
+                                <div className="filter-section-modal">
+                                    <h3>Budget <span className="clear-btn">Clear All</span></h3>
+                                    <div className="budget-range-wrapper">
+                                        <div className="budget-select-box"><span>Min</span> <ChevronDown size={14} /></div>
+                                        <span>-</span>
+                                        <div className="budget-select-box"><span>Max</span> <ChevronDown size={14} /></div>
+                                    </div>
+                                </div>
+
+                                {/* Possession */}
+                                <div className="filter-section-modal">
+                                    <h3>Possession <span className="clear-btn">Clear All</span></h3>
+                                    <div className="chip-group">
+                                        {['Ready to Move', 'Upto 1 Year', 'Upto 2 Years', '2+ Years'].map(p => (
+                                            <button key={p} className="chip-btn"><span>+</span> {p}</button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
+                            <div className="filter-modal-footer">
+                                <button className="btn-clear">Clear All</button>
+                                <button className="btn-apply" onClick={() => toggleSearchDropdown(null)}>Apply</button>
+                            </div>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
-            );
+        </div>
+    );
 };
 
-            export default Home;
+export default Home;
