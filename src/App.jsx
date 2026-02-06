@@ -14,7 +14,7 @@ function Layout() {
 
   return (
     <div className="app">
-      {!isHomePage && <Header />}
+      <Header />
       <main>
         <Routes>
           <Route path="/" element={<Home />} />

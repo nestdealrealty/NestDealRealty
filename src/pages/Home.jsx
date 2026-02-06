@@ -56,36 +56,7 @@ const Home = () => {
 
                 {/* Left Side: Navigation & Tools (The "Green" Area) */}
                 <div className="hero-left-sidebar">
-                    <div className="sidebar-branding">
-                        <Link to="/" className="brand-logo-large">
-                            <img src={logo} alt="Nest Deal" />
-                            <div className="brand-text">
-                                <h1>NEST DEAL</h1>
-                                <span>REALTY</span>
-                            </div>
-                        </Link>
-                    </div>
-
-                    <nav className="vertical-main-nav">
-                        {navStructure.map(category => (
-                            <div key={category.title} className="nav-group">
-                                <button
-                                    className={`nav-group-btn ${openDropdown === category.title ? 'active' : ''}`}
-                                    onClick={() => toggleDropdown(category.title)}
-                                >
-                                    {category.title}
-                                    <ChevronDown size={16} className={`arrow ${openDropdown === category.title ? 'rotate' : ''}`} />
-                                </button>
-                                <div className={`nav-dropdown ${openDropdown === category.title ? 'open' : ''}`}>
-                                    {category.items.map(item => (
-                                        <Link to="#" key={item} className="dropdown-link">{item}</Link>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </nav>
-
-                    <div className="sidebar-widgets">
+                    <div className="sidebar-widgets-top">
                         <div className="widget-card about-widget">
                             <h3>About Us</h3>
                             <p>Premium real estate partners for Ahmedabad's elite.</p>

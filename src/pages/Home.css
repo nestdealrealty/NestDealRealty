@@ -1,6 +1,6 @@
-/* Fullscreen Layout Wrapper */
 .homepage-wrapper-fullscreen {
-    height: 100vh;
+    height: calc(100vh - 80px);
+    /* Subtract header height */
     width: 100vw;
     overflow: hidden;
     background: var(--bg-dark);
@@ -20,11 +20,19 @@
     /* Deep Rich Green/Black */
     display: flex;
     flex-direction: column;
-    padding: 40px 30px;
+    padding: 60px 30px;
+    /* Increased top padding */
     position: relative;
     z-index: 10;
     flex-shrink: 0;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-widgets-top {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 20px;
 }
 
 /* Sidebar Branding */
