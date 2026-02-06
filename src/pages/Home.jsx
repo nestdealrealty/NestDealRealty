@@ -107,128 +107,127 @@ const Home = () => {
                         ))}
                     </div>
 
-                    {/* Search Bar */}
-                    <div className="hero-bottom-filter">
-                        <div className="advanced-search-container">
+                </div>
 
-                            {/* City */}
-                            <div className="search-field-group" onClick={() => toggleSearchDropdown('city')}>
-                                <label>Select City</label>
-                                <div className="field-control">
-                                    <span>{activeLocation}</span>
-                                    <ChevronDown size={14} className={activeSearchDropdown === 'city' ? 'rotate-180' : ''} />
+                {/* Search Bar - Moved OUTSIDE hero-right-visual to sit on top of everything */}
+                <div className="hero-bottom-filter">
+                    <div className="advanced-search-container">
+                        {/* City */}
+                        <div className="search-field-group" onClick={() => toggleSearchDropdown('city')}>
+                            <label>Select City</label>
+                            <div className="field-control">
+                                <span>{activeLocation}</span>
+                                <ChevronDown size={14} className={activeSearchDropdown === 'city' ? 'rotate-180' : ''} />
+                            </div>
+                            {activeSearchDropdown === 'city' && (
+                                <div className="dropdown-menu-search city-dropdown" onClick={(e) => e.stopPropagation()}>
+                                    <div className={`dd-item ${activeLocation === 'Ahmedabad' ? 'selected' : ''}`} onClick={() => { setActiveLocation('Ahmedabad'); toggleSearchDropdown(null); }}>Ahmedabad</div>
+                                    <div className={`dd-item ${activeLocation === 'Gandhinagar' ? 'selected' : ''}`} onClick={() => { setActiveLocation('Gandhinagar'); toggleSearchDropdown(null); }}>Gandhinagar</div>
                                 </div>
-                                {activeSearchDropdown === 'city' && (
-                                    <div className="dropdown-menu-search city-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        <div className={`dd-item ${activeLocation === 'Ahmedabad' ? 'selected' : ''}`} onClick={() => { setActiveLocation('Ahmedabad'); toggleSearchDropdown(null); }}>Ahmedabad</div>
-                                        <div className={`dd-item ${activeLocation === 'Gandhinagar' ? 'selected' : ''}`} onClick={() => { setActiveLocation('Gandhinagar'); toggleSearchDropdown(null); }}>Gandhinagar</div>
+                            )}
+                        </div>
+
+                        <div className="search-divider-v"></div>
+
+                        {/* Text Search */}
+                        <div className="search-field-group wide">
+                            <label>Search By</label>
+                            <input type="text" placeholder="Area / project / builder" />
+                        </div>
+
+                        <div className="search-divider-v"></div>
+
+                        {/* BHK */}
+                        <div className="search-field-group" onClick={() => toggleSearchDropdown('bhk')}>
+                            <label>Select BHK</label>
+                            <div className="field-control">
+                                <span>{selectedBHK.length > 0 ? `${selectedBHK.join(', ')} BHK` : 'BHK'}</span>
+                                <ChevronDown size={14} className={activeSearchDropdown === 'bhk' ? 'rotate-180' : ''} />
+                            </div>
+                            {activeSearchDropdown === 'bhk' && (
+                                <div className="dropdown-menu-search bhk-dropdown" onClick={(e) => e.stopPropagation()}>
+                                    <div className="bhk-options-grid">
+                                        {['1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK'].map(bhk => (
+                                            <div
+                                                key={bhk}
+                                                className={`bhk-option-btn ${selectedBHK.includes(bhk) ? 'active' : ''}`}
+                                                onClick={() => {
+                                                    const newSel = selectedBHK.includes(bhk)
+                                                        ? selectedBHK.filter(b => b !== bhk)
+                                                        : [...selectedBHK, bhk];
+                                                    setSelectedBHK(newSel);
+                                                }}
+                                            >
+                                                {bhk}
+                                            </div>
+                                        ))}
                                     </div>
-                                )}
-                            </div>
-
-                            <div className="search-divider-v"></div>
-
-                            {/* Text Search */}
-                            <div className="search-field-group wide">
-                                <label>Search By</label>
-                                <input type="text" placeholder="Area / project / builder" />
-                            </div>
-
-                            <div className="search-divider-v"></div>
-
-                            {/* BHK */}
-                            <div className="search-field-group" onClick={() => toggleSearchDropdown('bhk')}>
-                                <label>Select BHK</label>
-                                <div className="field-control">
-                                    <span>{selectedBHK.length > 0 ? `${selectedBHK.join(', ')} BHK` : 'BHK'}</span>
-                                    <ChevronDown size={14} className={activeSearchDropdown === 'bhk' ? 'rotate-180' : ''} />
+                                    <div className="bhk-footer" onClick={() => setSelectedBHK([])}>Clear All</div>
                                 </div>
-                                {activeSearchDropdown === 'bhk' && (
-                                    <div className="dropdown-menu-search bhk-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        <div className="bhk-options-grid">
-                                            {['1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK'].map(bhk => (
-                                                <div
-                                                    key={bhk}
-                                                    className={`bhk-option-btn ${selectedBHK.includes(bhk) ? 'active' : ''}`}
-                                                    onClick={() => {
-                                                        const newSel = selectedBHK.includes(bhk)
-                                                            ? selectedBHK.filter(b => b !== bhk)
-                                                            : [...selectedBHK, bhk];
-                                                        setSelectedBHK(newSel);
-                                                    }}
-                                                >
-                                                    {bhk}
+                            )}
+                        </div>
+
+                        <div className="search-divider-v"></div>
+
+                        {/* Budget */}
+                        <div className="search-field-group" onClick={() => toggleSearchDropdown('budget')}>
+                            <label>Select Budget</label>
+                            <div className="field-control">
+                                <span>{selectedBudget.min || 'Min'} - {selectedBudget.max || 'Max'}</span>
+                                <ChevronDown size={14} className={activeSearchDropdown === 'budget' ? 'rotate-180' : ''} />
+                            </div>
+                            {activeSearchDropdown === 'budget' && (
+                                <div className="dropdown-menu-search budget-dropdown" onClick={(e) => e.stopPropagation()}>
+                                    <div className="budget-range-wrapper">
+                                        {/* Min Selector */}
+                                        <div className="budget-select-box" onClick={() => setBudgetOpen(budgetOpen === 'min' ? null : 'min')}>
+                                            <span>{selectedBudget.min || 'Min'}</span>
+                                            <ChevronDown size={14} />
+                                            {budgetOpen === 'min' && (
+                                                <div className="price-dropdown-list">
+                                                    {priceOptions.map(price => (
+                                                        <div key={price} className="price-option" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedBudget({ ...selectedBudget, min: price });
+                                                            setBudgetOpen(null);
+                                                        }}>{price}</div>
+                                                    ))}
                                                 </div>
-                                            ))}
+                                            )}
                                         </div>
-                                        <div className="bhk-footer" onClick={() => setSelectedBHK([])}>Clear All</div>
+                                        <span>-</span>
+                                        {/* Max Selector */}
+                                        <div className="budget-select-box" onClick={() => setBudgetOpen(budgetOpen === 'max' ? null : 'max')}>
+                                            <span>{selectedBudget.max || 'Max'}</span>
+                                            <ChevronDown size={14} />
+                                            {budgetOpen === 'max' && (
+                                                <div className="price-dropdown-list">
+                                                    {priceOptions.map(price => (
+                                                        <div key={price} className="price-option" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedBudget({ ...selectedBudget, max: price });
+                                                            setBudgetOpen(null);
+                                                        }}>{price}</div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                )}
-                            </div>
-
-                            <div className="search-divider-v"></div>
-
-                            {/* Budget - UPDATED with Min/Max Lists */}
-                            <div className="search-field-group" onClick={() => toggleSearchDropdown('budget')}>
-                                <label>Select Budget</label>
-                                <div className="field-control">
-                                    <span>{selectedBudget.min || 'Min'} - {selectedBudget.max || 'Max'}</span>
-                                    <ChevronDown size={14} className={activeSearchDropdown === 'budget' ? 'rotate-180' : ''} />
                                 </div>
-                                {activeSearchDropdown === 'budget' && (
-                                    <div className="dropdown-menu-search budget-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        <div className="budget-range-wrapper">
-                                            {/* Min Selector */}
-                                            <div className="budget-select-box" onClick={() => setBudgetOpen(budgetOpen === 'min' ? null : 'min')}>
-                                                <span>{selectedBudget.min || 'Min'}</span>
-                                                <ChevronDown size={14} />
-                                                {budgetOpen === 'min' && (
-                                                    <div className="price-dropdown-list">
-                                                        {priceOptions.map(price => (
-                                                            <div key={price} className="price-option" onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setSelectedBudget({ ...selectedBudget, min: price });
-                                                                setBudgetOpen(null);
-                                                            }}>{price}</div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <span>-</span>
-                                            {/* Max Selector */}
-                                            <div className="budget-select-box" onClick={() => setBudgetOpen(budgetOpen === 'max' ? null : 'max')}>
-                                                <span>{selectedBudget.max || 'Max'}</span>
-                                                <ChevronDown size={14} />
-                                                {budgetOpen === 'max' && (
-                                                    <div className="price-dropdown-list">
-                                                        {priceOptions.map(price => (
-                                                            <div key={price} className="price-option" onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setSelectedBudget({ ...selectedBudget, max: price });
-                                                                setBudgetOpen(null);
-                                                            }}>{price}</div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            )}
+                        </div>
 
-                            <div className="search-divider-v"></div>
+                        <div className="search-divider-v"></div>
 
-                            {/* Actions & Filters */}
-                            <div className="search-actions-group">
-                                <button className="filter-text-btn" onClick={() => toggleSearchDropdown('filter-modal')}>
-                                    <Filter size={16} />
-                                    <span>Filter</span>
-                                </button>
-                                <button className="search-submit-btn">Search</button>
-                            </div>
+                        {/* Actions */}
+                        <div className="search-actions-group">
+                            <button className="filter-text-btn" onClick={() => toggleSearchDropdown('filter-modal')}>
+                                <Filter size={16} />
+                                <span>Filter</span>
+                            </button>
+                            <button className="search-submit-btn">Search</button>
                         </div>
                     </div>
-
                     {/* Full Screen Filter Modal */}
                     {activeSearchDropdown === 'filter-modal' && (
                         <div className="filter-modal-overlay" onClick={() => toggleSearchDropdown(null)}>
@@ -276,7 +275,7 @@ const Home = () => {
                                         </div>
                                     </div>
 
-                                    {/* Budget (Reused Logic in Modal if needed, but simplified for UI demo) */}
+                                    {/* Budget */}
                                     <div className="filter-section-modal">
                                         <h3>Budget <span className="clear-btn">Clear All</span></h3>
                                         <div className="budget-range-wrapper">
@@ -303,11 +302,9 @@ const Home = () => {
                             </div>
                         </div>
                     )}
-
                 </div>
             </div>
-        </div>
-    );
+            );
 };
 
-export default Home;
+            export default Home;
