@@ -67,6 +67,8 @@ const PropertyDetails = () => {
     };
 
     const property = fetchedProperty || demoProperty;
+    // Normalize gallery images source (Fix for missing gallery array in new IDs)
+    const galleryImages = property.mediaGallery?.photos?.map(p => p.url) || property.gallery || [];
 
     const [heroIndex, setHeroIndex] = useState(0);
     const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -107,11 +109,11 @@ const PropertyDetails = () => {
         let interval;
         if (isAutoPlaying && lightboxIndex === null) {
             interval = setInterval(() => {
-                setHeroIndex((prev) => (prev + 1) % property.gallery.length);
+                setHeroIndex((prev) => (prev + 1) % galleryImages.length);
             }, 5000);
         }
         return () => clearInterval(interval);
-    }, [isAutoPlaying, lightboxIndex, property.gallery.length]);
+    }, [isAutoPlaying, lightboxIndex, galleryImages.length]);
 
     // Keyboard navigation for lightbox
     useEffect(() => {
@@ -123,10 +125,10 @@ const PropertyDetails = () => {
                     closeLightbox();
                     break;
                 case 'ArrowLeft':
-                    setLightboxIndex((prev) => (prev - 1 + property.gallery.length) % property.gallery.length);
+                    setLightboxIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
                     break;
                 case 'ArrowRight':
-                    setLightboxIndex((prev) => (prev + 1) % property.gallery.length);
+                    setLightboxIndex((prev) => (prev + 1) % galleryImages.length);
                     break;
                 default:
                     break;
@@ -135,7 +137,7 @@ const PropertyDetails = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [lightboxIndex, property.gallery.length]);
+    }, [lightboxIndex, galleryImages.length]);
 
     // Touch swipe support for hero slider
     const [touchStart, setTouchStart] = useState(null);
@@ -167,12 +169,12 @@ const PropertyDetails = () => {
     };
 
     const nextHero = () => {
-        setHeroIndex((prev) => (prev + 1) % property.gallery.length);
+        setHeroIndex((prev) => (prev + 1) % galleryImages.length);
         setIsAutoPlaying(false);
     };
 
     const prevHero = () => {
-        setHeroIndex((prev) => (prev - 1 + property.gallery.length) % property.gallery.length);
+        setHeroIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
         setIsAutoPlaying(false);
     };
 
@@ -188,12 +190,12 @@ const PropertyDetails = () => {
 
     const nextLightbox = (e) => {
         e.stopPropagation();
-        setLightboxIndex((prev) => (prev + 1) % property.gallery.length);
+        setLightboxIndex((prev) => (prev + 1) % galleryImages.length);
     };
 
     const prevLightbox = (e) => {
         e.stopPropagation();
-        setLightboxIndex((prev) => (prev - 1 + property.gallery.length) % property.gallery.length);
+        setLightboxIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
     };
 
     return (
@@ -211,7 +213,7 @@ const PropertyDetails = () => {
                         className="hero-track"
                         style={{ transform: `translateX(-${heroIndex * 100}%)` }}
                     >
-                        {property.gallery.map((img, idx) => (
+                        {galleryImages.map((img, idx) => (
                             <div
                                 key={idx}
                                 className="hero-slide"
@@ -237,7 +239,7 @@ const PropertyDetails = () => {
 
                     {/* Dot Indicators */}
                     <div className="hero-dots">
-                        {property.gallery.map((_, idx) => (
+                        {galleryImages.map((_, idx) => (
                             <button
                                 key={idx}
                                 className={`hero-dot ${heroIndex === idx ? 'active' : ''}`}
@@ -708,7 +710,7 @@ const PropertyDetails = () => {
 
                             <div className="lb-image-wrapper">
                                 <img
-                                    src={property.gallery[lightboxIndex]}
+                                    src={galleryImages[lightboxIndex]}
                                     alt="Zoomed View"
                                     className="lb-main-img"
                                 />
@@ -720,7 +722,7 @@ const PropertyDetails = () => {
                         </div>
 
                         <div className="lb-footer">
-                            <div className="lb-counter">{lightboxIndex + 1} / {property.gallery.length}</div>
+                            <div className="lb-counter">{lightboxIndex + 1} / {galleryImages.length}</div>
                         </div>
                     </div>
                 )
