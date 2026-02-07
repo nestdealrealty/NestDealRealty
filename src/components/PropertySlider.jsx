@@ -6,11 +6,23 @@ import './PropertySlider.css';
 const PropertyCard = ({ property }) => {
     const navigate = useNavigate();
 
+    const handleDoubleClick = () => {
+        // Add fade-out animation before navigation
+        document.body.style.opacity = '0.95';
+        document.body.style.transition = 'opacity 0.3s ease';
+
+        setTimeout(() => {
+            navigate(`/property/${property.id}`);
+            document.body.style.opacity = '1';
+        }, 300);
+    };
+
     return (
         <div
             className="property-card"
-            onClick={() => navigate(`/property/${property.id}`)}
+            onDoubleClick={handleDoubleClick}
             style={{ cursor: 'pointer' }}
+            title="Double-click to view details"
         >
             <div className="property-image">
                 <img src={property.image} alt={property.name} />
@@ -41,7 +53,13 @@ const PropertyCard = ({ property }) => {
                         <span className="value">{property.area}</span>
                     </div>
                 </div>
-                <button className="view-details-btn">
+                <button
+                    className="view-details-btn"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleDoubleClick();
+                    }}
+                >
                     View Details <ArrowUpRight size={18} />
                 </button>
             </div>

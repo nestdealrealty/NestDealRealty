@@ -1,26 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import {
     Share2, Heart, MapPin, Download, ChevronRight, ChevronLeft, Check,
-    Star, Phone, User, Mail, School, Bus, ShoppingBag, Coffee, X
+    Star, Phone, User, Mail, School, Bus, ShoppingBag, Coffee, X,
+    Maximize2, Calendar, Ruler, Car, Home, Layers, ExternalLink,
+    ThumbsUp, ThumbsDown, Play, Building2, TrendingUp, FileText,
+    Hospital, Trees, Navigation, Calculator, ShieldCheck, Info, MessageSquare
 } from 'lucide-react';
+import { getPropertyById } from '../data/properties';
 import './PropertyDetails.css';
 
 const PropertyDetails = () => {
-    // Enhanced Dummy Data
-    const property = {
+    const { id } = useParams();
+
+    // Fetch property data dynamically or use fallback demo data
+    const fetchedProperty = getPropertyById(parseInt(id));
+
+    // Fallback demo data (The Planet)
+    const demoProperty = {
         title: "The Planet",
+        tagline: "Luxury 3BHK Elite Facing Apartments",
         developer: "Venus Group",
         location: "Shela, Ahmedabad",
         address: "Sy No.70/3, Opp To Club O7, Shela Road, Ahmedabad, Gujarat",
-        priceRange: "₹75L - 1.2Cr",
-        pricePerSqFt: "₹4.52 K/sq.ft",
-        emi: "EMI starts at ₹36.14 K",
-        configurations: "2, 3 BHK Apartments",
+        price: "₹75L - 1.2Cr",
+        pricePerSqFt: "₹4,520/sq.ft",
+        emi: "EMI starts at ₹36,140",
+        type: "Residential Apartment",
+        status: "Under Construction",
         possession: "Dec, 2025",
-        sizes: "1250 - 1827 sq.ft",
-        reraId: "PR/GJ/AHMEDABAD/AHMEDABAD CITY/AUDA/RAA00000/000000",
-        description: "The Planet by Venus Group is a premium residential project offering spacious 3 BHK apartments. Designed for modern elite living, these residences combine world-class design, privacy, and comfort with panoramic views of the city.",
+        furnishing: "Unfurnished",
+        description: "The Planet by Venus Group is a premium residential project offering spacious 3 BHK apartments. Designed for modern elite living, these residences combine world-class design, privacy, and comfort with panoramic views of the city. Every detail has been meticulously planned to offer a lifestyle of luxury and convenience.",
+        specs: [
+            { icon: <Home size={20} />, label: "Bedrooms", value: "3 BHK" },
+            { icon: <Layers size={20} />, label: "Bathrooms", value: "3" },
+            { icon: <Ruler size={20} />, label: "Area", value: "1827 sq.ft" },
+            { icon: <Car size={20} />, label: "Parking", value: "2 Covered" },
+            { icon: <Maximize2 size={20} />, label: "Facing", value: "East/West" },
+            { icon: <Calendar size={20} />, label: "Possession", value: "Dec 2025" }
+        ],
         highlights: [
             "Strategic Sit-out Areas for Relaxation",
             "Corner Units for Privacy & Light",
@@ -29,323 +47,762 @@ const PropertyDetails = () => {
             "3 Track UPVC Windows with Mosquito Net"
         ],
         amenities: [
-            { icon: "swimming", name: "Swimming Pool" },
-            { icon: "gym", name: "Gymnasium" },
-            { icon: "club", name: "Club House" },
-            { icon: "garden", name: "Landscaping & Tree Planting" },
-            { icon: "lift", name: "Lift(s)" },
-            { icon: "kids", name: "Children's Play Area" }
+            { icon: <div className="amenity-icon-box"><School size={20} /></div>, name: "Schools Nearby" },
+            { icon: <div className="amenity-icon-box"><Bus size={20} /></div>, name: "Public Transport" },
+            { icon: <div className="amenity-icon-box"><ShoppingBag size={20} /></div>, name: "Shopping Mall" },
+            { icon: <div className="amenity-icon-box"><Coffee size={20} /></div>, name: "Cafes & Dining" },
+            { icon: <div className="amenity-icon-box"><Check size={20} /></div>, name: "Swimming Pool" },
+            { icon: <div className="amenity-icon-box"><Check size={20} /></div>, name: "Gymnasium" },
+            { icon: <div className="amenity-icon-box"><Check size={20} /></div>, name: "Club House" },
+            { icon: <div className="amenity-icon-box"><Check size={20} /></div>, name: "Garden Area" }
         ],
         gallery: [
             "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=60",
-            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=60",
-            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=60",
-            "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=800&q=60",
-            "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?auto=format&fit=crop&w=800&q=60"
+            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?auto=format&fit=crop&w=1200&q=80"
         ]
     };
 
-    const [activeTab, setActiveTab] = useState('overview');
-    const [lightboxIndex, setLightboxIndex] = useState(null);
-    const [heroIndex, setHeroIndex] = useState(0);
+    const property = fetchedProperty || demoProperty;
 
-    // Auto-slide for Hero
+    const [heroIndex, setHeroIndex] = useState(0);
+    const [lightboxIndex, setLightboxIndex] = useState(null);
+    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+    // NEW: States for new sections
+    const [selectedUnitType, setSelectedUnitType] = useState(0);
+    const [selectedSize, setSelectedSize] = useState(0);
+    const [floorPlanModal, setFloorPlanModal] = useState(null);
+    const [mediaGalleryModal, setMediaGalleryModal] = useState(null);
+    const [helpfulFeedback, setHelpfulFeedback] = useState(null);
+    const nearbyPlacesRef = useRef(null);
+    const [activeSection, setActiveSection] = useState('overview');
+
     useEffect(() => {
-        const interval = setInterval(() => {
-            setHeroIndex((prev) => (prev + 1) % property.gallery.length);
-        }, 3000);
-        return () => clearInterval(interval);
+        const handleScroll = () => {
+            const sections = ['property-location', 'around-this-project', 'overview', 'floor-plan', 'photos-videos', 'amenities', 'brochure', 'helpful-tools'];
+            const scrollPosition = window.scrollY + 200; // Offset for sticky header
+
+            for (const section of sections) {
+                const element = document.getElementById(section);
+                if (element && element.offsetTop <= scrollPosition) {
+                    setActiveSection(section);
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
-    // Auto-slide effect
+    // Auto-slide for Hero Section
     useEffect(() => {
         let interval;
-        if (lightboxIndex !== null) {
+        if (isAutoPlaying && lightboxIndex === null) {
             interval = setInterval(() => {
-                setLightboxIndex((prev) => (prev + 1) % property.gallery.length);
-            }, 3000); // Change slide every 3 seconds
+                setHeroIndex((prev) => (prev + 1) % property.gallery.length);
+            }, 5000);
         }
         return () => clearInterval(interval);
-    }, [lightboxIndex]);
+    }, [isAutoPlaying, lightboxIndex, property.gallery.length]);
 
-    const openLightbox = (index) => setLightboxIndex(index);
-    const closeLightbox = () => setLightboxIndex(null);
+    // Keyboard navigation for lightbox
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (lightboxIndex === null) return;
 
-    const nextImage = (e) => {
+            switch (e.key) {
+                case 'Escape':
+                    closeLightbox();
+                    break;
+                case 'ArrowLeft':
+                    setLightboxIndex((prev) => (prev - 1 + property.gallery.length) % property.gallery.length);
+                    break;
+                case 'ArrowRight':
+                    setLightboxIndex((prev) => (prev + 1) % property.gallery.length);
+                    break;
+                default:
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [lightboxIndex, property.gallery.length]);
+
+    // Touch swipe support for hero slider
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+            nextHero();
+        } else if (isRightSwipe) {
+            prevHero();
+        }
+    };
+
+    const nextHero = () => {
+        setHeroIndex((prev) => (prev + 1) % property.gallery.length);
+        setIsAutoPlaying(false);
+    };
+
+    const prevHero = () => {
+        setHeroIndex((prev) => (prev - 1 + property.gallery.length) % property.gallery.length);
+        setIsAutoPlaying(false);
+    };
+
+    const openLightbox = (index) => {
+        setLightboxIndex(index);
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeLightbox = () => {
+        setLightboxIndex(null);
+        document.body.style.overflow = 'auto';
+    };
+
+    const nextLightbox = (e) => {
         e.stopPropagation();
         setLightboxIndex((prev) => (prev + 1) % property.gallery.length);
     };
 
-    const prevImage = (e) => {
+    const prevLightbox = (e) => {
         e.stopPropagation();
         setLightboxIndex((prev) => (prev - 1 + property.gallery.length) % property.gallery.length);
     };
 
-    const scrollToSection = (id) => {
-        const element = document.getElementById(id);
-        if (element) {
-            const offset = 120; // Height of sticky header + tabs
-            const bodyRect = document.body.getBoundingClientRect().top;
-            const elementRect = element.getBoundingClientRect().top;
-            const elementPosition = elementRect - bodyRect;
-            const offsetPosition = elementPosition - offset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-            });
-            setActiveTab(id);
-        }
-    };
-
     return (
-        <div className="property-details-page">
-            <div className="pd-container">
+        <div className="property-details-v2">
 
-                {/* --- HEADER --- */}
-                <div className="pd-header">
-                    <div className="pd-header-left">
-                        <div className="pd-breadcrumbs">
-                            <Link to="/">Home</Link> / <span>Ahmedabad</span> / <span>Shela</span> / <span>The Planet</span>
-                        </div>
-                        <h1 className="pd-title">{property.title}</h1>
-                        <div className="pd-developer">By <span className="dev-link">{property.developer}</span></div>
-                        <div className="pd-address">{property.address}</div>
-                    </div>
-                    <div className="pd-header-right">
-                        <div className="pd-price-block">
-                            <h2 className="pd-price">{property.priceRange} <span className="pd-rate">| {property.pricePerSqFt}</span></h2>
-                            <span className="pd-emi">{property.emi}</span>
-                        </div>
-                        <button className="contact-dev-btn"><Phone size={16} /> Contact Developer</button>
-                    </div>
-                </div>
-
-                {/* --- GALLERY & ACTIONS --- */}
-                <div className="pd-gallery-section">
-                    <div className="pd-actions-bar">
-                        <button className="pd-action-btn"><Share2 size={16} /> Share</button>
-                        <button className="pd-action-btn"><Heart size={16} /> Save</button>
-                    </div>
-                    <div className="pd-gallery-grid">
-                        <div className="pd-gallery-main hero-carousel" onClick={() => openLightbox(heroIndex)} style={{ cursor: 'pointer' }}>
-                            <div className="hero-carousel-track" style={{
-                                transform: `translate3d(-${heroIndex * 100}%, 0, 0)`
-                            }}>
-                                {property.gallery.map((img, idx) => (
-                                    <div key={idx} className="hero-slide">
-                                        <img
-                                            src={img}
-                                            alt={`Hero ${idx}`}
-                                            loading="eager"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="pd-tag-overlay">Cover Image {heroIndex + 1}/{property.gallery.length}</div>
-                        </div>
-                        <div className="pd-gallery-side">
-                            <div className="pd-gallery-item" onClick={() => openLightbox(1)} style={{ cursor: 'pointer' }}>
-                                <img src={property.gallery[1]} alt="Side 1" />
-                            </div>
-                            <div className="pd-gallery-item more-overlay-container" onClick={() => openLightbox(2)}>
-                                <img src={property.gallery[2]} alt="Side 2" />
-                                <div className="more-overlay">+4 more</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* --- QUICK INFO BAR --- */}
-                <div className="pd-quick-info">
-                    <div className="info-item">
-                        <span className="info-label">{property.configurations}</span>
-                        <span className="info-value">Configurations</span>
-                    </div>
-                    <div className="info-divider"></div>
-                    <div className="info-item">
-                        <span className="info-label">{property.possession}</span>
-                        <span className="info-value">Possession Starts</span>
-                    </div>
-                    <div className="info-divider"></div>
-                    <div className="info-item">
-                        <span className="info-label">{property.pricePerSqFt}</span>
-                        <span className="info-value">Avg. Price</span>
-                    </div>
-                    <div className="info-divider"></div>
-                    <div className="info-item">
-                        <span className="info-label">{property.sizes}</span>
-                        <span className="info-value">(Builtup Area) Sizes <span className="info-icon">i</span></span>
-                    </div>
-                </div>
-
-                {/* --- NAVIGATION TABS --- */}
-                <div className="pd-tabs-nav-sticky">
-                    <div className="pd-tabs-nav">
-                        {['Overview', 'Highlights', 'Floor Plan', 'Amenities', 'Location'].map(tab => (
-                            <button
-                                key={tab}
-                                className={`pd-tab-btn ${activeTab === tab.toLowerCase().replace(' ', '') ? 'active' : ''}`}
-                                onClick={() => scrollToSection(tab.toLowerCase().replace(' ', ''))}
+            {/* 1. HERO IMAGE SECTION */}
+            <section className="hero-gallery">
+                <div
+                    className="hero-slider"
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
+                >
+                    <div
+                        className="hero-track"
+                        style={{ transform: `translateX(-${heroIndex * 100}%)` }}
+                    >
+                        {property.gallery.map((img, idx) => (
+                            <div
+                                key={idx}
+                                className="hero-slide"
+                                onDoubleClick={() => openLightbox(idx)}
                             >
-                                {tab}
-                            </button>
+                                <img
+                                    src={img}
+                                    alt={`Slide ${idx}`}
+                                    loading={idx === 0 ? "eager" : "lazy"}
+                                />
+                                <div className="image-overlay-gradient"></div>
+                            </div>
                         ))}
                     </div>
-                </div>
 
-                {/* --- MAIN LAYOUT (Split) --- */}
-                <div className="pd-main-layout">
+                    {/* Navigation Arrows */}
+                    <button className="hero-arrow prev" onClick={prevHero}>
+                        <ChevronLeft size={24} />
+                    </button>
+                    <button className="hero-arrow next" onClick={nextHero}>
+                        <ChevronRight size={24} />
+                    </button>
 
-                    {/* LEFT CONTENT */}
-                    <div className="pd-content-col">
-
-                        {/* Overview / Highlights */}
-                        <div id="overview" className="pd-section">
-                            <h3 className="section-title">Why {property.title}?</h3>
-                            <ul className="pd-highlights-list">
-                                {property.highlights.map((item, idx) => (
-                                    <li key={idx}><Check size={16} className="check-icon" /> {item}</li>
-                                ))}
-                            </ul>
-                            <div className="pd-read-more">View More Highlights <ChevronRight size={16} /></div>
-                        </div>
-
-                        {/* Description */}
-                        <div className="pd-section">
-                            <h3 className="section-title">About {property.title}</h3>
-                            <p className="pd-description">{property.description}</p>
-                        </div>
-
-                        {/* Amenities */}
-                        <div id="amenities" className="pd-section">
-                            <h3 className="section-title">Project Amenities</h3>
-                            <div className="amenities-grid">
-                                {property.amenities.map((amenity, idx) => (
-                                    <div key={idx} className="amenity-card">
-                                        <div className="amenity-icon-circle">
-                                            <Star size={20} />
-                                        </div>
-                                        <span>{amenity.name}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Location / Around */}
-                        <div id="location" className="pd-section">
-                            <h3 className="section-title">Around This Project</h3>
-                            <div className="location-map-placeholder">
-                                <div className="map-overlay-btn"><MapPin size={16} /> View on Map</div>
-                            </div>
-                            <div className="nearby-places-grid">
-                                <div className="place-card">
-                                    <div className="place-icon"><School size={20} /></div>
-                                    <div className="place-info">
-                                        <span className="place-name">Shanti Asiatic School</span>
-                                        <span className="place-dist">3 mins</span>
-                                    </div>
-                                </div>
-                                <div className="place-card">
-                                    <div className="place-icon"><Bus size={20} /></div>
-                                    <div className="place-info">
-                                        <span className="place-name">Shela Bus Stop</span>
-                                        <span className="place-dist">5 mins</span>
-                                    </div>
-                                </div>
-                                <div className="place-card">
-                                    <div className="place-icon"><ShoppingBag size={20} /></div>
-                                    <div className="place-info">
-                                        <span className="place-name">Applewoods Mall</span>
-                                        <span className="place-dist">8 mins</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+                    {/* Dot Indicators */}
+                    <div className="hero-dots">
+                        {property.gallery.map((_, idx) => (
+                            <button
+                                key={idx}
+                                className={`hero-dot ${heroIndex === idx ? 'active' : ''}`}
+                                onClick={() => { setHeroIndex(idx); setIsAutoPlaying(false); }}
+                            />
+                        ))}
                     </div>
 
-                    {/* RIGHT SIDEBAR (Sticky) */}
-                    <div className="pd-sidebar-col">
-                        <div className="pd-sidebar-content">
-                            <div className="sidebar-banner">
-                                <span className="lightning-icon">⚡</span> Great choice! Most liked project
-                            </div>
-
-                            <div className="contact-seller-card">
-                                <h3>Contact Seller</h3>
-                                <div className="seller-profile">
-                                    <div className="seller-avatar">VG</div>
-                                    <div className="seller-info">
-                                        <h4>{property.developer}</h4>
-                                        <span>Developer</span>
-                                        <div className="seller-phone">+91 98765....</div>
-                                    </div>
-                                </div>
-
-                                <p className="form-label">Please share your contact</p>
-                                <form className="sidebar-form" onSubmit={(e) => e.preventDefault()}>
-                                    <input type="text" placeholder="Name" className="form-input" />
-
-                                    <div className="phone-input-group">
-                                        <select className="code-select"><option>+91</option></select>
-                                        <input type="tel" placeholder="Phone" className="form-input" />
-                                    </div>
-
-                                    <input type="email" placeholder="Email" className="form-input" />
-
-                                    <div className="form-checkbox-group">
-                                        <input type="checkbox" id="consent" defaultChecked />
-                                        <label htmlFor="consent">I agree to be contacted by Nest Deal and agents via WhatsApp, SMS, phone, email etc</label>
-                                    </div>
-
-                                    <div className="form-checkbox-group">
-                                        <input type="checkbox" id="loans" />
-                                        <label htmlFor="loans">I am interested in Home Loans</label>
-                                    </div>
-
-                                    <button type="submit" className="get-details-btn">Get Contact Details</button>
-                                </form>
-                            </div>
-                        </div>
+                    {/* Info Overlay */}
+                    <div className="hero-info-badge">
+                        <Maximize2 size={14} /> Double-click to expand
                     </div>
-
                 </div>
+            </section>
 
+            {/* STICKY NAV BAR */}
+            <div className="sticky-section-nav">
+                <div className="nav-wrapper">
+                    {[
+                        { id: 'property-location', label: 'Overview/Home' },
+                        { id: 'around-this-project', label: 'Around This Project' },
+                        { id: 'overview', label: 'More About Project' },
+                        { id: 'floor-plan', label: 'Floor Plan' },
+                        { id: 'photos-videos', label: 'Tour This Project' },
+                        { id: 'amenities', label: 'Amenities' },
+                        { id: 'brochure', label: 'Brochure' },
+                        { id: 'helpful-tools', label: 'Helpful Tools' }
+                    ].map(item => (
+                        <a
+                            key={item.id}
+                            href={`#${item.id}`}
+                            className={`nav-item ${activeSection === item.id ? 'active' : ''}`}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                const el = document.getElementById(item.id);
+                                if (el) {
+                                    const offset = 180; // Header + Nav height
+                                    const bodyRect = document.body.getBoundingClientRect().top;
+                                    const elementRect = el.getBoundingClientRect().top;
+                                    const elementPosition = elementRect - bodyRect;
+                                    const offsetPosition = elementPosition - offset;
+                                    window.scrollTo({
+                                        top: offsetPosition,
+                                        behavior: 'smooth'
+                                    });
+                                    setActiveSection(item.id);
+                                }
+                            }}
+                        >
+                            {item.label}
+                        </a>
+                    ))}
+                </div>
             </div>
 
-            {/* Lightbox Overlay */}
-            {lightboxIndex !== null && (
-                <div className="lightbox-overlay" onClick={closeLightbox}>
-                    <button className="lightbox-close" onClick={closeLightbox}><X size={32} /></button>
+            <div className="pd-content-container">
+                <div className="pd-layout-grid">
 
-                    <div className="lightbox-content" onClick={e => e.stopPropagation()}>
-                        <button className="lightbox-nav prev" onClick={prevImage}><ChevronLeft size={48} /></button>
+                    {/* LEFT COLUMN */}
+                    <div className="pd-main-col">
 
-                        <div className="lightbox-slide-container">
-                            <div className="lightbox-track" style={{ transform: `translateX(-${lightboxIndex * 100}%)` }}>
-                                {property.gallery.map((img, idx) => (
-                                    <div key={idx} className="lightbox-slide">
-                                        <img src={img} alt={`Slide ${idx}`} />
+                        {/* 3. PROPERTY DETAILS SECTION */}
+                        <div className="pd-header-block" id="property-location">
+                            <div className="pd-location-title-row">
+                                <div className="location-pin-gold">
+                                    <MapPin size={24} />
+                                </div>
+                                <div>
+                                    <span className="location-label">Property Location</span>
+                                    <h2 className="location-value">{property.location}</h2>
+                                    <p className="property-full-address">{property.address}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* NEW SECTION 1: NEARBY PLACES */}
+                        {property.nearbyPlaces && (
+                            <div className="pd-nearby-section" id="around-this-project">
+                                <h3 className="section-heading">Around This Project</h3>
+
+                                <div className="nearby-scroll-container">
+                                    <div className="nearby-places-scroll" ref={nearbyPlacesRef}>
+                                        {property.nearbyPlaces.map((place, idx) => {
+                                            const IconComponent = {
+                                                School, Hospital, ShoppingBag, Bus, Coffee, Trees
+                                            }[place.icon] || MapPin;
+
+                                            return (
+                                                <div key={idx} className="nearby-card">
+                                                    <div className="nearby-icon">
+                                                        <IconComponent size={22} />
+                                                    </div>
+                                                    <div className="nearby-info">
+                                                        <span className="nearby-category">{place.category}</span>
+                                                        <span className="nearby-name">{place.name}</span>
+                                                        <span className="nearby-distance">{place.distance}</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    <button
+                                        className="nearby-scroll-btn"
+                                        onClick={() => nearbyPlacesRef.current?.scrollBy({ left: 300, behavior: 'smooth' })}
+                                    >
+                                        <ChevronRight size={20} />
+                                    </button>
+                                </div>
+
+                                <div className="maps-cta">
+                                    <a
+                                        href={`https://www.google.com/maps/search/${encodeURIComponent(property.address)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="maps-link"
+                                    >
+                                        View more on Maps <ExternalLink size={16} />
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* NEW SECTION 2: PROJECT OVERVIEW */}
+                        {property.projectOverview && (
+                            <div className="pd-overview-section" id="overview">
+                                <div className="overview-header">
+                                    <h2 className="section-title">{property.title} Overview</h2>
+                                    <a
+                                        href={property.brochureUrl || '#'}
+                                        className="download-brochure-btn"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <Download size={18} /> Download Brochure
+                                    </a>
+                                </div>
+
+                                <div className="project-info-grid">
+                                    {[
+                                        { icon: Building2, label: "Project Units", value: property.projectOverview.projectUnits },
+                                        { icon: Ruler, label: "Area Unit", value: property.projectOverview.areaUnit },
+                                        { icon: TrendingUp, label: "Project Area", value: property.projectOverview.projectArea },
+                                        { icon: Maximize2, label: "Sizes", value: property.projectOverview.sizes },
+                                        { icon: Home, label: "Project Size", value: property.projectOverview.projectSize },
+                                        { icon: Calendar, label: "Launch Date", value: property.projectOverview.launchDate },
+                                        { icon: Star, label: "Avg. Price", value: property.projectOverview.avgPrice },
+                                        { icon: Calendar, label: "Possession Starts", value: property.projectOverview.possessionStarts },
+                                        { icon: Layers, label: "Configuration", value: property.projectOverview.configuration },
+                                    ].map((item, idx) => (
+                                        <div key={idx} className="info-grid-item">
+                                            <item.icon size={20} className="info-icon" />
+                                            <div className="info-content">
+                                                <span className="info-label">{item.label}</span>
+                                                <span className="info-value">{item.value}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="rera-section">
+                                    <div className="rera-info">
+                                        <FileText size={20} />
+                                        <span>RERA ID: <strong>{property.projectOverview.reraId}</strong></span>
+                                    </div>
+                                    <a
+                                        href={property.projectOverview.reraUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="rera-link"
+                                    >
+                                        Check RERA Status <ExternalLink size={14} />
+                                    </a>
+                                </div>
+
+                                <div className="overview-actions">
+                                    <button className="action-btn share-btn">
+                                        <Share2 size={18} /> Share
+                                    </button>
+                                    <button className="action-btn save-btn">
+                                        <Heart size={18} /> Save
+                                    </button>
+                                    <button className="action-btn primary-btn">
+                                        <Phone size={18} /> Ask For Details
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* NEW SECTION 3: PRICE & FLOOR PLAN */}
+                        {property.unitTypes && property.unitTypes.length > 0 && (
+                            <div className="pd-floorplan-section" id="floor-plan">
+                                <h2 className="section-title">Price & Floor Plan</h2>
+                                {/* ... content same as before but ensured ID is present ... */}
+                                {/* Unit Type Selector */}
+                                <div className="unit-type-selector">
+                                    {property.unitTypes.map((unitType, idx) => (
+                                        <button
+                                            key={idx}
+                                            className={`unit-type-tab ${selectedUnitType === idx ? 'active' : ''}`}
+                                            onClick={() => { setSelectedUnitType(idx); setSelectedSize(0); }}
+                                        >
+                                            <span className="unit-type-name">{unitType.type}</span>
+                                            <span className="unit-type-range">{unitType.priceRange}</span>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Size Selector */}
+                                <div className="size-selector-container">
+                                    <h3 className="subsection-title">Select Size</h3>
+                                    <div className="size-selector-scroll">
+                                        {property.unitTypes[selectedUnitType].variants.map((variant, idx) => (
+                                            <button
+                                                key={idx}
+                                                className={`size-option ${selectedSize === idx ? 'active' : ''}`}
+                                                onClick={() => setSelectedSize(idx)}
+                                            >
+                                                {variant.size}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Selected Variant Details */}
+                                {property.unitTypes[selectedUnitType].variants[selectedSize] && (
+                                    <>
+                                        <div className="selected-price-display">
+                                            <div className="price-main-large">
+                                                {property.unitTypes[selectedUnitType].variants[selectedSize].price}
+                                            </div>
+                                            <div className="price-per-sqft">
+                                                {property.unitTypes[selectedUnitType].variants[selectedSize].pricePerSqFt}/sq.ft
+                                            </div>
+                                        </div>
+
+                                        {/* Floor Plan Preview */}
+                                        <div className="floor-plan-preview">
+                                            <div
+                                                className="floor-plan-image-container"
+                                                onClick={() => setFloorPlanModal(property.unitTypes[selectedUnitType].variants[selectedSize].floorPlan)}
+                                            >
+                                                <img
+                                                    src={property.unitTypes[selectedUnitType].variants[selectedSize].floorPlan}
+                                                    alt="Floor Plan"
+                                                    className="floor-plan-img"
+                                                    loading="lazy"
+                                                />
+                                                <div className="floor-plan-overlay">
+                                                    <Maximize2 size={32} />
+                                                    <span>Click to enlarge</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="floor-plan-meta">
+                                                <div className="meta-row">
+                                                    <span className="meta-label">Plot Area:</span>
+                                                    <span className="meta-value">{property.unitTypes[selectedUnitType].variants[selectedSize].size}</span>
+                                                </div>
+                                                <div className="meta-row">
+                                                    <span className="meta-label">RERA ID:</span>
+                                                    <span className="meta-value">{property.unitTypes[selectedUnitType].variants[selectedSize].reraId}</span>
+                                                </div>
+                                                <div className="meta-row">
+                                                    <span className="meta-label">Possession:</span>
+                                                    <span className="meta-value">{property.possession}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Helpful Feedback */}
+                                        <div className="helpful-feedback">
+                                            <span>Is the pricing & floor plan helpful?</span>
+                                            <div className="feedback-buttons">
+                                                <button
+                                                    className={`feedback-btn ${helpfulFeedback === 'yes' ? 'active' : ''}`}
+                                                    onClick={() => setHelpfulFeedback('yes')}
+                                                >
+                                                    <ThumbsUp size={18} />
+                                                </button>
+                                                <button
+                                                    className={`feedback-btn ${helpfulFeedback === 'no' ? 'active' : ''}`}
+                                                    onClick={() => setHelpfulFeedback('no')}
+                                                >
+                                                    <ThumbsDown size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
+                        {/* NEW SECTION 4: PHOTOS & VIDEOS */}
+                        {property.mediaGallery && (
+                            <div className="pd-media-gallery-section" id="photos-videos">
+                                <div className="media-header">
+                                    <div>
+                                        <h2 className="section-title">Photos & Videos</h2>
+                                        <p className="media-subtitle">Tour this project virtually</p>
+                                    </div>
+                                </div>
+                                {/* Thumbnail Grid logic kept same */}
+                                <div className="media-thumbnail-grid">
+                                    {property.mediaGallery.photos.slice(0, 7).map((photo, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="media-thumbnail"
+                                            onClick={() => setMediaGalleryModal(idx)}
+                                        >
+                                            <img src={photo.url} alt={photo.caption} loading="lazy" />
+                                            <div className="media-caption">{photo.caption}</div>
+                                        </div>
+                                    ))}
+                                    {/* Video thumbnails would go here */}
+                                    {property.mediaGallery.totalMedia > 8 && (
+                                        <div className="media-thumbnail more-media" onClick={() => setMediaGalleryModal(0)}>
+                                            <div className="more-media-content">
+                                                <span className="more-count">+{property.mediaGallery.totalMedia - 8}</span>
+                                                <span>more</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 5. AMENITIES SECTION (Moved here for order) */}
+                        <div className="pd-amenities-section" id="amenities">
+                            <h2 className="section-title">Amenities</h2>
+                            <div className="amenities-grid-v2">
+                                {property.amenities.map((item, idx) => (
+                                    <div key={idx} className="amenity-card-v2">
+                                        {item.icon}
+                                        <span>{item.name}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        <button className="lightbox-nav next" onClick={nextImage}><ChevronRight size={48} /></button>
+                        {/* NEW SECTION: BROCHURE */}
+                        <div className="pd-brochure-section" id="brochure">
+                            <h2 className="section-title">Project Brochure</h2>
+                            <div className="brochure-preview-container">
+                                {property.brochureImages && property.brochureImages.map((img, idx) => (
+                                    <div key={idx} className="brochure-card">
+                                        <img src={img} alt="Brochure Page" loading="lazy" />
+                                        <div className="brochure-overlay">
+                                            <FileText size={24} />
+                                            <span>View Page</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <button className="download-brochure-large-btn">
+                                <Download size={20} /> Download Official Brochure
+                            </button>
+                        </div>
+
+                        {/* NEW SECTION: HELPFUL TOOLS */}
+                        <div className="pd-tools-section" id="helpful-tools">
+                            <h2 className="section-title">Helpful Tools</h2>
+                            <div className="tools-grid">
+                                <div className="tool-card">
+                                    <div className="tool-icon-bg"><Calculator size={24} /></div>
+                                    <h3>EMI Calculator</h3>
+                                    <p>Calculate your monthly EMI based on loan amount & tenure.</p>
+                                </div>
+                                <div className="tool-card">
+                                    <div className="tool-icon-bg"><ShieldCheck size={24} /></div>
+                                    <h3>Eligibility Check</h3>
+                                    <p>Check your home loan eligibility instantly.</p>
+                                </div>
+                                <div className="tool-card">
+                                    <div className="tool-icon-bg"><Info size={24} /></div>
+                                    <h3>Affordability</h3>
+                                    <p>Find the best budget for your home search.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 6. LOCATION / MAP SECTION */}
+                        <div className="pd-map-section" id="location">
+                            <h2 className="section-title">Map View</h2>
+                            <div className="map-placeholder-v2">
+                                <div className="map-inner">
+                                    <MapPin size={40} className="map-pin-anim" />
+                                    <p>Map View for {property.address}</p>
+                                    <button className="view-on-google">View on Google Maps</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="lightbox-counter">
-                        {lightboxIndex + 1} / {property.gallery.length}
+                    {/* RIGHT COLUMN - STICKY CTA */}
+                    <div className="pd-sidebar-col">
+                        <div className="sidebar-cta-card sticky-card">
+                            <div className="cta-highlight-banner">
+                                <TrendingUp size={16} /> Awesome! Most viewed project in this area
+                            </div>
+
+                            <div className="contact-seller-header">
+                                <div className="seller-profile-row">
+                                    <div className="seller-logo">
+                                        <Building2 size={24} />
+                                    </div>
+                                    <div className="seller-info">
+                                        <h3 className="cs-title">Contact Seller</h3>
+                                        <div className="seller-name">{property.developer}</div>
+                                        <div className="seller-phone">+91 98765 43210</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <form className="lead-form" onSubmit={(e) => e.preventDefault()}>
+                                <div className="lf-input-group">
+                                    <User size={16} className="lf-icon" />
+                                    <input type="text" placeholder="Name" className="lf-input" />
+                                </div>
+                                <div className="lf-input-group">
+                                    <Phone size={16} className="lf-icon" />
+                                    <input type="tel" placeholder="Phone" className="lf-input" />
+                                </div>
+                                <div className="lf-input-group">
+                                    <Mail size={16} className="lf-icon" />
+                                    <input type="email" placeholder="Email" className="lf-input" />
+                                </div>
+
+                                <div className="lf-checkbox-group">
+                                    <label className="lf-checkbox-label">
+                                        <input type="checkbox" defaultChecked />
+                                        <span>I agree to be contacted by Housing and agents via WhatsApp, SMS, phone, email etc</span>
+                                    </label>
+                                    <label className="lf-checkbox-label">
+                                        <input type="checkbox" />
+                                        <span>I am interested in Home Loans</span>
+                                    </label>
+                                </div>
+
+                                <button type="submit" className="lf-submit-btn">
+                                    Get Contact Details
+                                </button>
+                            </form>
+                        </div>
+
+                        <div className="still-deciding-card">
+                            <div className="sd-text">
+                                <h4>Still deciding?</h4>
+                                <p>Shortlist this property for now & easily come back to it later.</p>
+                            </div>
+                            <button className="sd-heart-btn">
+                                <Heart size={20} />
+                            </button>
+                        </div>
                     </div>
                 </div>
-            )}
-        </div>
+            </div>
+
+            {/* 2. FULL-SCREEN IMAGE VIEW */}
+            {
+                lightboxIndex !== null && (
+                    <div className="lightbox-v2" onClick={closeLightbox}>
+                        <button className="lb-close" onClick={closeLightbox}><X size={32} /></button>
+
+                        <div className="lb-content" onClick={e => e.stopPropagation()}>
+                            <button className="lb-nav prev" onClick={prevLightbox}>
+                                <ChevronLeft size={48} />
+                            </button>
+
+                            <div className="lb-image-wrapper">
+                                <img
+                                    src={property.gallery[lightboxIndex]}
+                                    alt="Zoomed View"
+                                    className="lb-main-img"
+                                />
+                            </div>
+
+                            <button className="lb-nav next" onClick={nextLightbox}>
+                                <ChevronRight size={48} />
+                            </button>
+                        </div>
+
+                        <div className="lb-footer">
+                            <div className="lb-counter">{lightboxIndex + 1} / {property.gallery.length}</div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* FLOOR PLAN MODAL */}
+            {
+                floorPlanModal && (
+                    <div className="lightbox-v2" onClick={() => setFloorPlanModal(null)}>
+                        <button className="lb-close" onClick={() => setFloorPlanModal(null)}>
+                            <X size={32} />
+                        </button>
+
+                        <div className="lb-content" onClick={e => e.stopPropagation()}>
+                            <div className="lb-image-wrapper">
+                                <img
+                                    src={floorPlanModal}
+                                    alt="Floor Plan"
+                                    className="lb-main-img"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="lb-footer">
+                            <div className="lb-counter">Floor Plan</div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* MEDIA GALLERY MODAL */}
+            {
+                mediaGalleryModal !== null && property.mediaGallery && (
+                    <div className="lightbox-v2" onClick={() => setMediaGalleryModal(null)}>
+                        <button className="lb-close" onClick={() => setMediaGalleryModal(null)}>
+                            <X size={32} />
+                        </button>
+
+                        <div className="lb-content" onClick={e => e.stopPropagation()}>
+                            <button className="lb-nav prev" onClick={(e) => {
+                                e.stopPropagation();
+                                const currentIdx = typeof mediaGalleryModal === 'number' ? mediaGalleryModal : 0;
+                                const newIdx = (currentIdx - 1 + property.mediaGallery.photos.length) % property.mediaGallery.photos.length;
+                                setMediaGalleryModal(newIdx);
+                            }}>
+                                <ChevronLeft size={48} />
+                            </button>
+
+                            <div className="lb-image-wrapper">
+                                <img
+                                    src={property.mediaGallery.photos[typeof mediaGalleryModal === 'number' ? mediaGalleryModal : 0]?.url}
+                                    alt="Gallery Image"
+                                    className="lb-main-img"
+                                />
+                            </div>
+
+                            <button className="lb-nav next" onClick={(e) => {
+                                e.stopPropagation();
+                                const currentIdx = typeof mediaGalleryModal === 'number' ? mediaGalleryModal : 0;
+                                const newIdx = (currentIdx + 1) % property.mediaGallery.photos.length;
+                                setMediaGalleryModal(newIdx);
+                            }}>
+                                <ChevronRight size={48} />
+                            </button>
+                        </div>
+
+                        <div className="lb-footer">
+                            <div className="lb-counter">
+                                {(typeof mediaGalleryModal === 'number' ? mediaGalleryModal : 0) + 1} / {property.mediaGallery.photos.length}
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Sticky Mobile CTA */}
+            <div className="mobile-cta-bar">
+                <button className="m-cta-btn phone"><Phone size={20} /></button>
+                <button className="m-cta-btn primary">Book a Visit</button>
+            </div>
+
+        </div >
     );
 };
 
