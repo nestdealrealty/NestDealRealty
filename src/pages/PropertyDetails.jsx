@@ -133,10 +133,9 @@ const PropertyDetails = () => {
                         <button className="pd-action-btn"><Heart size={16} /> Save</button>
                     </div>
                     <div className="pd-gallery-grid">
-                        <div className="pd-gallery-main hero-carousel" onClick={() => openLightbox(heroIndex)} style={{ cursor: 'pointer', minHeight: '480px' }}>
+                        <div className="pd-gallery-main hero-carousel" onClick={() => openLightbox(heroIndex)} style={{ cursor: 'pointer' }}>
                             <div className="hero-carousel-track" style={{
-                                transform: `translateX(-${heroIndex * 100}%)`,
-                                zIndex: 2
+                                transform: `translate3d(-${heroIndex * 100}%, 0, 0)`
                             }}>
                                 {property.gallery.map((img, idx) => (
                                     <div key={idx} className="hero-slide">
@@ -144,12 +143,11 @@ const PropertyDetails = () => {
                                             src={img}
                                             alt={`Hero ${idx}`}
                                             loading="eager"
-                                            style={{ zIndex: 2, position: 'relative' }}
                                         />
                                     </div>
                                 ))}
                             </div>
-                            <div className="pd-tag-overlay" style={{ zIndex: 10 }}>Cover Image {heroIndex + 1}/{property.gallery.length}</div>
+                            <div className="pd-tag-overlay">Cover Image {heroIndex + 1}/{property.gallery.length}</div>
                         </div>
                         <div className="pd-gallery-side">
                             <div className="pd-gallery-item" onClick={() => openLightbox(1)} style={{ cursor: 'pointer' }}>
