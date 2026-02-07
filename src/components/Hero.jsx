@@ -1,8 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Hero.css';
 import { ArrowRight, MapPin, ChevronDown, SlidersHorizontal, ChevronLeft, Search } from 'lucide-react';
 
 const Hero = () => {
+    const [currentImage, setCurrentImage] = useState(0);
+    const backgroundImages = [
+        "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+    ];
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentImage((prev) => (prev + 1) % backgroundImages.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, []);
+
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState(null); // 'city', 'bhk', 'budget'
     const [selectedCity, setSelectedCity] = useState('Ahmedabad');
@@ -28,6 +43,13 @@ const Hero = () => {
 
     return (
         <div className="hero">
+            {backgroundImages.map((img, index) => (
+                <div
+                    key={index}
+                    className={`hero-bg-slide ${index === currentImage ? 'active' : ''}`}
+                    style={{ backgroundImage: `url(${img})` }}
+                />
+            ))}
             <div className="hero-overlay"></div>
             <div className="container hero-container">
                 <div className="hero-content">
