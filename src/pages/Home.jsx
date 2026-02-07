@@ -6,19 +6,19 @@ import './Home.css';
 
 const slides = [
     {
-        image: "https://images.unsplash.com/photo-1600596542815-22b845074a34?auto=format&fit=crop&w=1600&q=80",
+        image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1920",
         title: "The Planet, Ahmedabad",
         price: "₹75L - 1.2Cr",
         tag: "Premium Flat"
     },
     {
-        image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1600&q=80",
+        image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1920",
         title: "Empire Skye, Gandhinagar",
         price: "₹1.5Cr - 3.2Cr",
         tag: "Luxury Villa"
     },
     {
-        image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1600&q=80",
+        image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1920",
         title: "Venus Group, Shela",
         price: "₹82L - 1.5Cr",
         tag: "3/4 BHK Flat"
