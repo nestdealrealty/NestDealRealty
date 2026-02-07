@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-    Share2, Heart, MapPin, Download, ChevronRight, Check,
+    Share2, Heart, MapPin, Download, ChevronRight, ChevronLeft, Check,
     Star, Phone, User, Mail, School, Bus, ShoppingBag, Coffee, X
 } from 'lucide-react';
 import './PropertyDetails.css';
@@ -45,10 +45,24 @@ const PropertyDetails = () => {
     };
 
     const [activeTab, setActiveTab] = useState('overview');
+    const [lightboxIndex, setLightboxIndex] = useState(null);
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
+    const openLightbox = (index) => setLightboxIndex(index);
+    const closeLightbox = () => setLightboxIndex(null);
+
+    const nextImage = (e) => {
+        e.stopPropagation();
+        setLightboxIndex((prev) => (prev + 1) % property.gallery.length);
+    };
+
+    const prevImage = (e) => {
+        e.stopPropagation();
+        setLightboxIndex((prev) => (prev - 1 + property.gallery.length) % property.gallery.length);
+    };
 
     const scrollToSection = (id) => {
         const element = document.getElementById(id);
@@ -97,15 +111,15 @@ const PropertyDetails = () => {
                         <button className="pd-action-btn"><Heart size={16} /> Save</button>
                     </div>
                     <div className="pd-gallery-grid">
-                        <div className="pd-gallery-main">
+                        <div className="pd-gallery-main" onClick={() => openLightbox(0)} style={{ cursor: 'pointer' }}>
                             <img src={property.gallery[0]} alt="Main" />
                             <div className="pd-tag-overlay">Cover Image</div>
                         </div>
                         <div className="pd-gallery-side">
-                            <div className="pd-gallery-item">
+                            <div className="pd-gallery-item" onClick={() => openLightbox(1)} style={{ cursor: 'pointer' }}>
                                 <img src={property.gallery[1]} alt="Side 1" />
                             </div>
-                            <div className="pd-gallery-item more-overlay-container">
+                            <div className="pd-gallery-item more-overlay-container" onClick={() => openLightbox(2)}>
                                 <img src={property.gallery[2]} alt="Side 2" />
                                 <div className="more-overlay">+4 more</div>
                             </div>
@@ -270,6 +284,33 @@ const PropertyDetails = () => {
                 </div>
 
             </div>
+
+            {/* Lightbox Overlay */}
+            {lightboxIndex !== null && (
+                <div className="lightbox-overlay" onClick={closeLightbox}>
+                    <button className="lightbox-close" onClick={closeLightbox}><X size={32} /></button>
+
+                    <div className="lightbox-content" onClick={e => e.stopPropagation()}>
+                        <button className="lightbox-nav prev" onClick={prevImage}><ChevronLeft size={48} /></button>
+
+                        <div className="lightbox-slide-container">
+                            <div className="lightbox-track" style={{ transform: `translateX(-${lightboxIndex * 100}%)` }}>
+                                {property.gallery.map((img, idx) => (
+                                    <div key={idx} className="lightbox-slide">
+                                        <img src={img} alt={`Slide ${idx}`} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button className="lightbox-nav next" onClick={nextImage}><ChevronRight size={48} /></button>
+                    </div>
+
+                    <div className="lightbox-counter">
+                        {lightboxIndex + 1} / {property.gallery.length}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
