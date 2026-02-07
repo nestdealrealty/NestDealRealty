@@ -54,11 +54,24 @@ const Home = () => {
 
     // Slideshow logic
     useEffect(() => {
+        console.log('Slideshow initialized with', slides.length, 'slides');
         const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % slides.length);
-        }, 5000);
-        return () => clearInterval(timer);
+            setCurrentSlide((prev) => {
+                const next = (prev + 1) % slides.length;
+                console.log('Slide transition:', prev, '->', next);
+                return next;
+            });
+        }, 4000);
+        return () => {
+            console.log('Slideshow cleanup');
+            clearInterval(timer);
+        };
     }, []);
+
+    // Debug: Log current slide on every render
+    useEffect(() => {
+        console.log('Current slide index:', currentSlide);
+    }, [currentSlide]);
 
     const priceOptions = ['₹ 20 Lac', '₹ 25 Lac', '₹ 30 Lac', '₹ 35 Lac', '₹ 40 Lac', '₹ 50 Lac', '₹ 75 Lac', '₹ 1 Cr', '₹ 1.5 Cr', '₹ 2 Cr+'];
 
@@ -185,8 +198,13 @@ const Home = () => {
                         {/* Slideshow */}
                         <div className="fullscreen-slideshow">
                             {slides.map((slide, idx) => (
-                                <div key={idx} className={`hero-slide ${idx === currentSlide ? 'active' : ''}`}>
-                                    <img src={slide.image} alt={slide.title} />
+                                <div
+                                    key={idx}
+                                    className={`hero-slide ${idx === currentSlide ? 'active' : ''}`}
+                                    data-slide-index={idx}
+                                    data-is-active={idx === currentSlide}
+                                >
+                                    <img src={slide.image} alt={slide.title} loading={idx === 0 ? "eager" : "lazy"} />
                                     <div className="slide-hero-text">
                                         <span className="hero-tag">{slide.tag}</span>
                                         <h2>{slide.title}</h2>
@@ -194,6 +212,34 @@ const Home = () => {
                                     </div>
                                 </div>
                             ))}
+
+                            {/* Debug Indicator */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '20px',
+                                right: '20px',
+                                background: 'rgba(212, 175, 55, 0.9)',
+                                color: '#000',
+                                padding: '10px 20px',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                                fontSize: '16px',
+                                zIndex: 100,
+                                fontFamily: 'monospace'
+                            }}>
+                                SLIDE: {currentSlide + 1} / {slides.length}
+                            </div>
+
+                            {/* Navigation Dots */}
+                            <div className="slider-dots">
+                                {slides.map((_, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`slider-dot ${idx === currentSlide ? 'active' : ''}`}
+                                        onClick={() => setCurrentSlide(idx)}
+                                    />
+                                ))}
+                            </div>
                         </div>
 
                     </div>
