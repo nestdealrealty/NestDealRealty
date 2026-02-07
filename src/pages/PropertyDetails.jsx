@@ -53,6 +53,17 @@ const PropertyDetails = () => {
         window.scrollTo(0, 0);
     }, []);
 
+    // Auto-slide effect
+    useEffect(() => {
+        let interval;
+        if (lightboxIndex !== null) {
+            interval = setInterval(() => {
+                setLightboxIndex((prev) => (prev + 1) % property.gallery.length);
+            }, 3000); // Change slide every 3 seconds
+        }
+        return () => clearInterval(interval);
+    }, [lightboxIndex]);
+
     const openLightbox = (index) => setLightboxIndex(index);
     const closeLightbox = () => setLightboxIndex(null);
 
