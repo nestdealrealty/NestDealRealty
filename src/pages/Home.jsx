@@ -106,6 +106,46 @@ const Home = () => {
         },
     ];
 
+    const exploreGandhinagarCategories = [
+        {
+            id: 'flats-gandhinagar',
+            title: 'Flats',
+            items: [
+                { id: 1, image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80', listingTitle: 'Gift City Heights', builder: 'Gift Group', config: '3 BHK Flat', location: 'Gift City, Gandhinagar', price: '₹ 85.00 L' },
+                { id: 2, image: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?auto=format&fit=crop&w=400&q=80', listingTitle: 'Sargasan Elite', builder: 'Sargasan Builders', config: '2 BHK Flat', location: 'Sargasan, Gandhinagar', price: '₹ 55.00 L' },
+                { id: 3, image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80', listingTitle: 'Raysan Pride', builder: 'Raysan Developers', config: '4 BHK Flat', location: 'Raysan, Gandhinagar', price: '₹ 1.10 Cr' },
+                { id: 4, image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=400&q=80', listingTitle: 'Kudasan Residency', builder: 'Kudasan Group', config: '3 BHK Flat', location: 'Kudasan, Gandhinagar', price: '₹ 72.00 L' },
+            ]
+        },
+        {
+            id: 'bungalows-gandhinagar',
+            title: 'Bungalows',
+            items: [
+                { id: 1, image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b91d?auto=format&fit=crop&w=400&q=80', listingTitle: 'Infocity Villas', builder: 'Infocity Group', config: '4 BHK Villa', location: 'Infocity, Gandhinagar', price: '₹ 2.50 Cr' },
+                { id: 2, image: 'https://images.unsplash.com/photo-1600596542815-22b845074a34?auto=format&fit=crop&w=400&q=80', listingTitle: 'Pethapur Bungalows', builder: 'Pethapur Estates', config: '3 BHK Bungalow', location: 'Pethapur, Gandhinagar', price: '₹ 1.80 Cr' },
+                { id: 3, image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80', listingTitle: 'Swagat Flamingo', builder: 'Swagat Group', config: '5 BHK Villa', location: 'Sargasan', price: '₹ 3.20 Cr' },
+            ]
+        },
+        {
+            id: 'commercial-gandhinagar',
+            title: 'Commercial',
+            items: [
+                { id: 1, image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80', listingTitle: 'Gift One Tower', builder: 'Gift City', config: 'Office Space', location: 'Gift City', price: '₹ 95.00 L' },
+                { id: 2, image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80', listingTitle: 'Reliance Circle Hub', builder: 'Reliance', config: 'Showroom', location: 'Reliance Circle', price: '₹ 2.50 Cr' },
+                { id: 3, image: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=400&q=80', listingTitle: 'Sector 11 Complex', builder: 'Govt Approved', config: 'Shop', location: 'Sector 11', price: '₹ 45.00 L' },
+            ]
+        },
+        {
+            id: 'plots-gandhinagar',
+            title: 'Plots',
+            items: [
+                { id: 1, image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=400&q=80', listingTitle: 'Vavol Plots', builder: 'Vavol Land', config: 'Residential Plot', location: 'Vavol', price: '₹ 60.00 L' },
+                { id: 2, image: 'https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?auto=format&fit=crop&w=400&q=80', listingTitle: 'Chiloda Green', builder: 'Chiloda Developers', config: 'Farm Plot', location: 'Chiloda', price: '₹ 1.20 Cr' },
+                { id: 3, image: 'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=400&q=80', listingTitle: 'Randesan Plots', builder: 'Randesan Group', config: 'Investment Plot', location: 'Randesan', price: '₹ 90.00 L' },
+            ]
+        },
+    ];
+
     return (
         <div className="home-page-root">
             <div className="homepage-wrapper-fullscreen">
@@ -365,6 +405,46 @@ const Home = () => {
 
                 <div className="explore-grid">
                     {exploreCategories.map((category) => (
+                        <div key={category.id} className="explore-column">
+                            <div className="column-header">
+                                <h3>{category.title}</h3>
+                            </div>
+                            <div className="reel-container">
+                                {category.items.map((item) => (
+                                    <div key={item.id} className="property-card-reel">
+                                        <div className="card-reel-image">
+                                            <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                        </div>
+                                        <div className="card-reel-details">
+                                            <h4 className="reel-prop-title">{item.listingTitle}</h4>
+                                            <span className="reel-prop-builder">{item.builder}</span>
+                                            <div className="reel-prop-specs">
+                                                <span>{item.config}</span>
+                                                <span className="dot">•</span>
+                                                <span>{item.location}</span>
+                                            </div>
+                                            <div className="reel-prop-price">{item.price}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="column-footer">
+                                <button className="see-all-btn">See All</button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Explore Gandhinagar Section */}
+            <div className="explore-ahmedabad-section">
+                <div className="explore-header-container">
+                    <h2>Explore Gandhinagar</h2>
+                    <div className="header-divider"></div>
+                </div>
+
+                <div className="explore-grid">
+                    {exploreGandhinagarCategories.map((category) => (
                         <div key={category.id} className="explore-column">
                             <div className="column-header">
                                 <h3>{category.title}</h3>
