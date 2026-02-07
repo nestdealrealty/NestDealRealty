@@ -411,7 +411,7 @@ const Home = () => {
                             </div>
                             <div className="reel-container">
                                 {category.items.map((item) => (
-                                    <div key={item.id} className="property-card-reel">
+                                    <Link to={`/property/${item.id}`} key={item.id} className="property-card-reel">
                                         <div className="card-reel-image">
                                             <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                         </div>
@@ -425,7 +425,7 @@ const Home = () => {
                                             </div>
                                             <div className="reel-prop-price">{item.price}</div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
                             </div>
                             <div className="column-footer">
@@ -451,7 +451,7 @@ const Home = () => {
                             </div>
                             <div className="reel-container">
                                 {category.items.map((item) => (
-                                    <div key={item.id} className="property-card-reel">
+                                    <Link to={`/property/${item.id}`} key={item.id} className="property-card-reel">
                                         <div className="card-reel-image">
                                             <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                         </div>
@@ -465,7 +465,7 @@ const Home = () => {
                                             </div>
                                             <div className="reel-prop-price">{item.price}</div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
                             </div>
                             <div className="column-footer">
