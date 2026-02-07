@@ -275,25 +275,76 @@
 }
 
 /* Fullscreen Slideshow */
+/* Fullscreen Slideshow Container - Mandatory Structure */
 .fullscreen-slideshow {
+    position: relative;
     width: 100%;
     height: 100%;
-    position: relative;
+    overflow: hidden;
+    background: #0b1f17;
+    /* Dark green fallback per user request */
 }
 
+/* Individual Slide */
 .hero-slide {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
+    /* Top/Left/Right/Bottom: 0 */
     width: 100%;
     height: 100%;
     opacity: 0;
-    transition: opacity 1.2s ease-in-out;
+    transition: opacity 1.5s ease-in-out;
     z-index: 1;
+    pointer-events: none;
+    /* Prevent interaction with hidden slides */
 }
 
+/* Active Slide */
 .hero-slide.active {
     opacity: 1;
+    z-index: 2;
+    pointer-events: auto;
+}
+
+/* Image Rendering Fix */
+.hero-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    /* Remove inline-block spacing */
+    filter: brightness(0.7);
+}
+
+/* Dots Navigation */
+.slider-dots {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 20;
+}
+
+.slider-dot {
+    width: 12px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.4);
+    border: 2px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.slider-dot:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.slider-dot.active {
+    background: var(--accent);
+    transform: scale(1.2);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
 }
 
 .hero-slide img {
