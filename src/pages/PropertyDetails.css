@@ -273,20 +273,23 @@
     position: relative;
     height: 100%;
     overflow: hidden;
+    background: #000;
 }
 
 .hero-carousel-track {
     display: flex;
     height: 100%;
     width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
     transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     will-change: transform;
-    /* Hint for optimization */
 }
 
 .hero-slide {
     flex: 0 0 100%;
-    min-width: 100%;
+    width: 100%;
     height: 100%;
 }
 
