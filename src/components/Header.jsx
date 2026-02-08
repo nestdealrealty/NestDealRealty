@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, Search, Heart, User, Menu, X, ArrowRight } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './Header.css';
 import logo from '../assets/logo.jpg';
 
@@ -56,6 +57,7 @@ const navItems = [
 ];
 
 const Header = () => {
+    const { user, logOut } = useAuth();
     const [activeMenu, setActiveMenu] = useState(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
@@ -112,10 +114,19 @@ const Header = () => {
 
                 <div className="header-actions">
                     <button className="action-btn"><Search size={20} /></button>
-                    <button className="action-btn"><Heart size={20} /></button>
-                    <button className="action-btn login-btn">
-                        <User size={20} /> <span>Sign In</span>
-                    </button>
+                    <Link to="/saved-properties" className="action-btn" aria-label="Saved Properties">
+                        <Heart size={20} fill={user ? "var(--accent)" : "none"} color={user ? "var(--accent)" : "currentColor"} />
+                    </Link>
+
+                    {user ? (
+                        <button onClick={logOut} className="action-btn login-btn">
+                            <User size={20} /> <span>Sign Out</span>
+                        </button>
+                    ) : (
+                        <Link to="/login" className="action-btn login-btn">
+                            <User size={20} /> <span>Sign In</span>
+                        </Link>
+                    )}
                     <button
                         className="mobile-toggle"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

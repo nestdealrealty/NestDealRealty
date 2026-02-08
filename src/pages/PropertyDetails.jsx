@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { getPropertyById } from '../data/properties';
 import './PropertyDetails.css';
+import logo from '../assets/logo.jpg';
 
 const PropertyDetails = () => {
     const { id } = useParams();
@@ -643,12 +644,12 @@ const PropertyDetails = () => {
                             <div className="contact-seller-header">
                                 <div className="seller-profile-row">
                                     <div className="seller-logo">
-                                        <Building2 size={24} />
+                                        <img src={logo} alt="Nest Deal Realty" className="seller-logo-img" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                     </div>
                                     <div className="seller-info">
                                         <h3 className="cs-title">Contact Seller</h3>
-                                        <div className="seller-name">{property.developer}</div>
-                                        <div className="seller-phone">+91 98765 43210</div>
+                                        <div className="seller-name">NEST DEAL REALTY</div>
+                                        <div className="seller-phone">+91 84696 30555</div>
                                     </div>
                                 </div>
                             </div>

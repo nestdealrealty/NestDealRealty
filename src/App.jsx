@@ -5,6 +5,9 @@ import PropertyDetails from './pages/PropertyDetails';
 import AdminDashboard from './pages/AdminDashboard';
 import EmiCalculator from './pages/EmiCalculator';
 import Footer from './components/Footer';
+import Login from './pages/Login';
+import SignUp from './pages/SignUp';
+import SavedProperties from './pages/SavedProperties';
 import './index.css';
 
 // Nest Deal Realty - v1.1.0.2
@@ -23,6 +26,9 @@ function Layout() {
           <Route path="/property" element={<PropertyDetails />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/emi-calculator" element={<EmiCalculator />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/saved-properties" element={<SavedProperties />} />
         </Routes>
       </main>
       <Footer />
