@@ -277,12 +277,31 @@ const InputGroup = ({ label, val, setVal, min, max, step, suffix }) => {
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
                 <span style={{ color: '#666', fontSize: '0.8rem' }}>{displayMin}{suffix}</span>
-                <input
-                    type="text"
-                    value={displayValue}
-                    onChange={handleChange}
-                    style={{ background: '#1a2420', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: '6px', color: 'white', minWidth: '120px', textAlign: 'right' }}
-                />
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: '#1a2420',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '6px',
+                    padding: '8px 12px',
+                    minWidth: '140px'
+                }}>
+                    {isCurrency && <span style={{ color: '#888', marginRight: '5px' }}>₹</span>}
+                    <input
+                        type="text"
+                        value={displayValue}
+                        onChange={handleChange}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'white',
+                            width: '100%',
+                            textAlign: 'right',
+                            outline: 'none',
+                            fontSize: '0.95rem'
+                        }}
+                    />
+                </div>
             </div>
         </div>
     );
