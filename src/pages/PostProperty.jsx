@@ -48,11 +48,13 @@ const PostProperty = () => {
 
     const handleNext = () => setStep(prev => Math.min(prev + 1, totalSteps));
     const handleBack = () => setStep(prev => Math.max(prev - 1, 1));
-    const updateForm = (key, value) => setFormData(prev => ({ ...prev, [key]: value }));
+    const updateForm = (key, value) => {
+        setFormData(prev => ({ ...prev, [key]: value }));
+    };
 
     const toggleSelection = (key, value) => {
         setFormData(prev => {
-            const list = prev[key];
+            const list = prev[key] || [];
             return {
                 ...prev,
                 [key]: list.includes(value) ? list.filter(item => item !== value) : [...list, value]
@@ -117,9 +119,9 @@ const PostProperty = () => {
 
     const renderStep1 = () => (
         <div className="animate-fade-in">
-            <h2 style={{ color: TEXT_PRIMARY, marginBottom: '10px' }}>Property Details</h2>
-            <p style={{ color: TEXT_MUTED, marginBottom: '30px' }}>Select the type of property you want to list.</p>
+            <h2 style={{ color: TEXT_PRIMARY, marginBottom: '20px' }}>Property Details</h2>
 
+            {/* 1. Purpose & Type */}
             <ChipGroup
                 label="I want to..."
                 options={[{ label: 'Sell', value: 'sell' }, { label: 'Rent / Lease', value: 'rent' }]}
@@ -158,6 +160,7 @@ const PostProperty = () => {
                 ))}
             </div>
 
+            {/* 2. BHK */}
             {formData.propertyType !== 'plot' && (
                 <ChipGroup
                     label="BHK Type"
@@ -170,6 +173,92 @@ const PostProperty = () => {
                     onChange="bhk"
                 />
             )}
+
+            <div style={{ borderTop: `1px solid ${BORDER}`, margin: '30px 0' }}></div>
+
+            {/* 3. Features (Parking, Bath, Balcony, Furnishing) - MOVED HERE */}
+            <h3 style={{ color: TEXT_PRIMARY, fontSize: '1rem', marginBottom: '20px' }}>Property Features</h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <Counter label="Bathrooms" value={formData.bathrooms} onChange="bathrooms" />
+                <Counter label="Balconies" value={formData.balconies} onChange="balconies" />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <Counter label="Covered Parking" value={formData.coveredParking} onChange="coveredParking" />
+                <Counter label="Open Parking" value={formData.openParking} onChange="openParking" />
+            </div>
+
+            <ChipGroup
+                label="Furnishing Status"
+                options={[
+                    { label: 'Unfurnished', value: 'unfurnished' },
+                    { label: 'Semi Furnished', value: 'semi' },
+                    { label: 'Fully Furnished', value: 'full' }
+                ]}
+                value={formData.furnishing}
+                onChange="furnishing"
+            />
+
+            {/* 4. Tenant & Availability - MOVED HERE */}
+            {formData.purpose === 'rent' && (
+                <>
+                    <label style={{ color: TEXT_MUTED, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>Preferred Tenants</label>
+                    <div style={{ display: 'flex', gap: '15px', marginBottom: '25px' }}>
+                        {[
+                            { id: 'family', label: 'Family', icon: Users },
+                            { id: 'bachelor', label: 'Bachelors', icon: Users },
+                            { id: 'company', label: 'Company', icon: Building }
+                        ].map(type => {
+                            const selected = formData.tenantPreference.includes(type.id);
+                            return (
+                                <button
+                                    key={type.id}
+                                    onClick={() => toggleSelection('tenantPreference', type.id)}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px',
+                                        background: selected ? `${GOLD_ACCENT}20` : 'transparent',
+                                        border: `1px solid ${selected ? GOLD_ACCENT : '#333'}`, borderRadius: '8px',
+                                        color: selected ? GOLD_ACCENT : TEXT_MUTED, cursor: 'pointer'
+                                    }}
+                                >
+                                    <type.icon size={16} /> {type.label}
+                                </button>
+                            )
+                        })}
+                    </div>
+                </>
+            )}
+
+            <div style={{ marginBottom: '25px' }}>
+                <label style={{ color: TEXT_MUTED, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>Available From</label>
+                <input
+                    type="date"
+                    value={formData.availableFrom}
+                    onChange={(e) => updateForm('availableFrom', e.target.value)}
+                    style={{ ...inputStyle, colorScheme: 'dark' }}
+                />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                <label style={{ color: TEXT_MUTED, fontSize: '0.9rem' }}>Pet Friendly?</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    {['Yes', 'No'].map(opt => (
+                        <button
+                            key={opt}
+                            onClick={() => updateForm('petFriendly', opt)}
+                            style={{
+                                padding: '5px 15px', borderRadius: '15px', border: `1px solid ${formData.petFriendly === opt ? GOLD_ACCENT : '#333'}`,
+                                background: formData.petFriendly === opt ? GOLD_ACCENT : 'transparent',
+                                color: formData.petFriendly === opt ? BG_PRIMARY : TEXT_MUTED, cursor: 'pointer', fontSize: '0.8rem'
+                            }}
+                        >
+                            {opt}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
         </div>
     );
 
@@ -220,71 +309,12 @@ const PostProperty = () => {
 
     const renderStep3 = () => (
         <div className="animate-fade-in">
-            <h2 style={{ color: TEXT_PRIMARY, marginBottom: '20px' }}>Features & Amenities</h2>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <Counter label="Bathrooms" value={formData.bathrooms} onChange="bathrooms" />
-                <Counter label="Balconies" value={formData.balconies} onChange="balconies" />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <Counter label="Covered Parking" value={formData.coveredParking} onChange="coveredParking" />
-                <Counter label="Open Parking" value={formData.openParking} onChange="openParking" />
-            </div>
-
-            <ChipGroup
-                label="Furnishing Status"
-                options={[
-                    { label: 'Unfurnished', value: 'unfurnished' },
-                    { label: 'Semi Furnished', value: 'semi' },
-                    { label: 'Fully Furnished', value: 'full' }
-                ]}
-                value={formData.furnishing}
-                onChange="furnishing"
-            />
-
-            {formData.purpose === 'rent' && (
-                <>
-                    <label style={{ color: TEXT_MUTED, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>Preferred Tenants</label>
-                    <div style={{ display: 'flex', gap: '15px', marginBottom: '25px' }}>
-                        {[
-                            { id: 'family', label: 'Family', icon: Users },
-                            { id: 'bachelor', label: 'Bachelors', icon: Users },
-                            { id: 'company', label: 'Company', icon: Building }
-                        ].map(type => {
-                            const selected = formData.tenantPreference.includes(type.id);
-                            return (
-                                <button
-                                    key={type.id}
-                                    onClick={() => toggleSelection('propertyType', type.id)} // BUG FIX: should be tenantPreference
-                                    onClick={() => {
-                                        const list = formData.tenantPreference;
-                                        const newList = list.includes(type.id) ? list.filter(i => i !== type.id) : [...list, type.id];
-                                        updateForm('tenantPreference', newList);
-                                    }}
-                                    style={{
-                                        display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px',
-                                        background: selected ? `${GOLD_ACCENT}20` : 'transparent',
-                                        border: `1px solid ${selected ? GOLD_ACCENT : '#333'}`, borderRadius: '8px',
-                                        color: selected ? GOLD_ACCENT : TEXT_MUTED, cursor: 'pointer'
-                                    }}
-                                >
-                                    <type.icon size={16} /> {type.label}
-                                </button>
-                            )
-                        })}
-                    </div>
-                </>
-            )}
-
-            <div style={{ marginBottom: '25px' }}>
-                <label style={{ color: TEXT_MUTED, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>Availability</label>
-                <input
-                    type="date"
-                    value={formData.availableFrom}
-                    onChange={(e) => updateForm('availableFrom', e.target.value)}
-                    style={{ ...inputStyle, colorScheme: 'dark' }}
-                />
+            <h2 style={{ color: TEXT_PRIMARY, marginBottom: '20px' }}>Photos & Media</h2>
+            <div style={{ marginTop: '30px', padding: '40px', background: `${BG_SECONDARY}`, borderRadius: '12px', textAlign: 'center', border: `2px dashed ${BORDER}` }}>
+                <Upload size={40} color={GOLD_ACCENT} style={{ marginBottom: '15px' }} />
+                <p style={{ color: TEXT_PRIMARY, fontWeight: 'bold', fontSize: '1.2rem' }}>Upload Property Photos</p>
+                <p style={{ color: TEXT_MUTED, fontSize: '0.9rem', marginBottom: '20px' }}>Add at least 3 photos to get 5x more responses</p>
+                <button style={{ padding: '10px 25px', borderRadius: '20px', background: GOLD_ACCENT, color: BG_PRIMARY, border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>Browse Files</button>
             </div>
         </div>
     );
@@ -351,13 +381,6 @@ const PostProperty = () => {
                 value={formData.brokerage}
                 onChange="brokerage"
             />
-
-            <div style={{ marginTop: '30px', padding: '20px', background: `${BG_SECONDARY}`, borderRadius: '12px', textAlign: 'center' }}>
-                <Upload size={30} color={GOLD_ACCENT} style={{ marginBottom: '10px' }} />
-                <p style={{ color: TEXT_PRIMARY, fontWeight: 'bold' }}>Upload Property Photos</p>
-                <p style={{ color: TEXT_MUTED, fontSize: '0.8rem' }}>Add at least 3 photos for better visibility</p>
-            </div>
-
         </div>
     );
 
@@ -381,7 +404,7 @@ const PostProperty = () => {
 
                 {/* Stepper */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px', position: 'relative' }}>
-                    {['Property Details', 'Location & Area', 'Features', 'Pricing'].map((label, idx) => {
+                    {['Property Details', 'Location & Area', 'Photos', 'Pricing'].map((label, idx) => {
                         const stepNum = idx + 1;
                         const isActive = step >= stepNum;
                         return (
