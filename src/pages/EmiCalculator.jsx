@@ -15,10 +15,12 @@ const EmiCalculator = () => {
     const BG_SECONDARY = '#1A1F1D';
     const TEXT_PRIMARY = '#E6ECE9';
     const TEXT_MUTED = '#8E9CA3';
-    const GOLD_ACCENT = '#BFA76A';
 
-    // UPDATED: Richer "Money" Green
-    const SUCCESS_GREEN = '#00C853';   // Deep, vibrant emerald
+    // UPDATED: More "Golden" accent (Rich, Smooth Gold)
+    const GOLD_ACCENT = '#E3BC5A';
+
+    // Richer "Money" Green
+    const SUCCESS_GREEN = '#00C853';
 
     const BORDER_COLOR = '#2A2F2D';
 
@@ -415,7 +417,7 @@ const EmiCalculator = () => {
 // Sub-components
 const InputGroup = ({ label, val, setVal, min, max, step, suffix, color }) => {
     const isCurrency = !suffix;
-    const accent = color || '#BFA76A';
+    const accent = color || '#E3BC5A';
 
     const handleChange = (e) => {
         const raw = e.target.value.replace(/,/g, '');
@@ -478,7 +480,7 @@ const ResultBox = ({ title, value, huge, color, mutedColor, textColor }) => (
         padding: huge ? '30px' : '20px',
         background: huge ? (color ? `${color}10` : 'rgba(212, 175, 55, 0.05)') : 'rgba(255,255,255,0.02)',
         borderRadius: '16px',
-        border: huge ? `1px solid ${color || '#BFA76A'}` : '1px solid rgba(255,255,255,0.05)',
+        border: huge ? `1px solid ${color || '#E3BC5A'}` : '1px solid rgba(255,255,255,0.05)',
         boxShadow: huge ? `0 0 35px ${color ? color + '40' : 'rgba(212, 175, 55, 0.2)'}` : 'none', // Stronger glow
         transition: 'all 0.3s ease'
     }}>
