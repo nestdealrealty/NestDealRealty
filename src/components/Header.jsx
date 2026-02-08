@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, Search, Heart, User, Menu, X, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import ValuationModal from './ValuationModal';
 import './Header.css';
 import logo from '../assets/logo.jpg';
 
@@ -60,6 +61,7 @@ const Header = () => {
     const { user, logOut } = useAuth();
     const [activeMenu, setActiveMenu] = useState(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isValuationOpen, setIsValuationOpen] = useState(false);
     const location = useLocation();
 
     return (
@@ -91,7 +93,20 @@ const Header = () => {
                                                     <h4>{section.title}</h4>
                                                     <ul>
                                                         {section.links.map((link) => (
-                                                            <li key={link}><a href="#">{link}</a></li>
+                                                            <li key={link}>
+                                                                <a
+                                                                    href="#"
+                                                                    onClick={(e) => {
+                                                                        if (link === 'Book a free valuation') {
+                                                                            e.preventDefault();
+                                                                            setIsValuationOpen(true);
+                                                                            setActiveMenu(null);
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    {link}
+                                                                </a>
+                                                            </li>
                                                         ))}
                                                     </ul>
                                                 </div>
@@ -100,7 +115,15 @@ const Header = () => {
                                         {item.cta && (
                                             <div className="mega-menu-cta">
                                                 <p>{item.cta.sub}</p>
-                                                <button className="btn btn-primary">
+                                                <button
+                                                    className="btn btn-primary"
+                                                    onClick={() => {
+                                                        if (item.cta.text === 'Book a valuation') {
+                                                            setIsValuationOpen(true);
+                                                            setActiveMenu(null);
+                                                        }
+                                                    }}
+                                                >
                                                     {item.cta.text} <ArrowRight size={16} />
                                                 </button>
                                             </div>
@@ -135,6 +158,8 @@ const Header = () => {
                     </button>
                 </div>
             </div>
+
+            <ValuationModal isOpen={isValuationOpen} onClose={() => setIsValuationOpen(false)} />
         </header>
     );
 };
