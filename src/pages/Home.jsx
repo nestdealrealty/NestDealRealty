@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter, Tag, Key, Briefcase, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ValuationModal from '../components/ValuationModal';
 import logo from '../assets/logo.jpg';
 import './Home.css';
 
@@ -35,6 +36,7 @@ const navStructure = [
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [activeLocation, setActiveLocation] = useState('Ahmedabad');
+    const [isValuationOpen, setIsValuationOpen] = useState(false);
 
     // Search States
     const [activeSearchDropdown, setActiveSearchDropdown] = useState(null); // 'city', 'bhk', 'budget', 'filter-modal'
@@ -176,7 +178,7 @@ const Home = () => {
                                 <div className="trust-badges">
                                     <div className="trust-item"><Star size={16} fill="#00b67a" stroke="none" /> <span>Trustpilot</span></div>
                                 </div>
-                                <button className="book-valuation-btn">Book a free valuation</button>
+                                <button className="book-valuation-btn" onClick={() => setIsValuationOpen(true)}>Book a free valuation</button>
                                 <p className="online-val-link">Or start with an <a href="#">online valuation</a></p>
                             </div>
 
@@ -577,6 +579,8 @@ const Home = () => {
                 </div>
             </div>
 
+            {/* Valuation Modal */}
+            <ValuationModal isOpen={isValuationOpen} onClose={() => setIsValuationOpen(false)} />
         </div>
     );
 };
