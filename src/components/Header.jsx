@@ -39,8 +39,12 @@ const navItems = [
         title: 'Rent',
         sections: [
             {
-                title: 'Property Types',
-                links: ['Flats', 'Villas', 'PG', 'Commercial', 'Shared houses']
+                title: 'RENT YOUR PROPERTY',
+                links: ['Flat', 'Bungalows', 'Commercial', 'Plot']
+            },
+            {
+                title: 'FIND RENTAL PROPERTY',
+                links: ['Flat', 'Bungalows', 'Commercial', 'Plot']
             }
         ],
         cta: { text: 'Explore rentals', sub: 'Finding a place?' }
