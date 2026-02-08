@@ -10,14 +10,14 @@ const EmiCalculator = () => {
     const [activeTab, setActiveTab] = useState(initialMode);
     const [showLoanModal, setShowLoanModal] = useState(false);
 
-    // COLORS FROM PALETTE
-    const BG_PRIMARY = '#0B1F17';
-    const BG_SECONDARY = '#102A21';
-    const TEXT_PRIMARY = '#F5F7F6';
-    const TEXT_MUTED = '#9FB5AC';
-    const GOLD_ACCENT = '#D4AF37';
-    const SUCCESS_GREEN = '#2EE59D';
-    const BORDER_COLOR = '#1c4536'; // Derived slightly lighter than secondary
+    // NEW NAVY PALETTE
+    const BG_PRIMARY = '#0E1624';      // Deep navy
+    const BG_SECONDARY = '#141F33';    // Card bg
+    const TEXT_PRIMARY = '#EAEFF5';    // White-ish
+    const TEXT_MUTED = '#8CA0B8';      // Blue-gray for muted text
+    const GOLD_ACCENT = '#C9A24D';     // Muted gold
+    const SUCCESS_GREEN = '#3DDC97';   // Positive green
+    const BORDER_COLOR = '#1E2F4D';    // Lighter navy border
 
     // --- EMI CALCULATOR STATE ---
     const [emiLoan, setEmiLoan] = useState(5000000);
@@ -412,7 +412,7 @@ const EmiCalculator = () => {
 // Sub-components
 const InputGroup = ({ label, val, setVal, min, max, step, suffix, color }) => {
     const isCurrency = !suffix;
-    const accent = color || '#D4AF37';
+    const accent = color || '#C9A24D';
 
     const handleChange = (e) => {
         const raw = e.target.value.replace(/,/g, '');
@@ -437,17 +437,17 @@ const InputGroup = ({ label, val, setVal, min, max, step, suffix, color }) => {
                 style={{ width: '100%', accentColor: accent }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                <span style={{ color: '#9FB5AC', fontSize: '0.8rem' }}>{displayMin}{suffix}</span>
+                <span style={{ color: '#8CA0B8', fontSize: '0.8rem' }}>{displayMin}{suffix}</span>
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    background: '#0D221B',
-                    border: '1px solid #1c4536',
+                    background: '#0E1624',
+                    border: '1px solid #1E2F4D',
                     borderRadius: '6px',
                     padding: '8px 12px',
                     minWidth: '140px'
                 }}>
-                    {isCurrency && <span style={{ color: '#9FB5AC', marginRight: '5px' }}>₹</span>}
+                    {isCurrency && <span style={{ color: '#8CA0B8', marginRight: '5px' }}>₹</span>}
                     <input
                         type="text"
                         value={displayValue}
@@ -455,7 +455,7 @@ const InputGroup = ({ label, val, setVal, min, max, step, suffix, color }) => {
                         style={{
                             background: 'transparent',
                             border: 'none',
-                            color: '#F5F7F6',
+                            color: '#EAEFF5',
                             width: '100%',
                             textAlign: 'right',
                             outline: 'none',
@@ -479,7 +479,7 @@ const ResultBox = ({ title, value, huge, color, mutedColor, textColor }) => (
         boxShadow: huge ? `0 0 20px ${color ? color + '20' : 'rgba(212, 175, 55, 0.1)'}` : 'none',
         transition: 'all 0.3s ease'
     }}>
-        <span style={{ display: 'block', color: mutedColor || '#9FB5AC', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px' }}>{title}</span>
+        <span style={{ display: 'block', color: mutedColor || '#8CA0B8', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px' }}>{title}</span>
         <span style={{ fontSize: huge ? '2.8rem' : '1.4rem', fontWeight: '800', color: color || textColor || 'white', textShadow: huge && color ? `0 0 15px ${color}40` : 'none' }}>{value}</span>
     </div>
 );
