@@ -10,14 +10,17 @@ const EmiCalculator = () => {
     const [activeTab, setActiveTab] = useState(initialMode);
     const [showLoanModal, setShowLoanModal] = useState(false);
 
-    // NEW PLATINUM-GOLD & DARK SLATE PALETTE
-    const BG_PRIMARY = '#0C1512';      // Very dark green/slate
-    const BG_SECONDARY = '#1A1F1D';    // Panel bg
-    const TEXT_PRIMARY = '#E6ECE9';    // Platinum white
-    const TEXT_MUTED = '#8E9CA3';      // Muted slate
-    const GOLD_ACCENT = '#BFA76A';     // Platinum-gold
-    const SUCCESS_GREEN = '#66E0A3';   // Soft green highlight
-    const BORDER_COLOR = '#2A2F2D';    // Dark slate border
+    // PALETTE: Platinum-Gold & Dark Slate + RICHER MONEY GREEN
+    const BG_PRIMARY = '#0C1512';
+    const BG_SECONDARY = '#1A1F1D';
+    const TEXT_PRIMARY = '#E6ECE9';
+    const TEXT_MUTED = '#8E9CA3';
+    const GOLD_ACCENT = '#BFA76A';
+
+    // UPDATED: Richer "Money" Green
+    const SUCCESS_GREEN = '#00C853';   // Deep, vibrant emerald
+
+    const BORDER_COLOR = '#2A2F2D';
 
     // --- EMI CALCULATOR STATE ---
     const [emiLoan, setEmiLoan] = useState(5000000);
@@ -468,7 +471,7 @@ const InputGroup = ({ label, val, setVal, min, max, step, suffix, color }) => {
     );
 };
 
-// UPDATED RESULT BOX with Color Support
+// UPDATED RESULT BOX with RICHER GLOW
 const ResultBox = ({ title, value, huge, color, mutedColor, textColor }) => (
     <div style={{
         textAlign: 'center',
@@ -476,11 +479,16 @@ const ResultBox = ({ title, value, huge, color, mutedColor, textColor }) => (
         background: huge ? (color ? `${color}10` : 'rgba(212, 175, 55, 0.05)') : 'rgba(255,255,255,0.02)',
         borderRadius: '16px',
         border: huge ? `1px solid ${color || '#BFA76A'}` : '1px solid rgba(255,255,255,0.05)',
-        boxShadow: huge ? `0 0 20px ${color ? color + '20' : 'rgba(212, 175, 55, 0.1)'}` : 'none',
+        boxShadow: huge ? `0 0 35px ${color ? color + '40' : 'rgba(212, 175, 55, 0.2)'}` : 'none', // Stronger glow
         transition: 'all 0.3s ease'
     }}>
         <span style={{ display: 'block', color: mutedColor || '#8E9CA3', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px' }}>{title}</span>
-        <span style={{ fontSize: huge ? '2.8rem' : '1.4rem', fontWeight: '800', color: color || textColor || 'white', textShadow: huge && color ? `0 0 15px ${color}40` : 'none' }}>{value}</span>
+        <span style={{
+            fontSize: huge ? '2.8rem' : '1.4rem',
+            fontWeight: '800',
+            color: color || textColor || 'white',
+            textShadow: huge && color ? `0 0 25px ${color}60` : 'none' // Intense Text Glow
+        }}>{value}</span>
     </div>
 );
 
