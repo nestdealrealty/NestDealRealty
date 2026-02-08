@@ -140,6 +140,9 @@ const Header = () => {
                 </nav>
 
                 <div className="header-actions">
+                    <Link to="/post-property" className="post-property-btn">
+                        <span>Post Property</span> <span className="free-tag">FREE</span>
+                    </Link>
                     <button className="action-btn"><Search size={20} /></button>
                     <Link to="/saved-properties" className="action-btn" aria-label="Saved Properties">
                         <Heart size={20} fill={user ? "var(--accent)" : "none"} color={user ? "var(--accent)" : "currentColor"} />

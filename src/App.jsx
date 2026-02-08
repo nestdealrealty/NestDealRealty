@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import PropertyDetails from './pages/PropertyDetails';
 import AdminDashboard from './pages/AdminDashboard';
 import EmiCalculator from './pages/EmiCalculator';
+import PostProperty from './pages/PostProperty';
 import Footer from './components/Footer';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
@@ -26,6 +27,7 @@ function Layout() {
           <Route path="/property" element={<PropertyDetails />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/emi-calculator" element={<EmiCalculator />} />
+          <Route path="/post-property" element={<PostProperty />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/saved-properties" element={<SavedProperties />} />
