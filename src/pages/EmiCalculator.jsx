@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Calculator, Activity, CheckCircle, Wallet, FileText, User, Briefcase } from 'lucide-react';
+import { ArrowLeft, Calculator, Activity, CheckCircle, Smartphone, Mail, User as UserIcon } from 'lucide-react';
 import LoanModal from '../components/LoanModal';
 import './AdminDashboard.css';
 
@@ -65,7 +65,7 @@ const EmiCalculator = () => {
         const calculateEligibility = () => {
             // Document Check
             let isEligible = false;
-            // Salaried: Either ITR OR Form 16 required (at least one)
+            // Salaried: Either ITR OR Form 16 required
             if (eligSource === 'salaried') {
                 isEligible = salItrFiled || salForm16;
             }
@@ -93,7 +93,7 @@ const EmiCalculator = () => {
             }
 
             const R = eligRate / 12 / 100;
-            const N = eligTenureMonths; // Already in months
+            const N = eligTenureMonths;
 
             const maxLoan = netAvailableIncome * (Math.pow(1 + R, N) - 1) / (R * Math.pow(1 + R, N));
             setEligAmount(Math.round(maxLoan));
@@ -126,6 +126,10 @@ const EmiCalculator = () => {
             currency: 'INR'
         });
     };
+
+    // UI Colors
+    const RICH_GREEN = '#00e676';
+    const GOLD = 'var(--accent)';
 
     return (
         <div className="admin-page" style={{ padding: '40px 0', minHeight: '100vh', background: '#050505' }}>
@@ -196,7 +200,7 @@ const EmiCalculator = () => {
                                                 style={{
                                                     flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid var(--accent)',
                                                     background: eligSource === 'salaried' ? 'var(--accent)' : 'transparent',
-                                                    color: eligSource === 'salaried' ? 'black' : 'var(--accent)', // Fixed Contrast
+                                                    color: eligSource === 'salaried' ? 'black' : 'var(--accent)',
                                                     cursor: 'pointer', fontWeight: 'bold',
                                                     transition: 'all 0.2s'
                                                 }}
@@ -208,7 +212,7 @@ const EmiCalculator = () => {
                                                 style={{
                                                     flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid var(--accent)',
                                                     background: eligSource === 'business' ? 'var(--accent)' : 'transparent',
-                                                    color: eligSource === 'business' ? 'black' : 'var(--accent)', // Fixed Contrast
+                                                    color: eligSource === 'business' ? 'black' : 'var(--accent)',
                                                     cursor: 'pointer', fontWeight: 'bold',
                                                     transition: 'all 0.2s'
                                                 }}
@@ -224,7 +228,6 @@ const EmiCalculator = () => {
                                         min={20000} max={20000000} step={5000}
                                     />
 
-                                    {/* Static Rate */}
                                     <div className="input-group-home">
                                         <label style={{ color: 'var(--accent)', fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>Interest Rate (%)</label>
                                         <div style={{ background: '#1a2420', padding: '12px', borderRadius: '6px', color: '#fff', border: '1px solid #333' }}>
@@ -319,7 +322,7 @@ const EmiCalculator = () => {
                             {/* EMI RESULT */}
                             {activeTab === 'emi' && (
                                 <>
-                                    <ResultBox title="Monthly EMI" value={formatCurrency(emiData.monthly)} huge />
+                                    <ResultBox title="Monthly EMI" value={formatCurrency(emiData.monthly)} huge color={RICH_GREEN} />
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                         <ResultBox title="Total Interest" value={formatCurrency(emiData.totalInt)} />
                                         <ResultBox title="Total Payment" value={formatCurrency(emiData.totalPay)} />
@@ -330,16 +333,20 @@ const EmiCalculator = () => {
                             {/* ELIGIBILITY RESULT */}
                             {activeTab === 'eligibility' && (
                                 <>
-                                    <ResultBox title="Maximum Eligible Loan" value={formatCurrency(eligAmount)} huge />
+                                    <ResultBox title="Maximum Eligible Loan" value={formatCurrency(eligAmount)} huge color={RICH_GREEN} />
 
-                                    {(eligAmount === 0 && ((eligSource === 'business' && !bizItrFiled) || (eligSource === 'salaried' && !salItrFiled && !salForm16))) ? (
-                                        <div style={{ padding: '20px', background: 'rgba(255,0,0,0.1)', borderRadius: '12px', fontSize: '0.9rem', color: '#ff6666', border: '1px solid #ff4444' }}>
-                                            <strong>Not Eligible:</strong> proper documentation (ITR or Form-16) is required for loan eligibility.
+                                    {/* NEW: Approx Property Value (Loan / 0.90) */}
+                                    {eligAmount > 0 && (
+                                        <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center' }}>
+                                            <div style={{ color: '#888', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Approx. Eligible Property Cost</div>
+                                            <div style={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold' }}>{formatCurrency(Math.round(eligAmount / 0.90))}</div>
+                                            <div style={{ color: RICH_GREEN, fontSize: '0.8rem', marginTop: '5px' }}>Assuming 90% Loan Coverage</div>
                                         </div>
-                                    ) : (
-                                        <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '0.9rem', color: '#ccc', lineHeight: '1.6' }}>
-                                            <CheckCircle size={16} color="var(--accent)" style={{ display: 'inline', marginRight: '5px' }} />
-                                            Calculation based on <strong>{eligSource}</strong> profile with 7.1% interest rate for {eligTenureMonths} months.
+                                    )}
+
+                                    {(eligAmount === 0 && ((eligSource === 'business' && !bizItrFiled) || (eligSource === 'salaried' && !salItrFiled && !salForm16))) && (
+                                        <div style={{ padding: '20px', background: 'rgba(255,0,0,0.1)', borderRadius: '12px', fontSize: '0.9rem', color: '#ff6666', border: '1px solid #ff4444' }}>
+                                            <strong>Not Eligible:</strong> Valid documentation (ITR or Form-16) is required.
                                         </div>
                                     )}
                                 </>
@@ -348,9 +355,18 @@ const EmiCalculator = () => {
                             {/* AFFORDABILITY RESULT */}
                             {activeTab === 'affordability' && (
                                 <>
-                                    <ResultBox title="Affordable Loan Amount" value={formatCurrency(affordLoan)} huge />
-                                    <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
-                                        If you can pay <strong>{formatCurrency(affordEmi)}</strong> monthly, you can afford a home loan of approximately <strong>{formatCurrency(affordLoan)}</strong>.
+                                    <ResultBox title="Affordable Loan Amount" value={formatCurrency(affordLoan)} huge color={RICH_GREEN} />
+
+                                    {/* Property Value for Affordability too */}
+                                    {affordLoan > 0 && (
+                                        <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center' }}>
+                                            <div style={{ color: '#888', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>You Can Purchase Property Worth</div>
+                                            <div style={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold' }}>{formatCurrency(Math.round(affordLoan / 0.90))}</div>
+                                        </div>
+                                    )}
+
+                                    <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', color: '#ccc' }}>
+                                        If possible monthly EMI is <strong>{formatCurrency(affordEmi)}</strong>.
                                     </div>
                                 </>
                             )}
@@ -447,16 +463,19 @@ const InputGroup = ({ label, val, setVal, min, max, step, suffix }) => {
     );
 };
 
-const ResultBox = ({ title, value, huge }) => (
+// UPDATED RESULT BOX with Color Support
+const ResultBox = ({ title, value, huge, color }) => (
     <div style={{
         textAlign: 'center',
         padding: huge ? '30px' : '20px',
-        background: huge ? 'rgba(212, 175, 55, 0.05)' : 'rgba(255,255,255,0.02)',
-        borderRadius: '15px',
-        border: huge ? 'none' : '1px solid rgba(255,255,255,0.05)'
+        background: huge ? (color ? `${color}10` : 'rgba(212, 175, 55, 0.05)') : 'rgba(255,255,255,0.02)',
+        borderRadius: '16px',
+        border: huge ? `1px solid ${color || 'var(--accent)'}` : '1px solid rgba(255,255,255,0.05)',
+        boxShadow: huge ? `0 0 20px ${color ? color + '20' : 'rgba(212, 175, 55, 0.1)'}` : 'none',
+        transition: 'all 0.3s ease'
     }}>
-        <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>{title}</span>
-        <span style={{ fontSize: huge ? '2.5rem' : '1.2rem', fontWeight: '800', color: huge ? 'var(--accent)' : 'white' }}>{value}</span>
+        <span style={{ display: 'block', color: '#888', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px' }}>{title}</span>
+        <span style={{ fontSize: huge ? '2.8rem' : '1.4rem', fontWeight: '800', color: color || 'white', textShadow: huge && color ? `0 0 15px ${color}40` : 'none' }}>{value}</span>
     </div>
 );
 
