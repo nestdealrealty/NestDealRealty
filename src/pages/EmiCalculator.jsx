@@ -128,7 +128,7 @@ const EmiCalculator = () => {
     };
 
     return (
-        <div className="admin-page" style={{ padding: '40px 0', minHeight: '100vh' }}>
+        <div className="admin-page" style={{ padding: '40px 0', minHeight: '100vh', background: '#050505' }}>
             <LoanModal isOpen={showLoanModal} onClose={() => setShowLoanModal(false)} />
 
             <div className="admin-container">
@@ -139,8 +139,8 @@ const EmiCalculator = () => {
                         <Link to="/" className="back-link">
                             <ArrowLeft size={18} /> Back to Site
                         </Link>
-                        <h1>Financial Planning Tools</h1>
-                        <p>Calculate EMI, check eligibility, and estimate affordability.</p>
+                        <h1 style={{ color: 'white' }}>Financial Planning Tools</h1>
+                        <p style={{ color: '#aaa' }}>Calculate EMI, check eligibility, and estimate affordability.</p>
                     </div>
                 </div>
 
@@ -167,8 +167,8 @@ const EmiCalculator = () => {
 
                 <div className="layout-grid-premium" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)', gap: '40px', marginTop: '30px' }}>
 
-                    {/* INPUT SECTION */}
-                    <div className="sidebar-card" style={{ height: 'fit-content' }}>
+                    {/* INPUT SECTION - Fixed Background to Dark */}
+                    <div className="sidebar-card" style={{ height: 'fit-content', background: '#0a0a0a', border: '1px solid #333', borderRadius: '12px', padding: '25px' }}>
                         <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '15px', color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <Calculator size={20} color="var(--accent)" /> Input Details
                         </h3>
@@ -196,7 +196,9 @@ const EmiCalculator = () => {
                                                 style={{
                                                     flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid var(--accent)',
                                                     background: eligSource === 'salaried' ? 'var(--accent)' : 'transparent',
-                                                    color: eligSource === 'salaried' ? 'black' : 'white', cursor: 'pointer', fontWeight: 'bold'
+                                                    color: eligSource === 'salaried' ? 'black' : 'var(--accent)', // Fixed Contrast
+                                                    cursor: 'pointer', fontWeight: 'bold',
+                                                    transition: 'all 0.2s'
                                                 }}
                                             >
                                                 Salaried
@@ -206,7 +208,9 @@ const EmiCalculator = () => {
                                                 style={{
                                                     flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid var(--accent)',
                                                     background: eligSource === 'business' ? 'var(--accent)' : 'transparent',
-                                                    color: eligSource === 'business' ? 'black' : 'white', cursor: 'pointer', fontWeight: 'bold'
+                                                    color: eligSource === 'business' ? 'black' : 'var(--accent)', // Fixed Contrast
+                                                    cursor: 'pointer', fontWeight: 'bold',
+                                                    transition: 'all 0.2s'
                                                 }}
                                             >
                                                 Business
@@ -223,7 +227,7 @@ const EmiCalculator = () => {
                                     {/* Static Rate */}
                                     <div className="input-group-home">
                                         <label style={{ color: 'var(--accent)', fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>Interest Rate (%)</label>
-                                        <div style={{ background: '#1a2420', padding: '12px', borderRadius: '6px', color: '#888', border: '1px solid #333' }}>
+                                        <div style={{ background: '#1a2420', padding: '12px', borderRadius: '6px', color: '#fff', border: '1px solid #333' }}>
                                             7.1% (Fixed Standard)
                                         </div>
                                     </div>
@@ -240,20 +244,22 @@ const EmiCalculator = () => {
                                                     HAVE YOU FILED YOUR LAST THREE ITRs?
                                                 </label>
                                                 <div style={{ display: 'flex', gap: '20px' }}>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ccc', cursor: 'pointer' }}>
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white', cursor: 'pointer' }}>
                                                         <input
                                                             type="radio"
                                                             checked={bizItrFiled === true}
                                                             onChange={() => setBizItrFiled(true)}
                                                             name="bizItr"
+                                                            style={{ accentColor: 'var(--accent)', width: '18px', height: '18px' }}
                                                         /> Yes
                                                     </label>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ccc', cursor: 'pointer' }}>
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white', cursor: 'pointer' }}>
                                                         <input
                                                             type="radio"
                                                             checked={bizItrFiled === false}
                                                             onChange={() => setBizItrFiled(false)}
                                                             name="bizItr"
+                                                            style={{ accentColor: 'var(--accent)', width: '18px', height: '18px' }}
                                                         /> No
                                                     </label>
                                                 </div>
@@ -264,7 +270,7 @@ const EmiCalculator = () => {
                                                     HAVE YOU FILED (Select Available):
                                                 </label>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#ccc', cursor: 'pointer' }}>
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'white', cursor: 'pointer' }}>
                                                         <input
                                                             type="checkbox"
                                                             checked={salItrFiled}
@@ -273,8 +279,8 @@ const EmiCalculator = () => {
                                                         />
                                                         Last 3 Years ITRs
                                                     </label>
-                                                    <div style={{ color: '#666', fontSize: '0.8rem', marginLeft: '28px' }}>- OR -</div>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#ccc', cursor: 'pointer' }}>
+                                                    <div style={{ color: '#888', fontSize: '0.8rem', marginLeft: '28px' }}>- OR -</div>
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'white', cursor: 'pointer' }}>
                                                         <input
                                                             type="checkbox"
                                                             checked={salForm16}
