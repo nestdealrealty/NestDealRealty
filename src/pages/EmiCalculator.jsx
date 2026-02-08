@@ -250,24 +250,43 @@ const EmiCalculator = () => {
 };
 
 // Sub-components for cleaner code
-const InputGroup = ({ label, val, setVal, min, max, step, suffix }) => (
-    <div className="input-group-home">
-        <label style={{ color: 'var(--accent)', fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>{label}</label>
-        <input
-            type="range" min={min} max={max} step={step}
-            value={val} onChange={(e) => setVal(Number(e.target.value))}
-            style={{ width: '100%', accentColor: 'var(--accent)' }}
-        />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-            <span style={{ color: '#666', fontSize: '0.8rem' }}>{min}{suffix}</span>
+const InputGroup = ({ label, val, setVal, min, max, step, suffix }) => {
+    const isCurrency = !suffix;
+
+    const handleChange = (e) => {
+        const raw = e.target.value.replace(/,/g, '');
+        if (raw === '') {
+            setVal(0);
+            return;
+        }
+        if (!isNaN(raw)) {
+            setVal(Number(raw));
+        }
+    };
+
+    const displayValue = isCurrency ? val.toLocaleString('en-IN') : val;
+    const displayMin = isCurrency ? min.toLocaleString('en-IN') : min;
+
+    return (
+        <div className="input-group-home">
+            <label style={{ color: 'var(--accent)', fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>{label}</label>
             <input
-                type="number" value={val}
-                onChange={(e) => setVal(Number(e.target.value))}
-                style={{ background: '#1a2420', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: '6px', color: 'white', width: '100px', textAlign: 'right' }}
+                type="range" min={min} max={max} step={step}
+                value={val} onChange={(e) => setVal(Number(e.target.value))}
+                style={{ width: '100%', accentColor: 'var(--accent)' }}
             />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                <span style={{ color: '#666', fontSize: '0.8rem' }}>{displayMin}{suffix}</span>
+                <input
+                    type="text"
+                    value={displayValue}
+                    onChange={handleChange}
+                    style={{ background: '#1a2420', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: '6px', color: 'white', minWidth: '120px', textAlign: 'right' }}
+                />
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const ResultBox = ({ title, value, huge }) => (
     <div style={{
