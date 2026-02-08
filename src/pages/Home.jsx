@@ -41,6 +41,8 @@ const Home = () => {
     const [budgetOpen, setBudgetOpen] = useState(null); // 'min', 'max' inside the budget dropdown
 
     const [selectedBHK, setSelectedBHK] = useState([]);
+    const [showFinancialOptions, setShowFinancialOptions] = useState(false);
+    const slideshowRef = useRef(null);
     const [selectedBudget, setSelectedBudget] = useState({ min: '', max: '' });
 
     const toggleSearchDropdown = (name) => {
@@ -179,14 +181,25 @@ const Home = () => {
                             </div>
 
                             <div className="widget-card emi-widget shadow-glow">
-                                <Link to="/emi-calculator" className="emi-side-btn">
+                                <div
+                                    className="emi-side-btn"
+                                    onClick={() => setShowFinancialOptions(!showFinancialOptions)}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <div className="icon-box"><Calculator size={20} /></div>
                                     <div className="btn-text">
-                                        <span>Financial Planning</span>
-                                        <strong>Calculate EMI</strong>
+                                        <strong>FINANCIAL PLANNING CALCULATOR</strong>
                                     </div>
-                                    <ChevronRight size={16} />
-                                </Link>
+                                    <ChevronRight size={16} className={`transition-transform ${showFinancialOptions ? 'rotate-90' : ''}`} />
+                                </div>
+
+                                {showFinancialOptions && (
+                                    <div className="financial-options-list">
+                                        <Link to="/emi-calculator" className="fin-option">EMI Calculator</Link>
+                                        <Link to="/emi-calculator?mode=eligibility" className="fin-option">Eligibility Calculator</Link>
+                                        <Link to="/emi-calculator?mode=affordability" className="fin-option">Affordability Calculator</Link>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
