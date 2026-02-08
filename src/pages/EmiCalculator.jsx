@@ -10,6 +10,15 @@ const EmiCalculator = () => {
     const [activeTab, setActiveTab] = useState(initialMode);
     const [showLoanModal, setShowLoanModal] = useState(false);
 
+    // COLORS FROM PALETTE
+    const BG_PRIMARY = '#0B1F17';
+    const BG_SECONDARY = '#102A21';
+    const TEXT_PRIMARY = '#F5F7F6';
+    const TEXT_MUTED = '#9FB5AC';
+    const GOLD_ACCENT = '#D4AF37';
+    const SUCCESS_GREEN = '#2EE59D';
+    const BORDER_COLOR = '#1c4536'; // Derived slightly lighter than secondary
+
     // --- EMI CALCULATOR STATE ---
     const [emiLoan, setEmiLoan] = useState(5000000);
     const [emiTenure, setEmiTenure] = useState(20);
@@ -127,12 +136,8 @@ const EmiCalculator = () => {
         });
     };
 
-    // UI Colors
-    const RICH_GREEN = '#00e676';
-    const GOLD = 'var(--accent)';
-
     return (
-        <div className="admin-page" style={{ padding: '40px 0', minHeight: '100vh', background: '#050505' }}>
+        <div className="admin-page" style={{ padding: '40px 0', minHeight: '100vh', background: BG_PRIMARY, color: TEXT_PRIMARY }}>
             <LoanModal isOpen={showLoanModal} onClose={() => setShowLoanModal(false)} />
 
             <div className="admin-container">
@@ -140,27 +145,28 @@ const EmiCalculator = () => {
                 {/* Header */}
                 <div className="admin-header" style={{ marginBottom: '30px' }}>
                     <div className="header-left">
-                        <Link to="/" className="back-link">
+                        <Link to="/" className="back-link" style={{ color: TEXT_MUTED }}>
                             <ArrowLeft size={18} /> Back to Site
                         </Link>
-                        <h1 style={{ color: 'white' }}>Financial Planning Tools</h1>
-                        <p style={{ color: '#aaa' }}>Calculate EMI, check eligibility, and estimate affordability.</p>
+                        <h1 style={{ color: TEXT_PRIMARY }}>Financial Planning Tools</h1>
+                        <p style={{ color: TEXT_MUTED }}>Calculate EMI, check eligibility, and estimate affordability.</p>
                     </div>
                 </div>
 
                 {/* Tabs */}
-                <div className="calc-tabs">
+                <div className="calc-tabs" style={{ borderBottom: `1px solid ${BORDER_COLOR}` }}>
                     {['emi', 'eligibility', 'affordability'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
-                            className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
+                            className={`tab-btn`}
                             style={{
                                 padding: '10px 20px',
-                                background: activeTab === tab ? 'var(--accent)' : 'transparent',
-                                color: activeTab === tab ? 'black' : 'var(--text-muted)',
+                                background: activeTab === tab ? GOLD_ACCENT : 'transparent',
+                                color: activeTab === tab ? BG_PRIMARY : TEXT_MUTED,
                                 border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer',
-                                textTransform: 'capitalize'
+                                textTransform: 'capitalize',
+                                transition: 'all 0.3s'
                             }}
                         >
                             {tab} Calculator
@@ -171,10 +177,10 @@ const EmiCalculator = () => {
 
                 <div className="layout-grid-premium" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)', gap: '40px', marginTop: '30px' }}>
 
-                    {/* INPUT SECTION - Fixed Background to Dark */}
-                    <div className="sidebar-card" style={{ height: 'fit-content', background: '#0a0a0a', border: '1px solid #333', borderRadius: '12px', padding: '25px' }}>
-                        <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '15px', color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <Calculator size={20} color="var(--accent)" /> Input Details
+                    {/* INPUT SECTION */}
+                    <div className="sidebar-card" style={{ height: 'fit-content', background: BG_SECONDARY, border: `1px solid ${BORDER_COLOR}`, borderRadius: '12px', padding: '25px' }}>
+                        <h3 style={{ borderBottom: `1px solid ${BORDER_COLOR}`, paddingBottom: '15px', color: TEXT_PRIMARY, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Calculator size={20} color={GOLD_ACCENT} /> Input Details
                         </h3>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '25px', marginTop: '20px' }}>
@@ -182,9 +188,9 @@ const EmiCalculator = () => {
                             {/* EMI INPUTS */}
                             {activeTab === 'emi' && (
                                 <>
-                                    <InputGroup label="Loan Amount (₹)" val={emiLoan} setVal={setEmiLoan} min={100000} max={100000000} step={50000} />
-                                    <InputGroup label="Tenure (Years)" val={emiTenure} setVal={setEmiTenure} min={1} max={30} step={1} suffix=" Years" />
-                                    <InputGroup label="Interest Rate (% PA)" val={emiRate} setVal={setEmiRate} min={5} max={15} step={0.1} suffix="%" />
+                                    <InputGroup label="Loan Amount (₹)" val={emiLoan} setVal={setEmiLoan} min={100000} max={100000000} step={50000} color={GOLD_ACCENT} />
+                                    <InputGroup label="Tenure (Years)" val={emiTenure} setVal={setEmiTenure} min={1} max={30} step={1} suffix=" Years" color={GOLD_ACCENT} />
+                                    <InputGroup label="Interest Rate (% PA)" val={emiRate} setVal={setEmiRate} min={5} max={15} step={0.1} suffix="%" color={GOLD_ACCENT} />
                                 </>
                             )}
 
@@ -193,14 +199,14 @@ const EmiCalculator = () => {
                                 <>
                                     {/* Income Source Toggle */}
                                     <div className="input-group-home">
-                                        <label style={{ color: 'var(--accent)', fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>INCOME SOURCE</label>
+                                        <label style={{ color: GOLD_ACCENT, fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>INCOME SOURCE</label>
                                         <div style={{ display: 'flex', gap: '10px' }}>
                                             <button
                                                 onClick={() => setEligSource('salaried')}
                                                 style={{
-                                                    flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid var(--accent)',
-                                                    background: eligSource === 'salaried' ? 'var(--accent)' : 'transparent',
-                                                    color: eligSource === 'salaried' ? 'black' : 'var(--accent)',
+                                                    flex: 1, padding: '10px', borderRadius: '6px', border: `1px solid ${GOLD_ACCENT}`,
+                                                    background: eligSource === 'salaried' ? GOLD_ACCENT : 'transparent',
+                                                    color: eligSource === 'salaried' ? BG_PRIMARY : GOLD_ACCENT,
                                                     cursor: 'pointer', fontWeight: 'bold',
                                                     transition: 'all 0.2s'
                                                 }}
@@ -210,9 +216,9 @@ const EmiCalculator = () => {
                                             <button
                                                 onClick={() => setEligSource('business')}
                                                 style={{
-                                                    flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid var(--accent)',
-                                                    background: eligSource === 'business' ? 'var(--accent)' : 'transparent',
-                                                    color: eligSource === 'business' ? 'black' : 'var(--accent)',
+                                                    flex: 1, padding: '10px', borderRadius: '6px', border: `1px solid ${GOLD_ACCENT}`,
+                                                    background: eligSource === 'business' ? GOLD_ACCENT : 'transparent',
+                                                    color: eligSource === 'business' ? BG_PRIMARY : GOLD_ACCENT,
                                                     cursor: 'pointer', fontWeight: 'bold',
                                                     transition: 'all 0.2s'
                                                 }}
@@ -225,70 +231,70 @@ const EmiCalculator = () => {
                                     <InputGroup
                                         label={eligSource === 'business' ? "Select Your Annual Income (₹)" : "Select Your Monthly Salary (₹)"}
                                         val={eligIncome} setVal={setEligIncome}
-                                        min={20000} max={20000000} step={5000}
+                                        min={20000} max={20000000} step={5000} color={GOLD_ACCENT}
                                     />
 
                                     <div className="input-group-home">
-                                        <label style={{ color: 'var(--accent)', fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>Interest Rate (%)</label>
-                                        <div style={{ background: '#1a2420', padding: '12px', borderRadius: '6px', color: '#fff', border: '1px solid #333' }}>
+                                        <label style={{ color: GOLD_ACCENT, fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>Interest Rate (%)</label>
+                                        <div style={{ background: '#0D221B', padding: '12px', borderRadius: '6px', color: TEXT_PRIMARY, border: `1px solid ${BORDER_COLOR}` }}>
                                             7.1% (Fixed Standard)
                                         </div>
                                     </div>
 
-                                    <InputGroup label="Loan Tenure (Months)" val={eligTenureMonths} setVal={setEligTenureMonths} min={1} max={360} step={1} suffix=" Months" />
+                                    <InputGroup label="Loan Tenure (Months)" val={eligTenureMonths} setVal={setEligTenureMonths} min={1} max={360} step={1} suffix=" Months" color={GOLD_ACCENT} />
 
-                                    <InputGroup label="On-going EMIs (₹)" val={existingEmi} setVal={setExistingEmi} min={0} max={500000} step={1000} />
+                                    <InputGroup label="On-going EMIs (₹)" val={existingEmi} setVal={setExistingEmi} min={0} max={500000} step={1000} color={GOLD_ACCENT} />
 
                                     {/* Document Checklist */}
-                                    <div className="input-group-home" style={{ marginTop: '10px', paddingTop: '15px', borderTop: '1px solid #333' }}>
+                                    <div className="input-group-home" style={{ marginTop: '10px', paddingTop: '15px', borderTop: `1px solid ${BORDER_COLOR}` }}>
                                         {eligSource === 'business' ? (
                                             <>
-                                                <label style={{ color: 'white', fontWeight: '600', fontSize: '0.9rem', marginBottom: '10px', display: 'block' }}>
+                                                <label style={{ color: TEXT_PRIMARY, fontWeight: '600', fontSize: '0.9rem', marginBottom: '10px', display: 'block' }}>
                                                     HAVE YOU FILED YOUR LAST THREE ITRs?
                                                 </label>
                                                 <div style={{ display: 'flex', gap: '20px' }}>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white', cursor: 'pointer' }}>
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: TEXT_PRIMARY, cursor: 'pointer' }}>
                                                         <input
                                                             type="radio"
                                                             checked={bizItrFiled === true}
                                                             onChange={() => setBizItrFiled(true)}
                                                             name="bizItr"
-                                                            style={{ accentColor: 'var(--accent)', width: '18px', height: '18px' }}
+                                                            style={{ accentColor: GOLD_ACCENT, width: '18px', height: '18px' }}
                                                         /> Yes
                                                     </label>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white', cursor: 'pointer' }}>
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: TEXT_PRIMARY, cursor: 'pointer' }}>
                                                         <input
                                                             type="radio"
                                                             checked={bizItrFiled === false}
                                                             onChange={() => setBizItrFiled(false)}
                                                             name="bizItr"
-                                                            style={{ accentColor: 'var(--accent)', width: '18px', height: '18px' }}
+                                                            style={{ accentColor: GOLD_ACCENT, width: '18px', height: '18px' }}
                                                         /> No
                                                     </label>
                                                 </div>
                                             </>
                                         ) : (
                                             <>
-                                                <label style={{ color: 'white', fontWeight: '600', fontSize: '0.9rem', marginBottom: '10px', display: 'block' }}>
+                                                <label style={{ color: TEXT_PRIMARY, fontWeight: '600', fontSize: '0.9rem', marginBottom: '10px', display: 'block' }}>
                                                     HAVE YOU FILED (Select Available):
                                                 </label>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'white', cursor: 'pointer' }}>
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: TEXT_PRIMARY, cursor: 'pointer' }}>
                                                         <input
                                                             type="checkbox"
                                                             checked={salItrFiled}
                                                             onChange={(e) => setSalItrFiled(e.target.checked)}
-                                                            style={{ accentColor: 'var(--accent)', width: '18px', height: '18px' }}
+                                                            style={{ accentColor: GOLD_ACCENT, width: '18px', height: '18px' }}
                                                         />
                                                         Last 3 Years ITRs
                                                     </label>
-                                                    <div style={{ color: '#888', fontSize: '0.8rem', marginLeft: '28px' }}>- OR -</div>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'white', cursor: 'pointer' }}>
+                                                    <div style={{ color: TEXT_MUTED, fontSize: '0.8rem', marginLeft: '28px' }}>- OR -</div>
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: TEXT_PRIMARY, cursor: 'pointer' }}>
                                                         <input
                                                             type="checkbox"
                                                             checked={salForm16}
                                                             onChange={(e) => setSalForm16(e.target.checked)}
-                                                            style={{ accentColor: 'var(--accent)', width: '18px', height: '18px' }}
+                                                            style={{ accentColor: GOLD_ACCENT, width: '18px', height: '18px' }}
                                                         />
                                                         Form-16 Available
                                                     </label>
@@ -302,9 +308,9 @@ const EmiCalculator = () => {
                             {/* AFFORDABILITY INPUTS */}
                             {activeTab === 'affordability' && (
                                 <>
-                                    <InputGroup label="EMI You Can Pay (₹)" val={affordEmi} setVal={setAffordEmi} min={5000} max={500000} step={1000} />
-                                    <InputGroup label="Interest Rate (%)" val={affordRate} setVal={setAffordRate} min={5} max={15} step={0.1} suffix="%" />
-                                    <InputGroup label="Tenure (Years)" val={affordTenure} setVal={setAffordTenure} min={1} max={30} step={1} suffix=" Years" />
+                                    <InputGroup label="EMI You Can Pay (₹)" val={affordEmi} setVal={setAffordEmi} min={5000} max={500000} step={1000} color={GOLD_ACCENT} />
+                                    <InputGroup label="Interest Rate (%)" val={affordRate} setVal={setAffordRate} min={5} max={15} step={0.1} suffix="%" color={GOLD_ACCENT} />
+                                    <InputGroup label="Tenure (Years)" val={affordTenure} setVal={setAffordTenure} min={1} max={30} step={1} suffix=" Years" color={GOLD_ACCENT} />
                                 </>
                             )}
 
@@ -312,9 +318,9 @@ const EmiCalculator = () => {
                     </div>
 
                     {/* RESULT SECTION */}
-                    <div className="sidebar-cardResult" style={{ background: 'linear-gradient(135deg, #121A16, #070B09)', border: '1px solid var(--accent)', borderRadius: '12px', padding: '25px', display: 'flex', flexDirection: 'column' }}>
-                        <h3 style={{ color: 'var(--white)', display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '20px' }}>
-                            <Activity size={20} /> Result
+                    <div className="sidebar-cardResult" style={{ background: BG_SECONDARY, border: `1px solid ${BORDER_COLOR}`, borderRadius: '12px', padding: '25px', display: 'flex', flexDirection: 'column' }}>
+                        <h3 style={{ color: TEXT_PRIMARY, display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '20px' }}>
+                            <Activity size={20} color={GOLD_ACCENT} /> Result
                         </h3>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', flex: 1 }}>
@@ -322,10 +328,10 @@ const EmiCalculator = () => {
                             {/* EMI RESULT */}
                             {activeTab === 'emi' && (
                                 <>
-                                    <ResultBox title="Monthly EMI" value={formatCurrency(emiData.monthly)} huge color={RICH_GREEN} />
+                                    <ResultBox title="Monthly EMI" value={formatCurrency(emiData.monthly)} huge color={SUCCESS_GREEN} mutedColor={TEXT_MUTED} />
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                                        <ResultBox title="Total Interest" value={formatCurrency(emiData.totalInt)} />
-                                        <ResultBox title="Total Payment" value={formatCurrency(emiData.totalPay)} />
+                                        <ResultBox title="Total Interest" value={formatCurrency(emiData.totalInt)} mutedColor={TEXT_MUTED} textColor={TEXT_PRIMARY} />
+                                        <ResultBox title="Total Payment" value={formatCurrency(emiData.totalPay)} mutedColor={TEXT_MUTED} textColor={TEXT_PRIMARY} />
                                     </div>
                                 </>
                             )}
@@ -333,14 +339,13 @@ const EmiCalculator = () => {
                             {/* ELIGIBILITY RESULT */}
                             {activeTab === 'eligibility' && (
                                 <>
-                                    <ResultBox title="Maximum Eligible Loan" value={formatCurrency(eligAmount)} huge color={RICH_GREEN} />
+                                    <ResultBox title="Maximum Eligible Loan" value={formatCurrency(eligAmount)} huge color={SUCCESS_GREEN} mutedColor={TEXT_MUTED} />
 
-                                    {/* NEW: Approx Property Value (Loan / 0.90) */}
                                     {eligAmount > 0 && (
-                                        <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center' }}>
-                                            <div style={{ color: '#888', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Approx. Eligible Property Cost</div>
-                                            <div style={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold' }}>{formatCurrency(Math.round(eligAmount / 0.90))}</div>
-                                            <div style={{ color: RICH_GREEN, fontSize: '0.8rem', marginTop: '5px' }}>Assuming 90% Loan Coverage</div>
+                                        <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: `1px dashed ${BORDER_COLOR}`, textAlign: 'center' }}>
+                                            <div style={{ color: TEXT_MUTED, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Approx. Eligible Property Cost</div>
+                                            <div style={{ color: TEXT_PRIMARY, fontSize: '1.5rem', fontWeight: 'bold' }}>{formatCurrency(Math.round(eligAmount / 0.90))}</div>
+                                            <div style={{ color: SUCCESS_GREEN, fontSize: '0.8rem', marginTop: '5px' }}>Assuming 90% Loan Coverage</div>
                                         </div>
                                     )}
 
@@ -355,17 +360,16 @@ const EmiCalculator = () => {
                             {/* AFFORDABILITY RESULT */}
                             {activeTab === 'affordability' && (
                                 <>
-                                    <ResultBox title="Affordable Loan Amount" value={formatCurrency(affordLoan)} huge color={RICH_GREEN} />
+                                    <ResultBox title="Affordable Loan Amount" value={formatCurrency(affordLoan)} huge color={SUCCESS_GREEN} mutedColor={TEXT_MUTED} />
 
-                                    {/* Property Value for Affordability too */}
                                     {affordLoan > 0 && (
-                                        <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center' }}>
-                                            <div style={{ color: '#888', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>You Can Purchase Property Worth</div>
-                                            <div style={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold' }}>{formatCurrency(Math.round(affordLoan / 0.90))}</div>
+                                        <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: `1px dashed ${BORDER_COLOR}`, textAlign: 'center' }}>
+                                            <div style={{ color: TEXT_MUTED, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>You Can Purchase Property Worth</div>
+                                            <div style={{ color: TEXT_PRIMARY, fontSize: '1.5rem', fontWeight: 'bold' }}>{formatCurrency(Math.round(affordLoan / 0.90))}</div>
                                         </div>
                                     )}
 
-                                    <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', color: '#ccc' }}>
+                                    <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', color: TEXT_MUTED }}>
                                         If possible monthly EMI is <strong>{formatCurrency(affordEmi)}</strong>.
                                     </div>
                                 </>
@@ -382,18 +386,18 @@ const EmiCalculator = () => {
                                         fontWeight: 'bold',
                                         textTransform: 'uppercase',
                                         letterSpacing: '1px',
-                                        background: 'var(--accent)',
-                                        color: 'black',
+                                        background: GOLD_ACCENT,
+                                        color: BG_PRIMARY,
                                         border: 'none',
                                         borderRadius: '8px',
                                         cursor: 'pointer',
-                                        boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)',
+                                        boxShadow: `0 4px 15px ${GOLD_ACCENT}40`,
                                         transition: 'all 0.3s ease'
                                     }}
                                 >
                                     Contact Agent for Loan
                                 </button>
-                                <p style={{ textAlign: 'center', color: '#666', fontSize: '0.8rem', marginTop: '10px' }}>
+                                <p style={{ textAlign: 'center', color: TEXT_MUTED, fontSize: '0.8rem', marginTop: '10px' }}>
                                     Get personalized rates and quick approval
                                 </p>
                             </div>
@@ -406,8 +410,9 @@ const EmiCalculator = () => {
 };
 
 // Sub-components
-const InputGroup = ({ label, val, setVal, min, max, step, suffix }) => {
+const InputGroup = ({ label, val, setVal, min, max, step, suffix, color }) => {
     const isCurrency = !suffix;
+    const accent = color || '#D4AF37';
 
     const handleChange = (e) => {
         const raw = e.target.value.replace(/,/g, '');
@@ -425,24 +430,24 @@ const InputGroup = ({ label, val, setVal, min, max, step, suffix }) => {
 
     return (
         <div className="input-group-home">
-            <label style={{ color: 'var(--accent)', fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>{label}</label>
+            <label style={{ color: accent, fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>{label}</label>
             <input
                 type="range" min={min} max={max} step={step}
                 value={val} onChange={(e) => setVal(Number(e.target.value))}
-                style={{ width: '100%', accentColor: 'var(--accent)' }}
+                style={{ width: '100%', accentColor: accent }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                <span style={{ color: '#666', fontSize: '0.8rem' }}>{displayMin}{suffix}</span>
+                <span style={{ color: '#9FB5AC', fontSize: '0.8rem' }}>{displayMin}{suffix}</span>
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    background: '#1a2420',
-                    border: '1px solid var(--border-color)',
+                    background: '#0D221B',
+                    border: '1px solid #1c4536',
                     borderRadius: '6px',
                     padding: '8px 12px',
                     minWidth: '140px'
                 }}>
-                    {isCurrency && <span style={{ color: '#888', marginRight: '5px' }}>₹</span>}
+                    {isCurrency && <span style={{ color: '#9FB5AC', marginRight: '5px' }}>₹</span>}
                     <input
                         type="text"
                         value={displayValue}
@@ -450,7 +455,7 @@ const InputGroup = ({ label, val, setVal, min, max, step, suffix }) => {
                         style={{
                             background: 'transparent',
                             border: 'none',
-                            color: 'white',
+                            color: '#F5F7F6',
                             width: '100%',
                             textAlign: 'right',
                             outline: 'none',
@@ -464,18 +469,18 @@ const InputGroup = ({ label, val, setVal, min, max, step, suffix }) => {
 };
 
 // UPDATED RESULT BOX with Color Support
-const ResultBox = ({ title, value, huge, color }) => (
+const ResultBox = ({ title, value, huge, color, mutedColor, textColor }) => (
     <div style={{
         textAlign: 'center',
         padding: huge ? '30px' : '20px',
         background: huge ? (color ? `${color}10` : 'rgba(212, 175, 55, 0.05)') : 'rgba(255,255,255,0.02)',
         borderRadius: '16px',
-        border: huge ? `1px solid ${color || 'var(--accent)'}` : '1px solid rgba(255,255,255,0.05)',
+        border: huge ? `1px solid ${color || '#D4AF37'}` : '1px solid rgba(255,255,255,0.05)',
         boxShadow: huge ? `0 0 20px ${color ? color + '20' : 'rgba(212, 175, 55, 0.1)'}` : 'none',
         transition: 'all 0.3s ease'
     }}>
-        <span style={{ display: 'block', color: '#888', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px' }}>{title}</span>
-        <span style={{ fontSize: huge ? '2.8rem' : '1.4rem', fontWeight: '800', color: color || 'white', textShadow: huge && color ? `0 0 15px ${color}40` : 'none' }}>{value}</span>
+        <span style={{ display: 'block', color: mutedColor || '#9FB5AC', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px' }}>{title}</span>
+        <span style={{ fontSize: huge ? '2.8rem' : '1.4rem', fontWeight: '800', color: color || textColor || 'white', textShadow: huge && color ? `0 0 15px ${color}40` : 'none' }}>{value}</span>
     </div>
 );
 
