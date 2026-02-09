@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Upload, Check, ChevronRight, MapPin, Home, Building, Building2, Trees, ChevronDown, ChevronUp, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../supabase';
 
 // --- THEME ---
 const THEME = {
@@ -211,6 +213,9 @@ const PostProperty = () => {
     const [step, setStep] = useState(1);
     const [errors, setErrors] = useState({});
     const [showAdditional, setShowAdditional] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const { user } = useAuth();
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         // 1. LOOKING TO
@@ -336,6 +341,112 @@ const PostProperty = () => {
     };
 
     const handleBack = () => setStep(prev => Math.max(prev - 1, 1));
+
+    const handleSubmit = async () => {
+        if (!user) {
+            alert('Please sign in to post a property.');
+            navigate('/login');
+            return;
+        }
+
+        setSubmitting(true);
+        try {
+            // 1. Upload Images
+            const imageUrls = [];
+            for (const imgObj of formData.images) {
+                const file = imgObj.file;
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random()}.${fileExt}`;
+                const filePath = `${user.id}/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('property-images')
+                    .upload(filePath, file);
+
+                if (uploadError) throw uploadError;
+
+                const { data: publicUrlData } = supabase.storage
+                    .from('property-images')
+                    .getPublicUrl(filePath);
+
+                imageUrls.push(publicUrlData.publicUrl);
+            }
+
+            // 2. Prepare Data
+            const payload = {
+                user_id: user.id,
+                user_email: user.email,
+                looking_to: formData.lookingTo,
+                property_type: formData.propertyType,
+                city: formData.city,
+                project_name: formData.project,
+                locality: formData.locality,
+
+                bhk: formData.bhk,
+                built_up_area: formData.builtUpArea ? parseFloat(formData.builtUpArea) : null,
+                cost: formData.cost ? parseFloat(formData.cost) : null,
+                maintenance: formData.maintenance ? parseFloat(formData.maintenance) : null,
+                construction_status: formData.constructionStatus,
+                transaction_type: formData.transactionType,
+
+                floor_no: formData.floorNo,
+                total_floors: formData.totalFloors,
+                bathrooms: formData.bathrooms,
+                balconies: formData.balconies,
+                furnishing: formData.furnishing,
+                covered_parking: formData.coveredParking,
+                open_parking: formData.openParking,
+
+                age_of_property: formData.ageOfProperty ? parseFloat(formData.ageOfProperty) : null,
+                available_from: formData.availableFrom || null,
+                lock_in_period: formData.lockInPeriod,
+
+                pet_friendly: formData.petFriendly,
+                gated_security: formData.gatedSecurity,
+                power_backup: formData.powerBackup,
+                address: formData.address,
+                servant_room: formData.servantRoom,
+                description: formData.description,
+
+                images: imageUrls,
+
+                // PG Fields
+                pg_name: formData.pgName,
+                total_beds: formData.totalBeds ? parseFloat(formData.totalBeds) : null,
+                pg_for: formData.pgFor,
+                best_suited_for: formData.bestSuitedFor,
+                meals_available: formData.mealsAvailable,
+                notice_period: formData.noticePeriod ? parseFloat(formData.noticePeriod) : null,
+                common_areas: formData.commonAreas,
+                managed_by: formData.managedBy,
+                manager_stays: formData.managerStays,
+                pg_rules: {
+                    nonVegAllowed: formData.nonVegAllowed,
+                    oppositeSexAllowed: formData.oppositeSexAllowed,
+                    anyTimeAllowed: formData.anyTimeAllowed,
+                    visitorsAllowed: formData.visitorsAllowed,
+                    guardianAllowed: formData.guardianAllowed,
+                    drinkingAllowed: formData.drinkingAllowed,
+                    smokingAllowed: formData.smokingAllowed,
+                }
+            };
+
+            // 3. Insert Record
+            const { error: insertError } = await supabase
+                .from('properties')
+                .insert([payload]);
+
+            if (insertError) throw insertError;
+
+            alert('Property Posted Successfully! Pending Approval.');
+            navigate('/');
+        } catch (error) {
+            console.error('Submission error:', error);
+            alert('Failed to post property: ' + error.message);
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     // --- RENDER FUNCTIONS ---
 
@@ -778,16 +889,17 @@ const PostProperty = () => {
                 )}
                 <button
                     type="button"
-                    onClick={step === 3 ? () => alert("Property Posted Successfully!") : handleNext}
+                    onClick={step === 3 ? handleSubmit : handleNext}
+                    disabled={submitting}
                     style={{
                         padding: '12px 35px', borderRadius: '8px', border: 'none',
-                        background: THEME.gold, color: THEME.bg,
+                        background: submitting ? THEME.muted : THEME.gold, color: THEME.bg,
                         fontWeight: 'bold', fontSize: '1rem',
-                        display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '10px', cursor: submitting ? 'not-allowed' : 'pointer',
                         boxShadow: `0 4px 15px ${THEME.gold}40`
                     }}
                 >
-                    {step === 3 ? 'Post Property' : 'Next'} <ChevronRight size={18} />
+                    {submitting ? 'Posting...' : (step === 3 ? 'Post Property' : 'Next')} {step !== 3 && <ChevronRight size={18} />}
                 </button>
             </div>
 
