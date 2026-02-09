@@ -149,9 +149,16 @@ const Header = () => {
                     </Link>
 
                     {user ? (
-                        <button onClick={logOut} className="action-btn login-btn">
-                            <User size={20} /> <span>Sign Out</span>
-                        </button>
+                        <>
+                            {user.email === 'minecraftxbox1389@gmail.com' && (
+                                <Link to="/admin" className="action-btn" style={{ color: '#E3BC5A', fontWeight: 'bold' }}>
+                                    Admin
+                                </Link>
+                            )}
+                            <button onClick={logOut} className="action-btn login-btn">
+                                <User size={20} /> <span>Sign Out</span>
+                            </button>
+                        </>
                     ) : (
                         <Link to="/login" className="action-btn login-btn">
                             <User size={20} /> <span>Sign In</span>
