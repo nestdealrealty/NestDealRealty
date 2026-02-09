@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Upload, Check, ChevronRight, X, MapPin, IndianRupee, Home, Building, Building2, Trees, Warehouse, Hotel, Calendar, Users, Dog, Car, Info, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Upload, Check, ChevronRight, MapPin, Home, Building, Building2, Trees, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // --- THEME ---
@@ -28,10 +28,10 @@ const PROPERTY_TYPES = [
 
 const BHK_TYPES = ['1 RK', '1 BHK', '1.5 BHK', '2 BHK', '2.5 BHK', '3 BHK', '3.5 BHK', '4 BHK', '4.5 BHK', '5 BHK', '5+ BHK'];
 
-// --- SUB-COMPONENTS (Defined Outside) ---
+// --- SUB-COMPONENTS ---
 
 const SectionHeader = ({ title, sub }) => (
-    <div style={{ marginBottom: '20px', borderBottom: `1px solid ${THEME.border}`, paddingBottom: '10px' }}>
+    <div style={{ marginBottom: '20px', borderBottom: `1px solid ${THEME.border}`, paddingBottom: '10px', marginTop: '30px' }}>
         <h3 style={{ color: THEME.text, fontSize: '1.1rem', marginBottom: '5px' }}>{title}</h3>
         {sub && <p style={{ color: THEME.muted, fontSize: '0.85rem' }}>{sub}</p>}
     </div>
@@ -87,6 +87,30 @@ const NumericInput = ({ id, label, value, onChange, placeholder, prefix, suffix,
     </div>
 );
 
+const TextInput = ({ id, label, value, onChange, placeholder, error }) => (
+    <div id={id} style={{ marginBottom: '20px' }}>
+        <label style={{ color: error ? THEME.red : THEME.muted, display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>
+            {label} {error && <span style={{ color: THEME.red, fontSize: '0.8rem' }}>* {error}</span>}
+        </label>
+        <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            style={{
+                width: '100%',
+                padding: '12px 15px',
+                background: THEME.inputBg,
+                border: `1px solid ${error ? THEME.red : THEME.border}`,
+                borderRadius: '8px',
+                color: THEME.text,
+                fontSize: '1rem',
+                outline: 'none'
+            }}
+        />
+    </div>
+);
+
 const ChipGroup = ({ id, label, options, value, onChange, multi, error, updateForm, toggleSelection }) => (
     <div id={id} style={{ marginBottom: '25px' }}>
         <label style={{ color: error ? THEME.red : THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>
@@ -107,57 +131,51 @@ const ChipGroup = ({ id, label, options, value, onChange, multi, error, updateFo
 );
 
 const PostProperty = () => {
+    // Consolidated Steps: 1. Property Details (Everything), 2. Photos, 3. Success
     const [step, setStep] = useState(1);
     const [errors, setErrors] = useState({});
     const [showAdditional, setShowAdditional] = useState(false);
 
     const [formData, setFormData] = useState({
-        // 1. Basic
-        purpose: 'rent',
+        // 1. LOOKING TO
+        lookingTo: 'rent', // 'rent', 'sell', 'pg'
+
+        // 2. PROPERTY TYPE
         propertyType: '',
+
+        // 3. LOCATION
+        city: '',
+        project: '', // Building / Society Name
+
+        // 4. SPECS
         bhk: '',
-
-        // 2. Area & Structure
         builtUpArea: '',
-        carpetArea: '',
-        floorNo: '',
-        totalFloors: '',
-        ageOfProperty: '',
 
-        // 3. Rooms
+        // 5. STATUS
+        constructionStatus: 'ready', // 'ready', 'under_construction'
+
+        // 6. FEATURES
         bathrooms: '',
         balconies: '',
         furnishing: '',
-
-        // 4. Parking
         coveredParking: '',
         openParking: '',
 
-        // 5. Financials
-        monthlyRent: '',
-        expectedPrice: '', // If sell
-        maintenanceOption: 'include', // include, separate
-        maintenanceAmount: '',
-        securityDeposit: 'none', // none, 1, 2, custom
-        depositAmount: '',
-        lockInPeriod: 'none', // none, 1, 6, custom
-        lockInMonths: '',
+        // 7. FINANCIALS
+        cost: '', // Rent or Price
+        maintenance: '',
 
-        // 6. Tenant & Avail
-        tenantPreference: [],
-        petFriendly: '',
-        availableFrom: '',
+        // 8. OTHER SPECS
+        carpetArea: '',
+        floorNo: '',
+        totalFloors: '',
 
-        // 7. Additional
+        // 9. ADDITIONAL
         facing: '',
         powerBackup: false,
         gatedSecurity: false,
-        lift: false,
 
-        // Location & Photos (Steps 2 & 3 - placeholders for now)
-        city: '',
-        locality: '',
-        project: '',
+        // Photos
         images: []
     });
 
@@ -179,23 +197,14 @@ const PostProperty = () => {
 
     const validateStep1 = () => {
         const newErrors = {};
-        if (!formData.propertyType) newErrors.propertyType = "Property Type is required";
-        if (formData.propertyType !== 'plot' && !formData.bhk) newErrors.bhk = "BHK selection is required";
 
-        if (!formData.builtUpArea) newErrors.builtUpArea = "Built-up Area is required";
-        if (!formData.floorNo) newErrors.floorNo = "Floor No is required";
-        if (!formData.totalFloors) newErrors.totalFloors = "Total Floors is required";
-        if (Number(formData.floorNo) > Number(formData.totalFloors)) newErrors.floorNo = "Floor No cannot be greater than Total Floors";
-
-        if (!formData.bathrooms) newErrors.bathrooms = "Select bathrooms";
-        if (!formData.furnishing) newErrors.furnishing = "Select furnishing";
-
-        if (formData.purpose === 'rent') {
-            if (!formData.monthlyRent) newErrors.monthlyRent = "Rent is required";
-            if (!formData.availableFrom) newErrors.availableFrom = "Availability date is required";
-        } else {
-            if (!formData.expectedPrice) newErrors.expectedPrice = "Price is required";
-        }
+        // Essential Validations
+        if (!formData.propertyType) newErrors.propertyType = "Required";
+        if (!formData.city) newErrors.city = "Required";
+        if (!formData.project) newErrors.project = "Required";
+        if (formData.propertyType !== 'plot' && !formData.bhk) newErrors.bhk = "Required";
+        if (!formData.builtUpArea) newErrors.builtUpArea = "Required";
+        if (!formData.cost) newErrors.cost = "Required";
 
         setErrors(newErrors);
 
@@ -210,18 +219,27 @@ const PostProperty = () => {
 
     const handleNext = () => {
         if (step === 1 && !validateStep1()) return;
-        setStep(prev => Math.min(prev + 1, 4));
+        setStep(prev => Math.min(prev + 1, 3));
     };
 
     const handleBack = () => setStep(prev => Math.max(prev - 1, 1));
 
-    // --- STEP 1 RENDER ---
-    const renderPropertyDetails = () => (
+    // --- RENDER FUNCTIONS ---
+
+    const renderStep1 = () => (
         <div className="animate-slide-up">
 
-            {/* 1. Property Type */}
+            {/* 1. LOOKING TO */}
+            <ChipGroup
+                id="lookingTo" label="LOOKING TO"
+                options={[{ label: 'RENT', value: 'rent' }, { label: 'SELL', value: 'sell' }, { label: 'PG/CO-LIVING', value: 'pg' }]}
+                value={formData.lookingTo} onChange="lookingTo"
+                updateForm={updateForm} toggleSelection={toggleSelection}
+            />
+
+            {/* 2. PROPERTY TYPE */}
             <div id="propertyType" style={{ marginBottom: '30px' }}>
-                <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px' }}>Property Type <span style={{ color: THEME.red }}>*</span></label>
+                <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px' }}>PROPERTY TYPE <span style={{ color: THEME.red }}>*</span></label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px' }}>
                     {PROPERTY_TYPES.map(type => (
                         <button
@@ -245,167 +263,103 @@ const PostProperty = () => {
                 {errors.propertyType && <p style={{ color: THEME.red, fontSize: '0.8rem', marginTop: '5px' }}>{errors.propertyType}</p>}
             </div>
 
-            {/* BHK Config */}
+            {/* 3. CITY */}
+            <TextInput id="city" label="SELECT CITY" placeholder="Enter City (e.g. Ahmedabad)" value={formData.city} onChange={(v) => updateForm('city', v)} error={errors.city} />
+
+            {/* 4. BUILDING / SOCIETY */}
+            <TextInput id="project" label="BUILDING / APARTMENT / SOCIETY NAME" placeholder="Enter Project Name" value={formData.project} onChange={(v) => updateForm('project', v)} error={errors.project} />
+
+            {/* 5. BHK */}
             {formData.propertyType !== 'plot' && (
                 <ChipGroup
-                    id="bhk"
-                    label="BHK Configuration"
+                    id="bhk" label="SELECT BHK"
                     options={BHK_TYPES.map(b => ({ label: b, value: b }))}
-                    value={formData.bhk}
-                    onChange="bhk"
-                    error={errors.bhk}
-                    updateForm={updateForm}
-                    toggleSelection={toggleSelection}
+                    value={formData.bhk} onChange="bhk" error={errors.bhk}
+                    updateForm={updateForm} toggleSelection={toggleSelection}
                 />
             )}
 
-            <div className="grid-2-col">
-                <NumericInput id="builtUpArea" label="Built-up Area" value={formData.builtUpArea} onChange={(v) => updateForm('builtUpArea', v)} suffix="Sq. ft." error={errors.builtUpArea} />
-                <NumericInput id="carpetArea" label="Carpet Area (Optional)" value={formData.carpetArea} onChange={(v) => updateForm('carpetArea', v)} suffix="Sq. ft." />
-            </div>
+            {/* 6. BUILT UP AREA */}
+            <NumericInput id="builtUpArea" label="BUILT UP AREA" value={formData.builtUpArea} onChange={(v) => updateForm('builtUpArea', v)} suffix="Sq. ft." error={errors.builtUpArea} />
 
-            <div className="grid-2-col">
-                <NumericInput id="floorNo" label="Floor No." value={formData.floorNo} onChange={(v) => updateForm('floorNo', v)} error={errors.floorNo} />
-                <NumericInput id="totalFloors" label="Total Floors" value={formData.totalFloors} onChange={(v) => updateForm('totalFloors', v)} error={errors.totalFloors} />
-            </div>
-
-            <NumericInput id="ageOfProperty" label="Age of Property (Years)" value={formData.ageOfProperty} onChange={(v) => updateForm('ageOfProperty', v)} type="number" />
-
-            <SectionHeader title="Rooms & Features" />
-
+            {/* 7. CONSTRUCTION STATUS */}
             <ChipGroup
-                id="bathrooms" label="Bathrooms"
-                options={['1', '2', '3', '4+'].map(n => ({ label: n, value: n }))}
-                value={formData.bathrooms} onChange="bathrooms" error={errors.bathrooms}
-                updateForm={updateForm}
-                toggleSelection={toggleSelection}
+                id="constructionStatus" label="CONSTRUCTION STATUS"
+                options={[{ label: 'READY TO MOVE', value: 'ready' }, { label: 'UNDER CONSTRUCTION', value: 'under_construction' }]}
+                value={formData.constructionStatus} onChange="constructionStatus"
+                updateForm={updateForm} toggleSelection={toggleSelection}
             />
+
+            {/* 8. BATHROOM */}
             <ChipGroup
-                id="balconies" label="Balconies"
+                id="bathrooms" label="SELECT BATHROOM"
+                options={['1', '2', '3', '4+'].map(n => ({ label: n, value: n }))}
+                value={formData.bathrooms} onChange="bathrooms"
+                updateForm={updateForm} toggleSelection={toggleSelection}
+            />
+
+            {/* 9. BALCONY */}
+            <ChipGroup
+                id="balconies" label="BALCONY"
                 options={['0', '1', '2', '3', '4+'].map(n => ({ label: n, value: n }))}
                 value={formData.balconies} onChange="balconies"
-                updateForm={updateForm}
-                toggleSelection={toggleSelection}
-            />
-            <ChipGroup
-                id="furnishing" label="Furnishing Type"
-                options={[{ label: 'Fully Furnished', value: 'full' }, { label: 'Semi Furnished', value: 'semi' }, { label: 'Unfurnished', value: 'unfurnished' }]}
-                value={formData.furnishing} onChange="furnishing" error={errors.furnishing}
-                updateForm={updateForm}
-                toggleSelection={toggleSelection}
+                updateForm={updateForm} toggleSelection={toggleSelection}
             />
 
-            <SectionHeader title="Parking Details" />
+            {/* 10. FURNISH TYPE */}
+            <ChipGroup
+                id="furnishing" label="FURNISH TYPE"
+                options={[{ label: 'FULLY FURNISHED', value: 'full' }, { label: 'SEMI FURNISHED', value: 'semi' }, { label: 'UNFURNISHED', value: 'unfurnished' }]}
+                value={formData.furnishing} onChange="furnishing"
+                updateForm={updateForm} toggleSelection={toggleSelection}
+            />
+
+            {/* 11 & 12. PARKING */}
             <div className="grid-2-col">
                 <ChipGroup
-                    id="coveredParking" label="Covered Parking"
+                    id="coveredParking" label="COVERED PARKING"
                     options={['0', '1', '2', '3+'].map(n => ({ label: n, value: n }))}
                     value={formData.coveredParking} onChange="coveredParking"
-                    updateForm={updateForm}
-                    toggleSelection={toggleSelection}
+                    updateForm={updateForm} toggleSelection={toggleSelection}
                 />
                 <ChipGroup
-                    id="openParking" label="Open Parking"
+                    id="openParking" label="OPEN PARKING"
                     options={['0', '1', '2', '3+'].map(n => ({ label: n, value: n }))}
                     value={formData.openParking} onChange="openParking"
-                    updateForm={updateForm}
-                    toggleSelection={toggleSelection}
+                    updateForm={updateForm} toggleSelection={toggleSelection}
                 />
             </div>
 
-            <SectionHeader title="Rental & Financial Details" />
+            {/* 13. COST */}
+            <NumericInput
+                id="cost"
+                label={formData.lookingTo === 'rent' ? "MONTHLY RENT" : "EXPECTED PRICE"}
+                value={formData.cost}
+                onChange={(v) => updateForm('cost', v)}
+                prefix="₹"
+                error={errors.cost}
+            />
 
-            {formData.purpose === 'rent' ? (
-                <>
-                    <NumericInput
-                        id="monthlyRent"
-                        label="Monthly Rent"
-                        value={formData.monthlyRent}
-                        onChange={(v) => updateForm('monthlyRent', v)}
-                        prefix="₹"
-                        error={errors.monthlyRent}
-                    />
+            {/* 14. MAINTENANCE */}
+            <NumericInput
+                id="maintenance"
+                label="MAINTENANCE CHARGES PER MONTH"
+                value={formData.maintenance}
+                onChange={(v) => updateForm('maintenance', v)}
+                prefix="₹"
+            />
 
-                    <div style={{ marginBottom: '25px' }}>
-                        <label style={{ color: THEME.muted, display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Maintenance Charges</label>
-                        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                            {['Included in Rent', 'Separate'].map(opt => (
-                                <SelectButton
-                                    key={opt} label={opt}
-                                    selected={formData.maintenanceOption === (opt === 'Included in Rent' ? 'include' : 'separate')}
-                                    onClick={() => updateForm('maintenanceOption', opt === 'Included in Rent' ? 'include' : 'separate')}
-                                />
-                            ))}
-                        </div>
-                        {formData.maintenanceOption === 'separate' && (
-                            <NumericInput placeholder="Enter Amount" value={formData.maintenanceAmount} onChange={(v) => updateForm('maintenanceAmount', v)} prefix="₹" />
-                        )}
-                    </div>
+            {/* 15. CARPET AREA */}
+            <NumericInput id="carpetArea" label="CARPET AREA" value={formData.carpetArea} onChange={(v) => updateForm('carpetArea', v)} suffix="Sq. ft." />
 
-                    <ChipGroup
-                        id="securityDeposit" label="Security Deposit"
-                        options={[{ label: 'None', value: 'none' }, { label: '1 Month', value: '1' }, { label: '2 Months', value: '2' }, { label: 'Custom', value: 'custom' }]}
-                        value={formData.securityDeposit} onChange="securityDeposit"
-                        updateForm={updateForm}
-                        toggleSelection={toggleSelection}
-                    />
-                    {formData.securityDeposit === 'custom' && (
-                        <NumericInput label="Deposit Amount" value={formData.depositAmount} onChange={(v) => updateForm('depositAmount', v)} prefix="₹" />
-                    )}
-                </>
-            ) : (
-                <NumericInput
-                    id="expectedPrice"
-                    label="Expected Price"
-                    value={formData.expectedPrice}
-                    onChange={(v) => updateForm('expectedPrice', v)}
-                    prefix="₹"
-                    error={errors.expectedPrice}
-                />
-            )}
+            {/* 16 & 17. FLOORS */}
+            <div className="grid-2-col">
+                <NumericInput id="floorNo" label="FLOOR NO" value={formData.floorNo} onChange={(v) => updateForm('floorNo', v)} />
+                <NumericInput id="totalFloors" label="TOTAL FLOORS" value={formData.totalFloors} onChange={(v) => updateForm('totalFloors', v)} />
+            </div>
 
-            {/* REMOVED BROKERAGE SECTION AS PER REQUEST */}
-
-            {formData.purpose === 'rent' && (
-                <>
-                    <SectionHeader title="Tenant Preferences" />
-                    <ChipGroup
-                        id="tenantPreference" label="Preferred Tenant" multi
-                        options={[{ label: 'Family', value: 'family' }, { label: 'Bachelors', value: 'bachelor' }, { label: 'Company', value: 'company' }]}
-                        value={formData.tenantPreference} onChange="tenantPreference"
-                        updateForm={updateForm}
-                        toggleSelection={toggleSelection}
-                    />
-
-                    <div className="grid-2-col">
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>Pet Friendly</label>
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                <SelectButton label="Yes" selected={formData.petFriendly === 'yes'} onClick={() => updateForm('petFriendly', 'yes')} />
-                                <SelectButton label="No" selected={formData.petFriendly === 'no'} onClick={() => updateForm('petFriendly', 'no')} />
-                            </div>
-                        </div>
-
-                        <div id="availableFrom">
-                            <label style={{ color: errors.availableFrom ? THEME.red : THEME.muted, display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>
-                                Available From {errors.availableFrom && '*'}
-                            </label>
-                            <input
-                                type="date"
-                                value={formData.availableFrom}
-                                onChange={(e) => updateForm('availableFrom', e.target.value)}
-                                style={{
-                                    width: '100%', padding: '12px', background: THEME.inputBg, border: `1px solid ${errors.availableFrom ? THEME.red : THEME.border}`,
-                                    borderRadius: '8px', color: THEME.text, outline: 'none', colorScheme: 'dark'
-                                }}
-                            />
-                        </div>
-                    </div>
-                </>
-            )}
-
-            {/* Additional Details Collapsible */}
-            <div style={{ marginTop: '30px', border: `1px solid ${THEME.border}`, borderRadius: '12px', overflow: 'hidden' }}>
+            {/* 18. ADDITIONAL DETAILS */}
+            <div style={{ marginTop: '20px', border: `1px solid ${THEME.border}`, borderRadius: '12px', overflow: 'hidden' }}>
                 <button
                     type="button"
                     onClick={() => setShowAdditional(!showAdditional)}
@@ -414,21 +368,19 @@ const PostProperty = () => {
                         color: THEME.gold, fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer'
                     }}
                 >
-                    <span>+ Add Additional Details (Score +5%)</span>
+                    <span>ADDITIONAL DETAILS (OPTIONAL)</span>
                     {showAdditional ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </button>
 
                 {showAdditional && (
                     <div style={{ padding: '20px', background: THEME.cardBg }}>
                         <ChipGroup
-                            id="facing" label="Property Facing"
+                            id="facing" label="PROPERTY FACING"
                             options={['North', 'South', 'East', 'West', 'North-East', 'North-West', 'South-East', 'South-West'].map(d => ({ label: d, value: d }))}
                             value={formData.facing} onChange="facing"
-                            updateForm={updateForm}
-                            toggleSelection={toggleSelection}
+                            updateForm={updateForm} toggleSelection={toggleSelection}
                         />
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                            {/* Examples of toggles */}
                             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: THEME.text, cursor: 'pointer' }}>
                                 <input type="checkbox" checked={formData.gatedSecurity} onChange={(e) => updateForm('gatedSecurity', e.target.checked)} style={{ accentColor: THEME.gold, width: '18px', height: '18px' }} />
                                 Gated Security
@@ -454,7 +406,7 @@ const PostProperty = () => {
                     <Link to="/" style={{ color: THEME.muted }}><ArrowLeft size={22} /></Link>
                     <div>
                         <h2 style={{ fontSize: '1.1rem', color: THEME.text, margin: 0 }}>Values & Property Details</h2>
-                        <div style={{ fontSize: '0.75rem', color: THEME.gold }}>Step {step} of 4</div>
+                        <div style={{ fontSize: '0.75rem', color: THEME.gold }}>Step {step} of 3</div>
                     </div>
                 </div>
                 <button type="button" style={{ background: 'transparent', border: 'none', color: THEME.gold, fontWeight: 'bold' }}>Save Draft</button>
@@ -464,7 +416,7 @@ const PostProperty = () => {
 
                 {/* Stepper Visual */}
                 <div style={{ display: 'flex', gap: '5px', marginBottom: '30px' }}>
-                    {[1, 2, 3, 4].map(s => (
+                    {[1, 2, 3].map(s => (
                         <div key={s} style={{
                             flex: 1, height: '4px', borderRadius: '2px',
                             background: step >= s ? THEME.green : THEME.border
@@ -474,11 +426,23 @@ const PostProperty = () => {
 
                 {/* Form Content */}
                 <form onSubmit={(e) => e.preventDefault()}>
-                    {step === 1 && renderPropertyDetails()}
+                    {step === 1 && renderStep1()}
 
-                    {step === 2 && <div style={{ textAlign: 'center', padding: '50px', color: THEME.muted }}>Location Details (Next Step)</div>}
-                    {step === 3 && <div style={{ textAlign: 'center', padding: '50px', color: THEME.muted }}>Photo Upload (Next Step)</div>}
-                    {step === 4 && <div style={{ textAlign: 'center', padding: '50px', color: THEME.muted }}>Summary & Post</div>}
+                    {step === 2 && (
+                        <div className="animate-slide-up" style={{ textAlign: 'center', padding: '50px' }}>
+                            <Upload size={40} color={THEME.gold} />
+                            <h3 style={{ marginTop: '20px' }}>Upload Photos</h3>
+                            <p style={{ color: THEME.muted }}>Upload at least 3 photos of your property.</p>
+                        </div>
+                    )}
+
+                    {step === 3 && (
+                        <div className="animate-slide-up" style={{ textAlign: 'center', padding: '50px' }}>
+                            <Check size={50} color={THEME.green} />
+                            <h3 style={{ marginTop: '20px' }}>Ready to Post!</h3>
+                            <p style={{ color: THEME.muted }}>Review your details and click Post.</p>
+                        </div>
+                    )}
                 </form>
 
             </div>
@@ -497,7 +461,7 @@ const PostProperty = () => {
                 )}
                 <button
                     type="button"
-                    onClick={handleNext}
+                    onClick={step === 3 ? () => alert("Property Posted Successfully!") : handleNext}
                     style={{
                         padding: '12px 35px', borderRadius: '8px', border: 'none',
                         background: THEME.gold, color: THEME.bg,
@@ -506,7 +470,7 @@ const PostProperty = () => {
                         boxShadow: `0 4px 15px ${THEME.gold}40`
                     }}
                 >
-                    {step === 4 ? 'Post Now' : 'Next, Add Address'} <ChevronRight size={18} />
+                    {step === 3 ? 'Post Property' : 'Next'} <ChevronRight size={18} />
                 </button>
             </div>
 
