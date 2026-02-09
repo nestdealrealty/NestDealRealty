@@ -257,7 +257,26 @@ const PostProperty = () => {
         gatedSecurity: false,
         address: '',
         servantRoom: 'no',
-        description: '',
+        // PG SPECIFIC
+        locality: '',
+        pgName: '',
+        totalBeds: '',
+        pgFor: 'both', // girls, boys, both
+        bestSuitedFor: 'students', // students, professionals, custom
+        mealsAvailable: 'no',
+        noticePeriod: '', // days
+        commonAreas: [], // living, kitchen, dining, study, breakout, custom
+        managedBy: 'landlord', // landlord, caretaker, professional
+        managerStays: 'no',
+
+        // PG RULES
+        nonVegAllowed: 'yes',
+        oppositeSexAllowed: 'yes',
+        anyTimeAllowed: 'yes',
+        visitorsAllowed: 'yes',
+        guardianAllowed: 'yes',
+        drinkingAllowed: 'no',
+        smokingAllowed: 'no',
 
         // Photos
         images: []
@@ -320,9 +339,8 @@ const PostProperty = () => {
 
     // --- RENDER FUNCTIONS ---
 
-    const renderStep1 = () => (
+    const renderPGForm = () => (
         <div className="animate-slide-up">
-
             {/* 1. LOOKING TO */}
             <ChipGroup
                 id="lookingTo" label="LOOKING TO"
@@ -331,244 +349,356 @@ const PostProperty = () => {
                 updateForm={updateForm} toggleSelection={toggleSelection}
             />
 
-            {/* 2. PROPERTY TYPE */}
-            <div id="propertyType" style={{ marginBottom: '30px' }}>
-                <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px' }}>PROPERTY TYPE <span style={{ color: THEME.red }}>*</span></label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px' }}>
-                    {PROPERTY_TYPES.map(type => (
-                        <button
-                            key={type.value}
-                            type="button"
-                            onClick={() => updateForm('propertyType', type.value)}
-                            style={{
-                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '15px',
-                                background: formData.propertyType === type.value ? `${THEME.gold}15` : THEME.inputBg,
-                                border: `1px solid ${formData.propertyType === type.value ? THEME.gold : (errors.propertyType ? THEME.red : THEME.border)}`,
-                                borderRadius: '12px',
-                                color: formData.propertyType === type.value ? THEME.gold : THEME.muted,
-                                cursor: 'pointer', transition: 'all 0.2s'
-                            }}
-                        >
-                            <type.icon size={22} />
-                            <span style={{ fontSize: '0.8rem', textAlign: 'center' }}>{type.label}</span>
-                        </button>
-                    ))}
-                </div>
-                {errors.propertyType && <p style={{ color: THEME.red, fontSize: '0.8rem', marginTop: '5px' }}>{errors.propertyType}</p>}
-            </div>
-
-            {/* 3. CITY */}
+            {/* 2. CITY */}
             <TextInput id="city" label="SELECT CITY" placeholder="Enter City (e.g. Ahmedabad)" value={formData.city} onChange={(v) => updateForm('city', v)} error={errors.city} />
 
-            {/* 4. BUILDING / SOCIETY */}
-            <TextInput id="project" label="BUILDING / APARTMENT / SOCIETY NAME" placeholder="Enter Project Name" value={formData.project} onChange={(v) => updateForm('project', v)} error={errors.project} />
+            {/* 3. SOCIETY / BUILDING */}
+            <TextInput id="project" label="BUILDING / APARTMENT / SOCIETY NAME" placeholder="Enter Building Name" value={formData.project} onChange={(v) => updateForm('project', v)} error={errors.project} />
 
-            {/* 5. BHK */}
-            {formData.propertyType !== 'plot' && (
-                <ChipGroup
-                    id="bhk" label="SELECT BHK"
-                    options={BHK_TYPES.map(b => ({ label: b, value: b }))}
-                    value={formData.bhk} onChange="bhk" error={errors.bhk}
-                    updateForm={updateForm} toggleSelection={toggleSelection}
-                />
-            )}
+            {/* 4. LOCALITY */}
+            <TextInput id="locality" label="LOCALITY" placeholder="Enter Locality" value={formData.locality} onChange={(v) => updateForm('locality', v)} />
 
-            {/* 6. BUILT UP AREA */}
-            <NumericInput id="builtUpArea" label="BUILT UP AREA" value={formData.builtUpArea} onChange={(v) => updateForm('builtUpArea', v)} suffix="Sq. ft." error={errors.builtUpArea} />
+            <SectionHeader title="PG Details" />
 
-            {/* 7. CONSTRUCTION STATUS */}
+            <TextInput id="pgName" label="PG NAME" placeholder="Enter PG Name" value={formData.pgName} onChange={(v) => updateForm('pgName', v)} />
+            <NumericInput id="totalBeds" label="TOTAL BEDS" value={formData.totalBeds} onChange={(v) => updateForm('totalBeds', v)} />
+
             <ChipGroup
-                id="constructionStatus" label="CONSTRUCTION STATUS"
-                options={[{ label: 'READY TO MOVE', value: 'ready' }, { label: 'UNDER CONSTRUCTION', value: 'under_construction' }]}
-                value={formData.constructionStatus} onChange="constructionStatus"
+                id="pgFor" label="PG IS FOR"
+                options={[{ label: 'GIRLS', value: 'girls' }, { label: 'BOYS', value: 'boys' }, { label: 'BOTH', value: 'both' }]}
+                value={formData.pgFor} onChange="pgFor"
                 updateForm={updateForm} toggleSelection={toggleSelection}
             />
 
-            {/* TRANSACTION TYPE (IF SELL) */}
-            {formData.lookingTo === 'sell' && (
-                <ChipGroup
-                    id="transactionType" label="TRANSACTION TYPE"
-                    options={[{ label: 'NEW BOOKING', value: 'new_booking' }, { label: 'RESALE', value: 'resale' }]}
-                    value={formData.transactionType} onChange="transactionType"
-                    updateForm={updateForm} toggleSelection={toggleSelection}
-                />
-            )}
-
-            {/* 8. BATHROOM */}
             <ChipGroup
-                id="bathrooms" label="SELECT BATHROOM"
-                options={['1', '2', '3', '4+'].map(n => ({ label: n, value: n }))}
-                value={formData.bathrooms} onChange="bathrooms"
+                id="bestSuitedFor" label="BEST SUITED FOR"
+                options={[{ label: 'STUDENTS', value: 'students' }, { label: 'PROFESSIONALS', value: 'professionals' }, { label: 'BOTH', value: 'both' }]}
+                value={formData.bestSuitedFor} onChange="bestSuitedFor"
                 updateForm={updateForm} toggleSelection={toggleSelection}
             />
 
-            {/* 9. BALCONY */}
-            <ChipGroup
-                id="balconies" label="BALCONY"
-                options={['0', '1', '2', '3', '4+'].map(n => ({ label: n, value: n }))}
-                value={formData.balconies} onChange="balconies"
-                updateForm={updateForm} toggleSelection={toggleSelection}
-            />
-
-            {/* 10. FURNISH TYPE */}
-            <ChipGroup
-                id="furnishing" label="FURNISH TYPE"
-                options={[{ label: 'FULLY FURNISHED', value: 'full' }, { label: 'SEMI FURNISHED', value: 'semi' }, { label: 'UNFURNISHED', value: 'unfurnished' }]}
-                value={formData.furnishing} onChange="furnishing"
-                updateForm={updateForm} toggleSelection={toggleSelection}
-            />
-
-            {/* 11 & 12. PARKING */}
-            <div className="grid-2-col">
-                <ChipGroup
-                    id="coveredParking" label="COVERED PARKING"
-                    options={['0', '1', '2', '3+'].map(n => ({ label: n, value: n }))}
-                    value={formData.coveredParking} onChange="coveredParking"
-                    updateForm={updateForm} toggleSelection={toggleSelection}
-                />
-                <ChipGroup
-                    id="openParking" label="OPEN PARKING"
-                    options={['0', '1', '2', '3+'].map(n => ({ label: n, value: n }))}
-                    value={formData.openParking} onChange="openParking"
-                    updateForm={updateForm} toggleSelection={toggleSelection}
-                />
-            </div>
-
-            {/* 13. COST */}
-            <NumericInput
-                id="cost"
-                label={formData.lookingTo === 'rent' ? "MONTHLY RENT" : "EXPECTED PRICE"}
-                value={formData.cost}
-                onChange={(v) => updateForm('cost', v)}
-                prefix="₹"
-                error={errors.cost}
-            />
-
-            {/* 14. MAINTENANCE */}
-            <NumericInput
-                id="maintenance"
-                label="MAINTENANCE CHARGES PER MONTH"
-                value={formData.maintenance}
-                onChange={(v) => updateForm('maintenance', v)}
-                prefix="₹"
-            />
-
-            {/* 15. CARPET AREA */}
-            <NumericInput id="carpetArea" label="CARPET AREA" value={formData.carpetArea} onChange={(v) => updateForm('carpetArea', v)} suffix="Sq. ft." />
-
-            {/* 16 & 17. FLOORS */}
-            <div className="grid-2-col">
-                <NumericInput id="floorNo" label="FLOOR NO" value={formData.floorNo} onChange={(v) => updateForm('floorNo', v)} />
-                <NumericInput id="totalFloors" label="TOTAL FLOORS" value={formData.totalFloors} onChange={(v) => updateForm('totalFloors', v)} />
-            </div>
-
-            {/* AGE OF PROPERTY */}
-            <NumericInput id="ageOfProperty" label="AGE OF PROPERTY (IN YEARS)" value={formData.ageOfProperty} onChange={(v) => updateForm('ageOfProperty', v)} />
-
-            {/* AVAILABLE DATE */}
-            <div id="availableFrom" style={{ marginBottom: '20px' }}>
-                <label style={{ color: THEME.muted, display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>AVAILABLE DATE</label>
-                <input
-                    type="date"
-                    value={formData.availableFrom}
-                    onChange={(e) => updateForm('availableFrom', e.target.value)}
-                    style={{
-                        width: '100%', padding: '12px', background: THEME.inputBg, border: `1px solid ${THEME.border}`,
-                        borderRadius: '8px', color: THEME.text, outline: 'none', colorScheme: 'dark'
-                    }}
-                />
-            </div>
-
-            {/* LOCK IN PERIOD */}
+            {/* MEALS */}
             <div style={{ marginBottom: '20px' }}>
-                <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>LOCK IN PERIOD</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                    {['None', '1 Month', '2 Months', '6 Months', 'Custom'].map(period => (
-                        <SelectButton
-                            key={period}
-                            label={period}
-                            selected={formData.lockInPeriod === period}
-                            onClick={() => updateForm('lockInPeriod', period)}
-                        />
-                    ))}
+                <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>MEALS AVAILABLE</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <SelectButton label="Yes" selected={formData.mealsAvailable === 'yes'} onClick={() => updateForm('mealsAvailable', 'yes')} />
+                    <SelectButton label="No" selected={formData.mealsAvailable === 'no'} onClick={() => updateForm('mealsAvailable', 'no')} />
                 </div>
             </div>
 
-            {/* 18. ADDITIONAL DETAILS */}
-            <div style={{ marginTop: '20px', border: `1px solid ${THEME.border}`, borderRadius: '12px', overflow: 'hidden' }}>
-                <button
-                    type="button"
-                    onClick={() => setShowAdditional(!showAdditional)}
-                    style={{
-                        width: '100%', padding: '15px', background: `${THEME.gold}10`, border: 'none',
-                        color: THEME.gold, fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer'
-                    }}
-                >
-                    <span>ADDITIONAL DETAILS (OPTIONAL)</span>
-                    {showAdditional ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                </button>
-
-                {showAdditional && (
-                    <div style={{ padding: '20px', background: THEME.cardBg }}>
-                        <ChipGroup
-                            id="facing" label="PROPERTY FACING"
-                            options={['North', 'South', 'East', 'West', 'North-East', 'North-West', 'South-East', 'South-West'].map(d => ({ label: d, value: d }))}
-                            value={formData.facing} onChange="facing"
-                            updateForm={updateForm} toggleSelection={toggleSelection}
-                        />
-
-                        {/* PET FRIENDLY */}
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>PET FRIENDLY</label>
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                <SelectButton label="Yes" selected={formData.petFriendly === 'yes'} onClick={() => updateForm('petFriendly', 'yes')} />
-                                <SelectButton label="No" selected={formData.petFriendly === 'no'} onClick={() => updateForm('petFriendly', 'no')} />
-                            </div>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: THEME.text, cursor: 'pointer' }}>
-                                <input type="checkbox" checked={formData.gatedSecurity} onChange={(e) => updateForm('gatedSecurity', e.target.checked)} style={{ accentColor: THEME.gold, width: '18px', height: '18px' }} />
-                                Gated Security
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: THEME.text, cursor: 'pointer' }}>
-                                <input type="checkbox" checked={formData.powerBackup} onChange={(e) => updateForm('powerBackup', e.target.checked)} style={{ accentColor: THEME.gold, width: '18px', height: '18px' }} />
-                                Power Backup
-                            </label>
-                        </div>
-
-                        {/* ADDRESS */}
-                        <div style={{ marginTop: '20px' }}>
-                            <TextInput id="address" label="FULL ADDRESS" placeholder="Enter Full Address" value={formData.address} onChange={(v) => updateForm('address', v)} />
-                        </div>
-
-                        {/* SERVANT ROOM */}
-                        <div style={{ marginTop: '20px' }}>
-                            <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>SERVANT ROOM</label>
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                <SelectButton label="Yes" selected={formData.servantRoom === 'yes'} onClick={() => updateForm('servantRoom', 'yes')} />
-                                <SelectButton label="No" selected={formData.servantRoom === 'no'} onClick={() => updateForm('servantRoom', 'no')} />
-                            </div>
-                        </div>
-
-                        {/* DESCRIPTION */}
-                        <div style={{ marginTop: '20px' }}>
-                            <label style={{ color: THEME.muted, display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>PROPERTY DESCRIPTION</label>
-                            <textarea
-                                value={formData.description}
-                                onChange={(e) => updateForm('description', e.target.value)}
-                                placeholder="Describe your property (amenities, location advantages, etc.)"
-                                style={{
-                                    width: '100%', padding: '12px 15px', background: THEME.inputBg, border: `1px solid ${THEME.border}`,
-                                    borderRadius: '8px', color: THEME.text, fontSize: '1rem', outline: 'none', minHeight: '100px', resize: 'vertical'
-                                }}
-                            />
-                        </div>
-                    </div>
-                )}
+            <div className="grid-2-col">
+                <NumericInput id="noticePeriod" label="NOTICE PERIOD (DAYS)" value={formData.noticePeriod} onChange={(v) => updateForm('noticePeriod', v)} />
+                <NumericInput id="lockInPeriod" label="LOCK IN PERIOD (DAYS)" value={formData.lockInPeriod} onChange={(v) => updateForm('lockInPeriod', v)} />
             </div>
+
+            <ChipGroup
+                id="commonAreas" label="COMMON AREAS" multi
+                options={[
+                    { label: 'Living Room', value: 'living' }, { label: 'Kitchen', value: 'kitchen' },
+                    { label: 'Dining Hall', value: 'dining' }, { label: 'Study Room', value: 'study' },
+                    { label: 'Breakout Room', value: 'breakout' }
+                ]}
+                value={formData.commonAreas} onChange="commonAreas"
+                updateForm={updateForm} toggleSelection={toggleSelection}
+            />
+
+            <SectionHeader title="Owner / Caretaker Details" />
+
+            <ChipGroup
+                id="managedBy" label="PROPERTY MANAGED BY"
+                options={[
+                    { label: 'Landlord', value: 'landlord' }, { label: 'Caretaker', value: 'caretaker' },
+                    { label: 'Dedicated Professional', value: 'professional' }
+                ]}
+                value={formData.managedBy} onChange="managedBy"
+                updateForm={updateForm} toggleSelection={toggleSelection}
+            />
+
+            <div style={{ marginBottom: '20px' }}>
+                <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>PROPERTY MANAGER STAYS AT PROPERTY</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <SelectButton label="Yes" selected={formData.managerStays === 'yes'} onClick={() => updateForm('managerStays', 'yes')} />
+                    <SelectButton label="No" selected={formData.managerStays === 'no'} onClick={() => updateForm('managerStays', 'no')} />
+                </div>
+            </div>
+
+            <SectionHeader title="PG Rules" />
+
+            {[
+                { label: 'NON VEG ALLOWED', key: 'nonVegAllowed' },
+                { label: 'OPPOSITE SEX ALLOWED', key: 'oppositeSexAllowed' },
+                { label: 'ANY TIME ALLOWED', key: 'anyTimeAllowed' },
+                { label: 'VISITORS ALLOWED', key: 'visitorsAllowed' },
+                { label: 'GUARDIAN ALLOWED', key: 'guardianAllowed' },
+                { label: 'DRINKING ALLOWED', key: 'drinkingAllowed' },
+                { label: 'SMOKING ALLOWED', key: 'smokingAllowed' },
+            ].map(rule => (
+                <div key={rule.key} style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${THEME.border}`, paddingBottom: '10px' }}>
+                    <label style={{ color: THEME.text, fontSize: '0.9rem' }}>{rule.label}</label>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <SelectButton label="Yes" selected={formData[rule.key] === 'yes'} onClick={() => updateForm(rule.key, 'yes')} half />
+                        <SelectButton label="No" selected={formData[rule.key] === 'no'} onClick={() => updateForm(rule.key, 'no')} half />
+                    </div>
+                </div>
+            ))}
 
         </div>
     );
+
+    const renderStep1 = () => {
+        if (formData.lookingTo === 'pg') return renderPGForm();
+
+        return (
+            <div className="animate-slide-up">
+
+                {/* 1. LOOKING TO */}
+                <ChipGroup
+                    id="lookingTo" label="LOOKING TO"
+                    options={[{ label: 'RENT', value: 'rent' }, { label: 'SELL', value: 'sell' }, { label: 'PG/CO-LIVING', value: 'pg' }]}
+                    value={formData.lookingTo} onChange="lookingTo"
+                    updateForm={updateForm} toggleSelection={toggleSelection}
+                />
+
+                {/* 2. PROPERTY TYPE */}
+                <div id="propertyType" style={{ marginBottom: '30px' }}>
+                    <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px' }}>PROPERTY TYPE <span style={{ color: THEME.red }}>*</span></label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px' }}>
+                        {PROPERTY_TYPES.map(type => (
+                            <button
+                                key={type.value}
+                                type="button"
+                                onClick={() => updateForm('propertyType', type.value)}
+                                style={{
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '15px',
+                                    background: formData.propertyType === type.value ? `${THEME.gold}15` : THEME.inputBg,
+                                    border: `1px solid ${formData.propertyType === type.value ? THEME.gold : (errors.propertyType ? THEME.red : THEME.border)}`,
+                                    borderRadius: '12px',
+                                    color: formData.propertyType === type.value ? THEME.gold : THEME.muted,
+                                    cursor: 'pointer', transition: 'all 0.2s'
+                                }}
+                            >
+                                <type.icon size={22} />
+                                <span style={{ fontSize: '0.8rem', textAlign: 'center' }}>{type.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                    {errors.propertyType && <p style={{ color: THEME.red, fontSize: '0.8rem', marginTop: '5px' }}>{errors.propertyType}</p>}
+                </div>
+
+                {/* 3. CITY */}
+                <TextInput id="city" label="SELECT CITY" placeholder="Enter City (e.g. Ahmedabad)" value={formData.city} onChange={(v) => updateForm('city', v)} error={errors.city} />
+
+                {/* 4. BUILDING / SOCIETY */}
+                <TextInput id="project" label="BUILDING / APARTMENT / SOCIETY NAME" placeholder="Enter Project Name" value={formData.project} onChange={(v) => updateForm('project', v)} error={errors.project} />
+
+                {/* 5. BHK */}
+                {formData.propertyType !== 'plot' && (
+                    <ChipGroup
+                        id="bhk" label="SELECT BHK"
+                        options={BHK_TYPES.map(b => ({ label: b, value: b }))}
+                        value={formData.bhk} onChange="bhk" error={errors.bhk}
+                        updateForm={updateForm} toggleSelection={toggleSelection}
+                    />
+                )}
+
+                {/* 6. BUILT UP AREA */}
+                <NumericInput id="builtUpArea" label="BUILT UP AREA" value={formData.builtUpArea} onChange={(v) => updateForm('builtUpArea', v)} suffix="Sq. ft." error={errors.builtUpArea} />
+
+                {/* 7. CONSTRUCTION STATUS */}
+                <ChipGroup
+                    id="constructionStatus" label="CONSTRUCTION STATUS"
+                    options={[{ label: 'READY TO MOVE', value: 'ready' }, { label: 'UNDER CONSTRUCTION', value: 'under_construction' }]}
+                    value={formData.constructionStatus} onChange="constructionStatus"
+                    updateForm={updateForm} toggleSelection={toggleSelection}
+                />
+
+                {/* TRANSACTION TYPE (IF SELL) */}
+                {formData.lookingTo === 'sell' && (
+                    <ChipGroup
+                        id="transactionType" label="TRANSACTION TYPE"
+                        options={[{ label: 'NEW BOOKING', value: 'new_booking' }, { label: 'RESALE', value: 'resale' }]}
+                        value={formData.transactionType} onChange="transactionType"
+                        updateForm={updateForm} toggleSelection={toggleSelection}
+                    />
+                )}
+
+                {/* 8. BATHROOM */}
+                <ChipGroup
+                    id="bathrooms" label="SELECT BATHROOM"
+                    options={['1', '2', '3', '4+'].map(n => ({ label: n, value: n }))}
+                    value={formData.bathrooms} onChange="bathrooms"
+                    updateForm={updateForm} toggleSelection={toggleSelection}
+                />
+
+                {/* 9. BALCONY */}
+                <ChipGroup
+                    id="balconies" label="BALCONY"
+                    options={['0', '1', '2', '3', '4+'].map(n => ({ label: n, value: n }))}
+                    value={formData.balconies} onChange="balconies"
+                    updateForm={updateForm} toggleSelection={toggleSelection}
+                />
+
+                {/* 10. FURNISH TYPE */}
+                <ChipGroup
+                    id="furnishing" label="FURNISH TYPE"
+                    options={[{ label: 'FULLY FURNISHED', value: 'full' }, { label: 'SEMI FURNISHED', value: 'semi' }, { label: 'UNFURNISHED', value: 'unfurnished' }]}
+                    value={formData.furnishing} onChange="furnishing"
+                    updateForm={updateForm} toggleSelection={toggleSelection}
+                />
+
+                {/* 11 & 12. PARKING */}
+                <div className="grid-2-col">
+                    <ChipGroup
+                        id="coveredParking" label="COVERED PARKING"
+                        options={['0', '1', '2', '3+'].map(n => ({ label: n, value: n }))}
+                        value={formData.coveredParking} onChange="coveredParking"
+                        updateForm={updateForm} toggleSelection={toggleSelection}
+                    />
+                    <ChipGroup
+                        id="openParking" label="OPEN PARKING"
+                        options={['0', '1', '2', '3+'].map(n => ({ label: n, value: n }))}
+                        value={formData.openParking} onChange="openParking"
+                        updateForm={updateForm} toggleSelection={toggleSelection}
+                    />
+                </div>
+
+                {/* 13. COST */}
+                <NumericInput
+                    id="cost"
+                    label={formData.lookingTo === 'rent' ? "MONTHLY RENT" : "EXPECTED PRICE"}
+                    value={formData.cost}
+                    onChange={(v) => updateForm('cost', v)}
+                    prefix="₹"
+                    error={errors.cost}
+                />
+
+                {/* 14. MAINTENANCE */}
+                <NumericInput
+                    id="maintenance"
+                    label="MAINTENANCE CHARGES PER MONTH"
+                    value={formData.maintenance}
+                    onChange={(v) => updateForm('maintenance', v)}
+                    prefix="₹"
+                />
+
+                {/* 15. CARPET AREA */}
+                <NumericInput id="carpetArea" label="CARPET AREA" value={formData.carpetArea} onChange={(v) => updateForm('carpetArea', v)} suffix="Sq. ft." />
+
+                {/* 16 & 17. FLOORS */}
+                <div className="grid-2-col">
+                    <NumericInput id="floorNo" label="FLOOR NO" value={formData.floorNo} onChange={(v) => updateForm('floorNo', v)} />
+                    <NumericInput id="totalFloors" label="TOTAL FLOORS" value={formData.totalFloors} onChange={(v) => updateForm('totalFloors', v)} />
+                </div>
+
+                {/* AGE OF PROPERTY */}
+                <NumericInput id="ageOfProperty" label="AGE OF PROPERTY (IN YEARS)" value={formData.ageOfProperty} onChange={(v) => updateForm('ageOfProperty', v)} />
+
+                {/* AVAILABLE DATE */}
+                <div id="availableFrom" style={{ marginBottom: '20px' }}>
+                    <label style={{ color: THEME.muted, display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>AVAILABLE DATE</label>
+                    <input
+                        type="date"
+                        value={formData.availableFrom}
+                        onChange={(e) => updateForm('availableFrom', e.target.value)}
+                        style={{
+                            width: '100%', padding: '12px', background: THEME.inputBg, border: `1px solid ${THEME.border}`,
+                            borderRadius: '8px', color: THEME.text, outline: 'none', colorScheme: 'dark'
+                        }}
+                    />
+                </div>
+
+                {/* LOCK IN PERIOD */}
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>LOCK IN PERIOD</label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                        {['None', '1 Month', '2 Months', '6 Months', 'Custom'].map(period => (
+                            <SelectButton
+                                key={period}
+                                label={period}
+                                selected={formData.lockInPeriod === period}
+                                onClick={() => updateForm('lockInPeriod', period)}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                {/* 18. ADDITIONAL DETAILS */}
+                <div style={{ marginTop: '20px', border: `1px solid ${THEME.border}`, borderRadius: '12px', overflow: 'hidden' }}>
+                    <button
+                        type="button"
+                        onClick={() => setShowAdditional(!showAdditional)}
+                        style={{
+                            width: '100%', padding: '15px', background: `${THEME.gold}10`, border: 'none',
+                            color: THEME.gold, fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer'
+                        }}
+                    >
+                        <span>ADDITIONAL DETAILS (OPTIONAL)</span>
+                        {showAdditional ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </button>
+
+                    {showAdditional && (
+                        <div style={{ padding: '20px', background: THEME.cardBg }}>
+                            <ChipGroup
+                                id="facing" label="PROPERTY FACING"
+                                options={['North', 'South', 'East', 'West', 'North-East', 'North-West', 'South-East', 'South-West'].map(d => ({ label: d, value: d }))}
+                                value={formData.facing} onChange="facing"
+                                updateForm={updateForm} toggleSelection={toggleSelection}
+                            />
+
+                            {/* PET FRIENDLY */}
+                            <div style={{ marginBottom: '20px' }}>
+                                <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>PET FRIENDLY</label>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <SelectButton label="Yes" selected={formData.petFriendly === 'yes'} onClick={() => updateForm('petFriendly', 'yes')} />
+                                    <SelectButton label="No" selected={formData.petFriendly === 'no'} onClick={() => updateForm('petFriendly', 'no')} />
+                                </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: THEME.text, cursor: 'pointer' }}>
+                                    <input type="checkbox" checked={formData.gatedSecurity} onChange={(e) => updateForm('gatedSecurity', e.target.checked)} style={{ accentColor: THEME.gold, width: '18px', height: '18px' }} />
+                                    Gated Security
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: THEME.text, cursor: 'pointer' }}>
+                                    <input type="checkbox" checked={formData.powerBackup} onChange={(e) => updateForm('powerBackup', e.target.checked)} style={{ accentColor: THEME.gold, width: '18px', height: '18px' }} />
+                                    Power Backup
+                                </label>
+                            </div>
+
+                            {/* ADDRESS */}
+                            <div style={{ marginTop: '20px' }}>
+                                <TextInput id="address" label="FULL ADDRESS" placeholder="Enter Full Address" value={formData.address} onChange={(v) => updateForm('address', v)} />
+                            </div>
+
+                            {/* SERVANT ROOM */}
+                            <div style={{ marginTop: '20px' }}>
+                                <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>SERVANT ROOM</label>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <SelectButton label="Yes" selected={formData.servantRoom === 'yes'} onClick={() => updateForm('servantRoom', 'yes')} />
+                                    <SelectButton label="No" selected={formData.servantRoom === 'no'} onClick={() => updateForm('servantRoom', 'no')} />
+                                </div>
+                            </div>
+
+                            {/* DESCRIPTION */}
+                            <div style={{ marginTop: '20px' }}>
+                                <label style={{ color: THEME.muted, display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>PROPERTY DESCRIPTION</label>
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) => updateForm('description', e.target.value)}
+                                    placeholder="Describe your property (amenities, location advantages, etc.)"
+                                    style={{
+                                        width: '100%', padding: '12px 15px', background: THEME.inputBg, border: `1px solid ${THEME.border}`,
+                                        borderRadius: '8px', color: THEME.text, fontSize: '1rem', outline: 'none', minHeight: '100px', resize: 'vertical'
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+            </div>
+        );
+
+    };
 
     // --- MAIN RENDER ---
     return (
