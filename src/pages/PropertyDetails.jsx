@@ -5,7 +5,7 @@ import {
     Star, Phone, User, Mail, School, Bus, ShoppingBag, Coffee, X,
     Maximize2, Calendar, Ruler, Car, Home, Layers, ExternalLink,
     ThumbsUp, ThumbsDown, Play, Building2, TrendingUp, FileText,
-    Hospital, Trees, Navigation, Calculator, ShieldCheck, Info, MessageSquare
+    Hospital, Trees, Navigation, Calculator, ShieldCheck, Info, MessageSquare, CheckCircle
 } from 'lucide-react';
 import { getPropertyById } from '../data/properties';
 import { supabase } from '../supabase';
@@ -867,12 +867,15 @@ const PropertyDetails = () => {
 
             {/* SUCCESS MODAL */}
             {showSuccess && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ background: '#fff', padding: '40px', borderRadius: '12px', textAlign: 'center', maxWidth: '400px' }}>
-                        <div style={{ color: '#00C853', marginBottom: '15px' }}><Check size={50} /></div>
-                        <h2>Thank You!</h2>
-                        <p>We have received your details. Our team will contact you shortly.</p>
-                        <button onClick={() => setShowSuccess(false)} style={{ marginTop: '20px', padding: '10px 20px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '1rem', cursor: 'pointer' }}>Close</button>
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)' }}>
+                    <div style={{ background: '#0b1f17', border: '1px solid #E3BC5A', padding: '40px', borderRadius: '12px', textAlign: 'center', maxWidth: '400px', width: '90%', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', color: '#fff' }}>
+                        <div style={{ color: '#E3BC5A', marginBottom: '15px', display: 'flex', justifyContent: 'center' }}><CheckCircle size={50} /></div>
+                        <h2 style={{ color: '#E3BC5A', fontSize: '1.4rem', marginBottom: '10px' }}>Thank You!</h2>
+                        <p style={{ color: '#8E9CA3', fontSize: '1rem', lineHeight: '1.5', marginBottom: '20px' }}>
+                            We have received your details.<br />
+                            Our team will contact you shortly.
+                        </p>
+                        <button onClick={() => setShowSuccess(false)} style={{ padding: '12px 30px', background: '#E3BC5A', color: '#000', border: 'none', borderRadius: '6px', fontSize: '1rem', cursor: 'pointer', fontWeight: 'bold' }}>Close</button>
                     </div>
                 </div>
             )}

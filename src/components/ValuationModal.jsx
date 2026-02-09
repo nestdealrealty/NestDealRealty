@@ -80,7 +80,7 @@ const ValuationModal = ({ isOpen, onClose }) => {
                         <p className="success-message">
                             Your valuation request has been received.
                             <br /><br />
-                            Our team will review your details and reach out to you as soon as possible via WhatsApp or Email.
+                            Our team will review your details and reach out to you as soon as possible.
                         </p>
                         <button className="modal-submit-btn" onClick={handleClose}>
                             Close
