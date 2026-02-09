@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Upload, Check, ChevronRight, MapPin, Home, Building, Building2, Trees, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Upload, Check, ChevronRight, MapPin, Home, Building, Building2, Trees, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // --- THEME ---
@@ -130,6 +130,82 @@ const ChipGroup = ({ id, label, options, value, onChange, multi, error, updateFo
     </div>
 );
 
+const ImageUploadSection = ({ images, onChange, THEME, error }) => {
+    const handleFileChange = (e) => {
+        if (e.target.files) {
+            const newFiles = Array.from(e.target.files);
+            // In a real app, you'd probably upload these to a server/storage here
+            // For now, we'll create local object URLs for preview
+            const newImages = newFiles.map(file => ({
+                file,
+                url: URL.createObjectURL(file)
+            }));
+            onChange([...images, ...newImages]);
+        }
+    };
+
+    const removeImage = (index) => {
+        const newImages = [...images];
+        // Revoke URL to avoid memory leaks
+        URL.revokeObjectURL(newImages[index].url);
+        newImages.splice(index, 1);
+        onChange(newImages);
+    };
+
+    return (
+        <div style={{ marginTop: '20px' }}>
+            <label style={{ color: error ? THEME.red : THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>
+                Upload Photos (Min 3) {error && <span style={{ color: THEME.red, fontSize: '0.8rem' }}>* {error}</span>}
+            </label>
+
+            <div style={{
+                border: `2px dashed ${error ? THEME.red : THEME.border}`,
+                borderRadius: '12px',
+                padding: '40px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                background: THEME.inputBg,
+                marginBottom: '20px'
+            }} onClick={() => document.getElementById('file-upload').click()}>
+                <Upload size={40} color={THEME.gold} style={{ marginBottom: '15px' }} />
+                <h4 style={{ color: THEME.text, margin: '0 0 10px 0' }}>Click to Upload Photos</h4>
+                <p style={{ color: THEME.muted, fontSize: '0.9rem', margin: 0 }}>Supported: JPG, PNG, WEBP (Max 5MB)</p>
+                <input
+                    id="file-upload"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={handleFileChange}
+                />
+            </div>
+
+            {/* Image Previews */}
+            {images.length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '15px' }}>
+                    {images.map((img, idx) => (
+                        <div key={idx} style={{ position: 'relative', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${THEME.border}` }}>
+                            <img src={img.url} alt={`Preview ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <button
+                                type="button"
+                                onClick={() => removeImage(idx)}
+                                style={{
+                                    position: 'absolute', top: '5px', right: '5px',
+                                    background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%',
+                                    width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: '#fff', cursor: 'pointer'
+                                }}
+                            >
+                                <X size={14} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const PostProperty = () => {
     // Consolidated Steps: 1. Property Details (Everything), 2. Photos, 3. Success
     const [step, setStep] = useState(1);
@@ -217,8 +293,18 @@ const PostProperty = () => {
         return true;
     };
 
+    const validateStep2 = () => {
+        if (formData.images.length < 3) {
+            setErrors({ images: "Please upload at least 3 photos" });
+            return false;
+        }
+        setErrors({});
+        return true;
+    };
+
     const handleNext = () => {
         if (step === 1 && !validateStep1()) return;
+        if (step === 2 && !validateStep2()) return;
         setStep(prev => Math.min(prev + 1, 3));
     };
 
@@ -429,10 +515,14 @@ const PostProperty = () => {
                     {step === 1 && renderStep1()}
 
                     {step === 2 && (
-                        <div className="animate-slide-up" style={{ textAlign: 'center', padding: '50px' }}>
-                            <Upload size={40} color={THEME.gold} />
-                            <h3 style={{ marginTop: '20px' }}>Upload Photos</h3>
-                            <p style={{ color: THEME.muted }}>Upload at least 3 photos of your property.</p>
+                        <div className="animate-slide-up">
+                            <SectionHeader title="Property Photos" sub="Upload photos of your property to get better responses." />
+                            <ImageUploadSection
+                                images={formData.images}
+                                onChange={(imgs) => updateForm('images', imgs)}
+                                THEME={THEME}
+                                error={errors.images}
+                            />
                         </div>
                     )}
 
