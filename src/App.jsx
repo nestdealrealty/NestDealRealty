@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import SavedProperties from './pages/SavedProperties';
+import ExplorePage from './pages/ExplorePage';
 import './index.css';
 
 // Nest Deal Realty - v1.1.0.2
@@ -31,6 +32,7 @@ function Layout() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/saved-properties" element={<SavedProperties />} />
+          <Route path="/explore" element={<ExplorePage />} />
         </Routes>
       </main>
       <Footer />

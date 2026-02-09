@@ -460,7 +460,9 @@ const Home = () => {
             {/* Explore Ahmedabad Section */}
             <div className="explore-ahmedabad-section">
                 <div className="explore-header-container">
-                    <h2>Explore Ahmedabad</h2>
+                    <Link to="/explore?city=Ahmedabad" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <h2>Explore Ahmedabad <ChevronRight size={24} style={{ verticalAlign: 'middle' }} /></h2>
+                    </Link>
                     <div className="header-divider"></div>
                 </div>
 
@@ -490,7 +492,7 @@ const Home = () => {
                                 ))}
                             </div>
                             <div className="column-footer">
-                                <button className="see-all-btn">See All</button>
+                                <Link to={`/explore?city=Ahmedabad&type=${category.title.toLowerCase()}`} className="see-all-btn" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>See All</Link>
                             </div>
                         </div>
                     ))}
@@ -500,7 +502,9 @@ const Home = () => {
             {/* Explore Gandhinagar Section */}
             <div className="explore-ahmedabad-section">
                 <div className="explore-header-container">
-                    <h2>Explore Gandhinagar</h2>
+                    <Link to="/explore?city=Gandhinagar" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <h2>Explore Gandhinagar <ChevronRight size={24} style={{ verticalAlign: 'middle' }} /></h2>
+                    </Link>
                     <div className="header-divider"></div>
                 </div>
 
@@ -530,7 +534,7 @@ const Home = () => {
                                 ))}
                             </div>
                             <div className="column-footer">
-                                <button className="see-all-btn">See All</button>
+                                <Link to={`/explore?city=Gandhinagar&type=${category.title.toLowerCase()}`} className="see-all-btn" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>See All</Link>
                             </div>
                         </div>
                     ))}
