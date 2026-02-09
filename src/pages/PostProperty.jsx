@@ -350,7 +350,12 @@ const PostProperty = () => {
             />
 
             {/* 2. CITY */}
-            <TextInput id="city" label="SELECT CITY" placeholder="Enter City (e.g. Ahmedabad)" value={formData.city} onChange={(v) => updateForm('city', v)} error={errors.city} />
+            <ChipGroup
+                id="city" label="SELECT CITY"
+                options={[{ label: 'AHMEDABAD', value: 'Ahmedabad' }, { label: 'GANDHINAGAR', value: 'Gandhinagar' }]}
+                value={formData.city} onChange="city" error={errors.city}
+                updateForm={updateForm} toggleSelection={toggleSelection}
+            />
 
             {/* 3. SOCIETY / BUILDING */}
             <TextInput id="project" label="BUILDING / APARTMENT / SOCIETY NAME" placeholder="Enter Building Name" value={formData.project} onChange={(v) => updateForm('project', v)} error={errors.project} />
@@ -486,7 +491,12 @@ const PostProperty = () => {
                 </div>
 
                 {/* 3. CITY */}
-                <TextInput id="city" label="SELECT CITY" placeholder="Enter City (e.g. Ahmedabad)" value={formData.city} onChange={(v) => updateForm('city', v)} error={errors.city} />
+                <ChipGroup
+                    id="city" label="SELECT CITY"
+                    options={[{ label: 'AHMEDABAD', value: 'Ahmedabad' }, { label: 'GANDHINAGAR', value: 'Gandhinagar' }]}
+                    value={formData.city} onChange="city" error={errors.city}
+                    updateForm={updateForm} toggleSelection={toggleSelection}
+                />
 
                 {/* 4. BUILDING / SOCIETY */}
                 <TextInput id="project" label="BUILDING / APARTMENT / SOCIETY NAME" placeholder="Enter Project Name" value={formData.project} onChange={(v) => updateForm('project', v)} error={errors.project} />
