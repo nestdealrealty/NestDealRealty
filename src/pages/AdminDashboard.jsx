@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase';
 import { Navigate } from 'react-router-dom';
-import { Check, X, MapPin, Search, Phone, User, MessageCircle, FileText, Activity } from 'lucide-react';
+import { Check, X, MapPin, Search, Phone, User, MessageCircle, FileText, Activity, Home } from 'lucide-react';
 
 const ADMIN_EMAIL = 'minecraftxbox1389@gmail.com';
 

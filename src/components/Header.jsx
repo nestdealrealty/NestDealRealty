@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, Search, Heart, User, Menu, X, ArrowRight } from 'lucide-react';
+import { ChevronDown, Search, Heart, User, Menu, X, ArrowRight, Home } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ValuationModal from './ValuationModal';
 import './Header.css';
