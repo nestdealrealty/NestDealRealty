@@ -25,7 +25,7 @@
     /* Narrower width to start between Logo "Realty" and "Sell" */
     min-width: 420px;
     height: 100%;
-    z-index: 10;
+    z-index: 60;
     background: transparent;
     /* Transparent container */
     padding: 60px 40px;
