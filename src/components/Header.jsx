@@ -148,7 +148,7 @@ const Header = () => {
 
                     {user ? (
                         <button onClick={logOut} className="action-btn login-btn">
-                            <User size={20} /> <span>Sign Out</span>
+                            <LogOut size={20} /> <span>Sign Out</span>
                         </button>
                     ) : (
                         <Link to="/login" className="action-btn login-btn">

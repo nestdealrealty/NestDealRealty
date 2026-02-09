@@ -19,12 +19,13 @@
 .logo {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
     font-family: 'Outfit', sans-serif;
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: var(--white);
     letter-spacing: 0.5px;
+    flex-shrink: 0;
 }
 
 .logo span {
@@ -35,8 +36,8 @@
 }
 
 .logo-img {
-    height: 70px;
-    width: 70px;
+    height: 60px;
+    width: 60px;
     object-fit: cover;
     border-radius: 12px;
     border: 1.5px solid var(--accent);
@@ -45,7 +46,7 @@
 
 .nav-list {
     display: flex;
-    gap: 32px;
+    gap: 20px;
 }
 
 .nav-item {
@@ -77,8 +78,8 @@
     top: 100%;
     left: 50%;
     transform: translateX(-50%) translateY(10px);
-    width: 100vw;
-    max-width: 1000px;
+    width: 95vw;
+    max-width: 900px;
     background-color: var(--bg-card);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
     border-radius: 0 0 var(--radius) var(--radius);
@@ -216,6 +217,7 @@
         display: block;
     }
 }
+
 .post-property-btn {
     padding: 8px 16px;
     background: var(--accent);
@@ -251,16 +253,50 @@
     .post-property-btn span {
         display: none;
     }
+
     .post-property-btn {
         padding: 10px;
         border-radius: 12px;
         margin-right: 10px;
         justify-content: center;
     }
+
     .post-property-btn::before {
         content: '+';
         font-size: 1.2rem;
         font-weight: 900;
         line-height: 1;
+    }
+}
+
+@media (max-width: 1200px) {
+    .nav-list {
+        gap: 12px;
+    }
+
+    .logo span {
+        font-size: 1.2rem;
+    }
+}
+
+.user-menu-item:hover {
+    background: rgba(227, 188, 90, 0.15);
+    /* Accent with low opacity */
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu-user {
+    animation: fadeInDropdown 0.2s ease;
+}
+
+@keyframes fadeInDropdown {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
