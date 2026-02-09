@@ -229,6 +229,7 @@ const PostProperty = () => {
 
         // 5. STATUS
         constructionStatus: 'ready', // 'ready', 'under_construction'
+        transactionType: 'resale', // 'new_booking', 'resale'
 
         // 6. FEATURES
         bathrooms: '',
@@ -254,6 +255,9 @@ const PostProperty = () => {
         facing: '',
         powerBackup: false,
         gatedSecurity: false,
+        address: '',
+        servantRoom: 'no',
+        description: '',
 
         // Photos
         images: []
@@ -379,6 +383,16 @@ const PostProperty = () => {
                 value={formData.constructionStatus} onChange="constructionStatus"
                 updateForm={updateForm} toggleSelection={toggleSelection}
             />
+
+            {/* TRANSACTION TYPE (IF SELL) */}
+            {formData.lookingTo === 'sell' && (
+                <ChipGroup
+                    id="transactionType" label="TRANSACTION TYPE"
+                    options={[{ label: 'NEW BOOKING', value: 'new_booking' }, { label: 'RESALE', value: 'resale' }]}
+                    value={formData.transactionType} onChange="transactionType"
+                    updateForm={updateForm} toggleSelection={toggleSelection}
+                />
+            )}
 
             {/* 8. BATHROOM */}
             <ChipGroup
@@ -520,6 +534,34 @@ const PostProperty = () => {
                                 <input type="checkbox" checked={formData.powerBackup} onChange={(e) => updateForm('powerBackup', e.target.checked)} style={{ accentColor: THEME.gold, width: '18px', height: '18px' }} />
                                 Power Backup
                             </label>
+                        </div>
+
+                        {/* ADDRESS */}
+                        <div style={{ marginTop: '20px' }}>
+                            <TextInput id="address" label="FULL ADDRESS" placeholder="Enter Full Address" value={formData.address} onChange={(v) => updateForm('address', v)} />
+                        </div>
+
+                        {/* SERVANT ROOM */}
+                        <div style={{ marginTop: '20px' }}>
+                            <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>SERVANT ROOM</label>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <SelectButton label="Yes" selected={formData.servantRoom === 'yes'} onClick={() => updateForm('servantRoom', 'yes')} />
+                                <SelectButton label="No" selected={formData.servantRoom === 'no'} onClick={() => updateForm('servantRoom', 'no')} />
+                            </div>
+                        </div>
+
+                        {/* DESCRIPTION */}
+                        <div style={{ marginTop: '20px' }}>
+                            <label style={{ color: THEME.muted, display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>PROPERTY DESCRIPTION</label>
+                            <textarea
+                                value={formData.description}
+                                onChange={(e) => updateForm('description', e.target.value)}
+                                placeholder="Describe your property (amenities, location advantages, etc.)"
+                                style={{
+                                    width: '100%', padding: '12px 15px', background: THEME.inputBg, border: `1px solid ${THEME.border}`,
+                                    borderRadius: '8px', color: THEME.text, fontSize: '1rem', outline: 'none', minHeight: '100px', resize: 'vertical'
+                                }}
+                            />
                         </div>
                     </div>
                 )}
