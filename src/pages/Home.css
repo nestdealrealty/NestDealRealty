@@ -25,7 +25,8 @@
     /* Narrower width to start between Logo "Realty" and "Sell" */
     min-width: 420px;
     height: 100%;
-    z-index: 60;
+    z-index: auto;
+    /* Allow children to have their own stacking context relative to siblings */
     background: transparent;
     /* Transparent container */
     padding: 60px 40px;
@@ -44,7 +45,8 @@
     width: 100%;
     height: 100%;
     background: #0f1c16;
-    z-index: -1;
+    z-index: 5;
+    /* Lower than search bar (50) */
     /* Create a large Arc from Top-Right to Bottom-Left */
     border-bottom-right-radius: 100% 100%;
     box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.3);
@@ -58,7 +60,8 @@
     gap: 30px;
     margin-top: 20px;
     position: relative;
-    z-index: 2;
+    z-index: 100;
+    /* On top of everything */
     max-width: 350px;
     /* Keep content compact on the left safe zone */
     pointer-events: auto;
