@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter, Tag, Key, Briefcase, Star } from 'lucide-react';
+import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter, Tag, Key, Briefcase, Star, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ValuationModal from '../components/ValuationModal';
 import logo from '../assets/logo.jpg';
@@ -33,10 +33,13 @@ const navStructure = [
     { title: 'Help', items: ['Contact Support', 'FAQs', 'Legal'] }
 ];
 
+import { supabase } from '../supabase';
+
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [activeLocation, setActiveLocation] = useState('Ahmedabad');
     const [isValuationOpen, setIsValuationOpen] = useState(false);
+    const [realProperties, setRealProperties] = useState([]);
 
     // Search States
     const [activeSearchDropdown, setActiveSearchDropdown] = useState(null); // 'city', 'bhk', 'budget', 'filter-modal'
@@ -46,6 +49,32 @@ const Home = () => {
     const [showFinancialOptions, setShowFinancialOptions] = useState(false);
     const slideshowRef = useRef(null);
     const [selectedBudget, setSelectedBudget] = useState({ min: '', max: '' });
+
+    // Fetch real properties from Supabase
+    useEffect(() => {
+        const fetchRealProperties = async () => {
+            const { data, error } = await supabase
+                .from('properties')
+                .select('*')
+                .eq('status', 'approved')
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            if (data && !error) {
+                setRealProperties(data.map(p => ({
+                    id: p.id,
+                    image: (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80',
+                    listingTitle: p.project_name || `Property in ${p.locality}`,
+                    builder: p.contact_name || 'Individual Seller',
+                    config: p.bhk || p.property_type,
+                    location: p.locality,
+                    price: `₹ ${p.cost?.toLocaleString('en-IN')}`,
+                    isReal: true
+                })));
+            }
+        };
+        fetchRealProperties();
+    }, []);
 
     const toggleSearchDropdown = (name) => {
         if (name === activeSearchDropdown) {
@@ -84,6 +113,7 @@ const Home = () => {
             id: 'flats',
             title: 'Flats',
             items: [
+                ...realProperties,
                 { id: 1, image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80', listingTitle: 'Trident Experia', builder: 'A. Shridhar', config: '3 BHK Flat', location: 'Vaishnodevi, Ahmedabad', price: '₹ 76.00 L' },
                 { id: 2, image: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?auto=format&fit=crop&w=400&q=80', listingTitle: 'Sky City', builder: 'Goyal & Co', config: '4 BHK Flat', location: 'Shela, Ahmedabad', price: '₹ 1.25 Cr' },
                 { id: 3, image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80', listingTitle: 'The Metallis', builder: 'Daanish Info', config: '3 BHK Flat', location: 'S.G Highway', price: '₹ 95.00 L' },
@@ -477,6 +507,27 @@ const Home = () => {
                                     <Link to={`/property/${item.id}`} key={item.id} className="property-card-reel">
                                         <div className="card-reel-image">
                                             <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                            {item.isReal && (
+                                                <div className="verified-badge-reel" style={{
+                                                    position: 'absolute',
+                                                    top: '10px',
+                                                    left: '10px',
+                                                    background: 'rgba(11, 31, 23, 0.85)',
+                                                    color: '#E3BC5A',
+                                                    padding: '4px 8px',
+                                                    borderRadius: '4px',
+                                                    fontSize: '10px',
+                                                    fontWeight: 'bold',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px',
+                                                    border: '1px solid #E3BC5A',
+                                                    backdropFilter: 'blur(4px)',
+                                                    zIndex: 2
+                                                }}>
+                                                    <ShieldCheck size={12} /> VERIFIED
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="card-reel-details">
                                             <h4 className="reel-prop-title">{item.listingTitle}</h4>

@@ -15,12 +15,13 @@ import logo from '../assets/logo.jpg';
 
 const PropertyDetails = () => {
     const { id } = useParams();
-
-    // Fetch property data dynamically or use fallback demo data
-    const fetchedProperty = getPropertyById(parseInt(id));
+    const { user } = useAuth();
+    const [property, setProperty] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     // Fallback demo data (The Planet)
     const demoProperty = {
+        id: "demo-1",
         title: "The Planet",
         tagline: "Luxury 3BHK Elite Facing Apartments",
         developer: "Venus Group",
@@ -69,9 +70,77 @@ const PropertyDetails = () => {
         ]
     };
 
-    const property = fetchedProperty || demoProperty;
-    // Normalize gallery images source (Fix for missing gallery array in new IDs)
-    const galleryImages = property.mediaGallery?.photos?.map(p => p.url) || property.gallery || [];
+    useEffect(() => {
+        const fetchProperty = async () => {
+            setLoading(true);
+            try {
+                // Try fetching from Supabase if ID is a UUID
+                if (id.length > 5) {
+                    const { data, error } = await supabase
+                        .from('properties')
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+
+                    if (data && !error) {
+                        // Map Supabase data to the UI structure
+                        const mappedProperty = {
+                            id: data.id,
+                            title: data.project_name || "Property for " + data.looking_to,
+                            tagline: data.property_type + " in " + data.locality,
+                            developer: data.contact_name,
+                            location: `${data.locality}, ${data.city}`,
+                            address: data.address,
+                            price: `₹ ${data.cost.toLocaleString('en-IN')}`,
+                            pricePerSqFt: data.built_up_area ? `₹ ${(data.cost / data.built_up_area).toFixed(0)}/sq.ft` : '',
+                            emi: `EMI starts at ₹ ${(data.cost * 0.008).toFixed(0)}`, // Rough estimate
+                            type: data.property_type,
+                            status: data.construction_status,
+                            possession: data.available_from ? new Date(data.available_from).toLocaleDateString() : 'Ready',
+                            furnishing: data.furnishing,
+                            description: data.description || "No description provided.",
+                            specs: [
+                                { icon: <Home size={20} />, label: "Bedrooms", value: data.bhk || "N/A" },
+                                { icon: <Layers size={20} />, label: "Bathrooms", value: data.bathrooms || "N/A" },
+                                { icon: <Ruler size={20} />, label: "Built-up Area", value: `${data.built_up_area} sq.ft` },
+                                { icon: <Car size={20} />, label: "Parking", value: data.covered_parking ? "Covered" : "Open" },
+                                { icon: <Maximize2 size={20} />, label: "Facing", value: data.facing || "N/A" },
+                                { icon: <Calendar size={20} />, label: "Available", value: data.available_from || "Ready" }
+                            ],
+                            highlights: [
+                                data.gated_security && "Gated Security",
+                                data.power_backup && "Power Backup",
+                                data.pet_friendly === "Yes" && "Pet Friendly",
+                                data.transaction_type && `Transaction: ${data.transaction_type}`
+                            ].filter(Boolean),
+                            amenities: [
+                                { icon: <div className="amenity-icon-box"><ShieldCheck size={20} /></div>, name: "Verified Property" },
+                                { icon: <div className="amenity-icon-box"><School size={20} /></div>, name: "Schools Nearby" }
+                            ],
+                            gallery: data.images && data.images.length > 0 ? data.images : demoProperty.gallery
+                        };
+                        setProperty(mappedProperty);
+                    } else {
+                        // Handle numeric IDs or not found
+                        const staticProp = getPropertyById(parseInt(id));
+                        setProperty(staticProp || demoProperty);
+                    }
+                } else {
+                    const staticProp = getPropertyById(parseInt(id));
+                    setProperty(staticProp || demoProperty);
+                }
+            } catch (err) {
+                console.error("Error fetching property:", err);
+                setProperty(demoProperty);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProperty();
+    }, [id]);
+
+    const galleryImages = property?.gallery || [];
 
     const [heroIndex, setHeroIndex] = useState(0);
     const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -90,7 +159,14 @@ const PropertyDetails = () => {
     const [leadForm, setLeadForm] = useState({ name: '', phone: '', email: '', whatsapp: '' });
     const [leadLoading, setLeadLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
-    const { user } = useAuth();
+
+    if (loading) {
+        return <div className="loading-container" style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#0b1f17', color: '#fff' }}>Loading Property Details...</div>;
+    }
+
+    if (!property) {
+        return <div className="error-container">Property not found.</div>;
+    }
 
     const handleLeadSubmit = async (e) => {
         e.preventDefault();
