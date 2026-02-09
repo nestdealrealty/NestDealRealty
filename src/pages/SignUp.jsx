@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
 const SignUp = () => {
+    const nameRef = useRef();
+    const phoneRef = useRef();
     const emailRef = useRef();
     const passwordRef = useRef();
     const passwordConfirmRef = useRef();
@@ -34,7 +36,11 @@ const SignUp = () => {
         try {
             setError('');
             setLoading(true);
-            const { data, error: authError } = await signUp(emailRef.current.value, passwordRef.current.value);
+            const meta = {
+                full_name: nameRef.current.value,
+                phone: phoneRef.current.value
+            };
+            const { data, error: authError } = await signUp(emailRef.current.value, passwordRef.current.value, meta);
             if (authError) throw authError;
 
             // Check if session was created immediately (no email confirm) or pending
@@ -60,6 +66,14 @@ const SignUp = () => {
                 </div>
                 {error && <div className={`error-message ${error.startsWith('Success') ? 'success-message' : ''}`}>{error}</div>}
                 <form onSubmit={handleSubmit} className="auth-form">
+                    <div className="form-group">
+                        <label>Full Name</label>
+                        <input type="text" ref={nameRef} required className="form-input" placeholder="Enter full name" />
+                    </div>
+                    <div className="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" ref={phoneRef} required className="form-input" placeholder="Enter phone number" />
+                    </div>
                     <div className="form-group">
                         <label>Email Address</label>
                         <input type="email" ref={emailRef} required className="form-input" placeholder="Enter your email" />

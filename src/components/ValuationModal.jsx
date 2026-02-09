@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, CheckCircle } from 'lucide-react';
+import { supabase } from '../supabase';
 import './ValuationModal.css';
 
 const ValuationModal = ({ isOpen, onClose }) => {
@@ -36,12 +37,24 @@ const ValuationModal = ({ isOpen, onClose }) => {
         e.preventDefault();
         setLoading(true);
 
-        // Simulate API call delay to feel like processing
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            const { error } = await supabase.from('valuations').insert([
+                {
+                    name: formData.name,
+                    phone: formData.mobile, // Mapping 'mobile' to 'phone'
+                    email: formData.email,
+                    message: formData.whatsapp ? `WhatsApp: ${formData.whatsapp}` : '' // Using message for extra details for now or add whatsapp column
+                }
+            ]);
 
-        setLoading(false);
-        setIsSubmitted(true);
-        // In future: Save to Supabase 'valuations' table
+            if (error) throw error;
+            setIsSubmitted(true);
+        } catch (error) {
+            console.error('Error submitting valuation:', error);
+            alert('Failed to submit, please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleClose = () => {

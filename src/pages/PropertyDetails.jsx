@@ -8,6 +8,8 @@ import {
     Hospital, Trees, Navigation, Calculator, ShieldCheck, Info, MessageSquare
 } from 'lucide-react';
 import { getPropertyById } from '../data/properties';
+import { supabase } from '../supabase';
+import { useAuth } from '../context/AuthContext';
 import './PropertyDetails.css';
 import logo from '../assets/logo.jpg';
 
@@ -83,6 +85,40 @@ const PropertyDetails = () => {
     const [helpfulFeedback, setHelpfulFeedback] = useState(null);
     const nearbyPlacesRef = useRef(null);
     const [activeSection, setActiveSection] = useState('overview');
+
+    // Lead Form State
+    const [leadForm, setLeadForm] = useState({ name: '', phone: '', email: '', whatsapp: '' });
+    const [leadLoading, setLeadLoading] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const { user } = useAuth();
+
+    const handleLeadSubmit = async (e) => {
+        e.preventDefault();
+        setLeadLoading(true);
+
+        try {
+            const { error } = await supabase.from('leads').insert([
+                {
+                    property_id: id,
+                    user_id: user?.id, // Optional
+                    name: leadForm.name,
+                    phone: leadForm.phone,
+                    email: leadForm.email,
+                    whatsapp: leadForm.whatsapp,
+                    message: `Interested in ${property.title}`
+                }
+            ]);
+
+            if (error) throw error;
+            setShowSuccess(true);
+            setLeadForm({ name: '', phone: '', email: '', whatsapp: '' });
+        } catch (error) {
+            console.error('Error submitting lead:', error);
+            alert('Failed to submit. Please try again.');
+        } finally {
+            setLeadLoading(false);
+        }
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -654,18 +690,52 @@ const PropertyDetails = () => {
                                 </div>
                             </div>
 
-                            <form className="lead-form" onSubmit={(e) => e.preventDefault()}>
+                            <form className="lead-form" onSubmit={handleLeadSubmit}>
                                 <div className="lf-input-group">
                                     <User size={16} className="lf-icon" />
-                                    <input type="text" placeholder="Name" className="lf-input" />
+                                    <input
+                                        type="text"
+                                        placeholder="Name"
+                                        className="lf-input"
+                                        required
+                                        value={leadForm.name}
+                                        onChange={e => setLeadForm({ ...leadForm, name: e.target.value })}
+                                    />
                                 </div>
                                 <div className="lf-input-group">
                                     <Phone size={16} className="lf-icon" />
-                                    <input type="tel" placeholder="Phone" className="lf-input" />
+                                    <input
+                                        type="tel"
+                                        placeholder="Phone (Max 10 digits)"
+                                        className="lf-input"
+                                        required
+                                        maxLength={10}
+                                        pattern="\d{10}"
+                                        value={leadForm.phone}
+                                        onChange={e => setLeadForm({ ...leadForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                                    />
+                                </div>
+                                <div className="lf-input-group">
+                                    <MessageSquare size={16} className="lf-icon" />
+                                    <input
+                                        type="tel"
+                                        placeholder="WhatsApp (Optional)"
+                                        className="lf-input"
+                                        maxLength={10}
+                                        value={leadForm.whatsapp}
+                                        onChange={e => setLeadForm({ ...leadForm, whatsapp: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                                    />
                                 </div>
                                 <div className="lf-input-group">
                                     <Mail size={16} className="lf-icon" />
-                                    <input type="email" placeholder="Email" className="lf-input" />
+                                    <input
+                                        type="email"
+                                        placeholder="Email"
+                                        className="lf-input"
+                                        required
+                                        value={leadForm.email}
+                                        onChange={e => setLeadForm({ ...leadForm, email: e.target.value })}
+                                    />
                                 </div>
 
                                 <div className="lf-checkbox-group">
@@ -673,14 +743,10 @@ const PropertyDetails = () => {
                                         <input type="checkbox" defaultChecked />
                                         <span>I agree to be contacted by Housing and agents via WhatsApp, SMS, phone, email etc</span>
                                     </label>
-                                    <label className="lf-checkbox-label">
-                                        <input type="checkbox" />
-                                        <span>I am interested in Home Loans</span>
-                                    </label>
                                 </div>
 
-                                <button type="submit" className="lf-submit-btn">
-                                    Get Contact Details
+                                <button type="submit" className="lf-submit-btn" disabled={leadLoading}>
+                                    {leadLoading ? 'Sending...' : 'Get Contact Details'}
                                 </button>
                             </form>
                         </div>
@@ -798,6 +864,18 @@ const PropertyDetails = () => {
                     </div>
                 )
             }
+
+            {/* SUCCESS MODAL */}
+            {showSuccess && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ background: '#fff', padding: '40px', borderRadius: '12px', textAlign: 'center', maxWidth: '400px' }}>
+                        <div style={{ color: '#00C853', marginBottom: '15px' }}><Check size={50} /></div>
+                        <h2>Thank You!</h2>
+                        <p>We have received your details. Our team will contact you shortly.</p>
+                        <button onClick={() => setShowSuccess(false)} style={{ marginTop: '20px', padding: '10px 20px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '1rem', cursor: 'pointer' }}>Close</button>
+                    </div>
+                </div>
+            )}
 
             {/* Sticky Mobile CTA */}
             <div className="mobile-cta-bar">

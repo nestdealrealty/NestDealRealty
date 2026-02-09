@@ -376,6 +376,8 @@ const PostProperty = () => {
             const payload = {
                 user_id: user.id,
                 user_email: user.email,
+                contact_name: user.user_metadata?.full_name || '',
+                contact_phone: user.user_metadata?.phone || '',
                 looking_to: formData.lookingTo,
                 property_type: formData.propertyType,
                 city: formData.city,

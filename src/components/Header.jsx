@@ -147,6 +147,11 @@ const Header = () => {
                     <Link to="/saved-properties" className="action-btn" aria-label="Saved Properties">
                         <Heart size={20} fill={user ? "var(--accent)" : "none"} color={user ? "var(--accent)" : "currentColor"} />
                     </Link>
+                    {user && (
+                        <Link to="/my-properties" className="action-btn" aria-label="My Properties" style={{ display: 'flex', alignItems: 'center' }}>
+                            <Home size={20} />
+                        </Link>
+                    )}
 
                     {user ? (
                         <>
