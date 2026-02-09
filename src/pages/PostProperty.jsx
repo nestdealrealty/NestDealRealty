@@ -247,6 +247,10 @@ const PostProperty = () => {
         totalFloors: '',
 
         // 9. ADDITIONAL
+        ageOfProperty: '',
+        availableFrom: '',
+        lockInPeriod: 'none',
+        petFriendly: 'no',
         facing: '',
         powerBackup: false,
         gatedSecurity: false,
@@ -444,6 +448,38 @@ const PostProperty = () => {
                 <NumericInput id="totalFloors" label="TOTAL FLOORS" value={formData.totalFloors} onChange={(v) => updateForm('totalFloors', v)} />
             </div>
 
+            {/* AGE OF PROPERTY */}
+            <NumericInput id="ageOfProperty" label="AGE OF PROPERTY (IN YEARS)" value={formData.ageOfProperty} onChange={(v) => updateForm('ageOfProperty', v)} />
+
+            {/* AVAILABLE DATE */}
+            <div id="availableFrom" style={{ marginBottom: '20px' }}>
+                <label style={{ color: THEME.muted, display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>AVAILABLE DATE</label>
+                <input
+                    type="date"
+                    value={formData.availableFrom}
+                    onChange={(e) => updateForm('availableFrom', e.target.value)}
+                    style={{
+                        width: '100%', padding: '12px', background: THEME.inputBg, border: `1px solid ${THEME.border}`,
+                        borderRadius: '8px', color: THEME.text, outline: 'none', colorScheme: 'dark'
+                    }}
+                />
+            </div>
+
+            {/* LOCK IN PERIOD */}
+            <div style={{ marginBottom: '20px' }}>
+                <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>LOCK IN PERIOD</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                    {['None', '1 Month', '2 Months', '6 Months', 'Custom'].map(period => (
+                        <SelectButton
+                            key={period}
+                            label={period}
+                            selected={formData.lockInPeriod === period}
+                            onClick={() => updateForm('lockInPeriod', period)}
+                        />
+                    ))}
+                </div>
+            </div>
+
             {/* 18. ADDITIONAL DETAILS */}
             <div style={{ marginTop: '20px', border: `1px solid ${THEME.border}`, borderRadius: '12px', overflow: 'hidden' }}>
                 <button
@@ -466,6 +502,15 @@ const PostProperty = () => {
                             value={formData.facing} onChange="facing"
                             updateForm={updateForm} toggleSelection={toggleSelection}
                         />
+
+                        {/* PET FRIENDLY */}
+                        <div style={{ marginBottom: '20px' }}>
+                            <label style={{ color: THEME.muted, display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>PET FRIENDLY</label>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <SelectButton label="Yes" selected={formData.petFriendly === 'yes'} onClick={() => updateForm('petFriendly', 'yes')} />
+                                <SelectButton label="No" selected={formData.petFriendly === 'no'} onClick={() => updateForm('petFriendly', 'no')} />
+                            </div>
+                        </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: THEME.text, cursor: 'pointer' }}>
                                 <input type="checkbox" checked={formData.gatedSecurity} onChange={(e) => updateForm('gatedSecurity', e.target.checked)} style={{ accentColor: THEME.gold, width: '18px', height: '18px' }} />
