@@ -13,74 +13,77 @@ import { useAuth } from '../context/AuthContext';
 import './PropertyDetails.css';
 import logo from '../assets/logo.jpg';
 
+// Move demo data outside component for stability
+const demoProperty = {
+    id: "demo-1",
+    title: "The Planet",
+    tagline: "Luxury 3BHK Elite Facing Apartments",
+    developer: "Venus Group",
+    location: "Shela, Ahmedabad",
+    address: "Sy No.70/3, Opp To Club O7, Shela Road, Ahmedabad, Gujarat",
+    price: "₹75L - 1.2Cr",
+    pricePerSqFt: "₹4,520/sq.ft",
+    emi: "EMI starts at ₹36,140",
+    type: "Residential Apartment",
+    status: "Under Construction",
+    possession: "Dec, 2025",
+    furnishing: "Unfurnished",
+    description: "The Planet by Venus Group is a premium residential project offering spacious 3 BHK apartments. Designed for modern elite living, these residences combine world-class design, privacy, and comfort with panoramic views of the city. Every detail has been meticulously planned to offer a lifestyle of luxury and convenience.",
+    specs: [
+        { icon: <Home size={20} />, label: "Bedrooms", value: "3 BHK" },
+        { icon: <Layers size={20} />, label: "Bathrooms", value: "3" },
+        { icon: <Ruler size={20} />, label: "Area", value: "1827 sq.ft" },
+        { icon: <Car size={20} />, label: "Parking", value: "2 Covered" },
+        { icon: <Maximize2 size={20} />, label: "Facing", value: "East/West" },
+        { icon: <Calendar size={20} />, label: "Possession", value: "Dec 2025" }
+    ],
+    highlights: [
+        "Strategic Sit-out Areas for Relaxation",
+        "Corner Units for Privacy & Light",
+        "Multiple Facing Options for Sunlight",
+        "Teak Wood Main Door",
+        "3 Track UPVC Windows with Mosquito Net"
+    ],
+    amenities: [
+        { icon: <div className="amenity-icon-box"><ShieldCheck size={20} /></div>, name: "Verified Property" },
+        { icon: <div className="amenity-icon-box"><School size={20} /></div>, name: "Schools Nearby" }
+    ],
+    gallery: [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1460317442991-0ec239f36791?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80"
+    ]
+};
+
 const PropertyDetails = () => {
     const { id } = useParams();
     const { user } = useAuth();
     const [property, setProperty] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Fallback demo data (The Planet)
-    const demoProperty = {
-        id: "demo-1",
-        title: "The Planet",
-        tagline: "Luxury 3BHK Elite Facing Apartments",
-        developer: "Venus Group",
-        location: "Shela, Ahmedabad",
-        address: "Sy No.70/3, Opp To Club O7, Shela Road, Ahmedabad, Gujarat",
-        price: "₹75L - 1.2Cr",
-        pricePerSqFt: "₹4,520/sq.ft",
-        emi: "EMI starts at ₹36,140",
-        type: "Residential Apartment",
-        status: "Under Construction",
-        possession: "Dec, 2025",
-        furnishing: "Unfurnished",
-        description: "The Planet by Venus Group is a premium residential project offering spacious 3 BHK apartments. Designed for modern elite living, these residences combine world-class design, privacy, and comfort with panoramic views of the city. Every detail has been meticulously planned to offer a lifestyle of luxury and convenience.",
-        specs: [
-            { icon: <Home size={20} />, label: "Bedrooms", value: "3 BHK" },
-            { icon: <Layers size={20} />, label: "Bathrooms", value: "3" },
-            { icon: <Ruler size={20} />, label: "Area", value: "1827 sq.ft" },
-            { icon: <Car size={20} />, label: "Parking", value: "2 Covered" },
-            { icon: <Maximize2 size={20} />, label: "Facing", value: "East/West" },
-            { icon: <Calendar size={20} />, label: "Possession", value: "Dec 2025" }
-        ],
-        highlights: [
-            "Strategic Sit-out Areas for Relaxation",
-            "Corner Units for Privacy & Light",
-            "Multiple Facing Options for Sunlight",
-            "Teak Wood Main Door",
-            "3 Track UPVC Windows with Mosquito Net"
-        ],
-        amenities: [
-            { icon: <div className="amenity-icon-box"><School size={20} /></div>, name: "Schools Nearby" },
-            { icon: <div className="amenity-icon-box"><Bus size={20} /></div>, name: "Public Transport" },
-            { icon: <div className="amenity-icon-box"><ShoppingBag size={20} /></div>, name: "Shopping Mall" },
-            { icon: <div className="amenity-icon-box"><Coffee size={20} /></div>, name: "Cafes & Dining" },
-            { icon: <div className="amenity-icon-box"><Check size={20} /></div>, name: "Swimming Pool" },
-            { icon: <div className="amenity-icon-box"><Check size={20} /></div>, name: "Gymnasium" },
-            { icon: <div className="amenity-icon-box"><Check size={20} /></div>, name: "Club House" },
-            { icon: <div className="amenity-icon-box"><Check size={20} /></div>, name: "Garden Area" }
-        ],
-        gallery: [
-            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?auto=format&fit=crop&w=1200&q=80"
-        ]
-    };
-
     useEffect(() => {
         const fetchProperty = async () => {
+            console.log('fetchProperty called with ID:', id);
+
+            if (!id) {
+                console.log('No ID provided, using demo property');
+                setProperty(demoProperty);
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
             try {
                 // Try fetching from Supabase if ID is a UUID
                 if (id.length > 5) {
+                    console.log('Fetching from Supabase for ID:', id);
                     const { data, error } = await supabase
                         .from('properties')
                         .select('*')
                         .eq('id', id)
                         .single();
+
+                    console.log('Supabase response:', { data, error });
 
                     if (data && !error) {
                         // Map Supabase data to the UI structure
@@ -91,9 +94,9 @@ const PropertyDetails = () => {
                             developer: data.contact_name,
                             location: `${data.locality}, ${data.city}`,
                             address: data.address,
-                            price: `₹ ${data.cost.toLocaleString('en-IN')}`,
-                            pricePerSqFt: data.built_up_area ? `₹ ${(data.cost / data.built_up_area).toFixed(0)}/sq.ft` : '',
-                            emi: `EMI starts at ₹ ${(data.cost * 0.008).toFixed(0)}`, // Rough estimate
+                            price: `₹ ${data.cost?.toLocaleString('en-IN')}`,
+                            pricePerSqFt: data.built_up_area && data.cost ? `₹ ${(data.cost / data.built_up_area).toFixed(0)}/sq.ft` : '',
+                            emi: data.cost ? `EMI starts at ₹ ${(data.cost * 0.008).toFixed(0)}` : '',
                             type: data.property_type,
                             status: data.construction_status,
                             possession: data.available_from ? new Date(data.available_from).toLocaleDateString() : 'Ready',
@@ -102,7 +105,7 @@ const PropertyDetails = () => {
                             specs: [
                                 { icon: <Home size={20} />, label: "Bedrooms", value: data.bhk || "N/A" },
                                 { icon: <Layers size={20} />, label: "Bathrooms", value: data.bathrooms || "N/A" },
-                                { icon: <Ruler size={20} />, label: "Built-up Area", value: `${data.built_up_area} sq.ft` },
+                                { icon: <Ruler size={20} />, label: "Area", value: data.built_up_area ? `${data.built_up_area} sq.ft` : "N/A" },
                                 { icon: <Car size={20} />, label: "Parking", value: data.covered_parking ? "Covered" : "Open" },
                                 { icon: <Maximize2 size={20} />, label: "Facing", value: data.facing || "N/A" },
                                 { icon: <Calendar size={20} />, label: "Available", value: data.available_from || "Ready" }
@@ -119,14 +122,19 @@ const PropertyDetails = () => {
                             ],
                             gallery: data.images && data.images.length > 0 ? data.images : demoProperty.gallery
                         };
+                        console.log('Setting mapped property:', mappedProperty);
                         setProperty(mappedProperty);
                     } else {
                         // Handle numeric IDs or not found
+                        console.log('Supabase data not found or error, trying static property');
                         const staticProp = getPropertyById(parseInt(id));
+                        console.log('Static property:', staticProp);
                         setProperty(staticProp || demoProperty);
                     }
                 } else {
+                    console.log('ID is numeric, using static properties');
                     const staticProp = getPropertyById(parseInt(id));
+                    console.log('Static property:', staticProp);
                     setProperty(staticProp || demoProperty);
                 }
             } catch (err) {
@@ -134,17 +142,21 @@ const PropertyDetails = () => {
                 setProperty(demoProperty);
             } finally {
                 setLoading(false);
+                console.log('Loading complete');
             }
         };
 
         fetchProperty();
     }, [id]);
 
-    const galleryImages = property?.gallery || [];
+    const galleryImages = property?.gallery || demoProperty.gallery || [];
 
     const [heroIndex, setHeroIndex] = useState(0);
     const [lightboxIndex, setLightboxIndex] = useState(null);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+    const minSwipeDistance = 50;
 
     // NEW: States for new sections
     const [selectedUnitType, setSelectedUnitType] = useState(0);
@@ -160,12 +172,77 @@ const PropertyDetails = () => {
     const [leadLoading, setLeadLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
+    // ALL useEffect hooks must be at the top, before any conditional returns
+    useEffect(() => {
+        const handleScroll = () => {
+            const sections = ['property-location', 'around-this-project', 'overview', 'floor-plan', 'photos-videos', 'amenities', 'brochure', 'helpful-tools'];
+            const scrollPosition = window.scrollY + 200;
+
+            for (const section of sections) {
+                const element = document.getElementById(section);
+                if (element && element.offsetTop <= scrollPosition) {
+                    setActiveSection(section);
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
+    // Auto-slide for Hero Section
+    useEffect(() => {
+        let interval;
+        if (isAutoPlaying && lightboxIndex === null && galleryImages.length > 0) {
+            interval = setInterval(() => {
+                setHeroIndex((prev) => (prev + 1) % galleryImages.length);
+            }, 5000);
+        }
+        return () => clearInterval(interval);
+    }, [isAutoPlaying, lightboxIndex, galleryImages.length]);
+
+    // Keyboard navigation for lightbox
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (lightboxIndex === null) return;
+
+            switch (e.key) {
+                case 'Escape':
+                    setLightboxIndex(null);
+                    document.body.style.overflow = 'auto';
+                    break;
+                case 'ArrowLeft':
+                    setLightboxIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+                    break;
+                case 'ArrowRight':
+                    setLightboxIndex((prev) => (prev + 1) % galleryImages.length);
+                    break;
+                default:
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [lightboxIndex, galleryImages.length]);
+
+    console.log('PropertyDetails render:', { id, property, loading });
+
     if (loading) {
         return <div className="loading-container" style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#0b1f17', color: '#fff' }}>Loading Property Details...</div>;
     }
 
     if (!property) {
-        return <div className="error-container">Property not found.</div>;
+        console.error('Property is null after loading completed');
+        return <div className="loading-container" style={{ height: '100vh', display: 'flex', flexDirection: 'column', gap: '20px', justifyContent: 'center', alignItems: 'center', background: '#0b1f17', color: '#fff' }}>
+            <h2 style={{ color: '#E3BC5A' }}>Property Not Found</h2>
+            <p>The property you're looking for could not be loaded.</p>
+            <a href="/" style={{ color: '#E3BC5A', textDecoration: 'underline' }}>Return to Home</a>
+        </div>;
     }
 
     const handleLeadSubmit = async (e) => {
@@ -196,68 +273,7 @@ const PropertyDetails = () => {
         }
     };
 
-    useEffect(() => {
-        const handleScroll = () => {
-            const sections = ['property-location', 'around-this-project', 'overview', 'floor-plan', 'photos-videos', 'amenities', 'brochure', 'helpful-tools'];
-            const scrollPosition = window.scrollY + 200; // Offset for sticky header
-
-            for (const section of sections) {
-                const element = document.getElementById(section);
-                if (element && element.offsetTop <= scrollPosition) {
-                    setActiveSection(section);
-                }
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
-
-    // Auto-slide for Hero Section
-    useEffect(() => {
-        let interval;
-        if (isAutoPlaying && lightboxIndex === null) {
-            interval = setInterval(() => {
-                setHeroIndex((prev) => (prev + 1) % galleryImages.length);
-            }, 5000);
-        }
-        return () => clearInterval(interval);
-    }, [isAutoPlaying, lightboxIndex, galleryImages.length]);
-
-    // Keyboard navigation for lightbox
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (lightboxIndex === null) return;
-
-            switch (e.key) {
-                case 'Escape':
-                    closeLightbox();
-                    break;
-                case 'ArrowLeft':
-                    setLightboxIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
-                    break;
-                case 'ArrowRight':
-                    setLightboxIndex((prev) => (prev + 1) % galleryImages.length);
-                    break;
-                default:
-                    break;
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [lightboxIndex, galleryImages.length]);
-
     // Touch swipe support for hero slider
-    const [touchStart, setTouchStart] = useState(null);
-    const [touchEnd, setTouchEnd] = useState(null);
-
-    const minSwipeDistance = 50;
-
     const onTouchStart = (e) => {
         setTouchEnd(null);
         setTouchStart(e.targetTouches[0].clientX);
@@ -414,9 +430,24 @@ const PropertyDetails = () => {
                     {/* LEFT COLUMN */}
                     <div className="pd-main-col">
 
-                        {/* 3. PROPERTY DETAILS SECTION */}
-                        <div className="pd-header-block" id="property-location">
-                            <div className="pd-location-title-row">
+                        {/* 3. PROPERTY DETAILS MAIN INFO */}
+                        <div className="pd-header-block">
+                            <h1 className="pd-main-title">{property.title}</h1>
+                            <p className="pd-tagline">{property.tagline}</p>
+
+                            <div className="pd-main-meta-row">
+                                <div className="pd-price-row">
+                                    <span className="price-main">{property.price}</span>
+                                    {property.pricePerSqFt && <span className="price-sub">{property.pricePerSqFt}</span>}
+                                </div>
+                                {property.emi && (
+                                    <div className="emi-badge-gold">
+                                        <Calculator size={16} /> {property.emi}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="pd-location-title-row" id="property-location">
                                 <div className="location-pin-gold">
                                     <MapPin size={24} />
                                 </div>
@@ -426,6 +457,40 @@ const PropertyDetails = () => {
                                     <p className="property-full-address">{property.address}</p>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* 4. SPECS GRID */}
+                        {property.specs && property.specs.length > 0 && (
+                            <div className="specs-grid">
+                                {property.specs.map((spec, idx) => (
+                                    <div key={idx} className="spec-item">
+                                        <div className="spec-icon">
+                                            {spec.icon}
+                                        </div>
+                                        <div className="spec-info">
+                                            <span className="spec-label">{spec.label}</span>
+                                            <span className="spec-value">{spec.value}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* 5. DESCRIPTION */}
+                        <div className="pd-description-section" id="overview">
+                            <h3 className="section-title">Description</h3>
+                            <p className="description-text">{property.description}</p>
+
+                            {property.highlights && property.highlights.length > 0 && (
+                                <div className="highlights-box">
+                                    {property.highlights.map((highlight, idx) => (
+                                        <div key={idx} className="highlight-item">
+                                            <Check size={16} className="text-brand" />
+                                            <span>{highlight}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* NEW SECTION 1: NEARBY PLACES */}
