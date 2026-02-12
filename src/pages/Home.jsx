@@ -5,7 +5,7 @@ import ValuationModal from '../components/ValuationModal';
 import logo from '../assets/logo.jpg';
 import './Home.css';
 
-const slides = [
+const defaultSlides = [
     {
         image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1920",
         title: "The Planet, Ahmedabad",
@@ -40,6 +40,7 @@ const Home = () => {
     const [activeLocation, setActiveLocation] = useState('Ahmedabad');
     const [isValuationOpen, setIsValuationOpen] = useState(false);
     const [realProperties, setRealProperties] = useState([]);
+    const [homeSlides, setHomeSlides] = useState(defaultSlides);
 
     // Search States
     const [activeSearchDropdown, setActiveSearchDropdown] = useState(null); // 'city', 'bhk', 'budget', 'filter-modal'
@@ -47,21 +48,26 @@ const Home = () => {
 
     const [selectedBHK, setSelectedBHK] = useState([]);
     const [showFinancialOptions, setShowFinancialOptions] = useState(false);
+
+    // New Layout State
+    const [activeProjectTab, setActiveProjectTab] = useState('flats'); // 'flats' or 'bungalows'
+    const [activeOwnerTab, setActiveOwnerTab] = useState('flats'); // 'flats' or 'bungalows'
     const slideshowRef = useRef(null);
     const [selectedBudget, setSelectedBudget] = useState({ min: '', max: '' });
 
-    // Fetch real properties from Supabase
+    // Fetch real properties and slides from Supabase
     useEffect(() => {
-        const fetchRealProperties = async () => {
-            const { data, error } = await supabase
+        const fetchData = async () => {
+            // Fetch Properties
+            const { data: propsData, error: propsError } = await supabase
                 .from('properties')
                 .select('*')
                 .eq('status', 'approved')
                 .order('created_at', { ascending: false })
                 .limit(10);
 
-            if (data && !error) {
-                setRealProperties(data.map(p => ({
+            if (propsData && !propsError) {
+                setRealProperties(propsData.map(p => ({
                     id: p.id,
                     image: (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80',
                     listingTitle: p.project_name || `Property in ${p.locality}`,
@@ -72,8 +78,23 @@ const Home = () => {
                     isReal: true
                 })));
             }
+
+            // Fetch Slides
+            const { data: slidesData, error: slidesError } = await supabase
+                .from('home_slides')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (slidesData && slidesData.length >= 2 && !slidesError) {
+                setHomeSlides(slidesData.map(s => ({
+                    image: s.image_url,
+                    title: s.title,
+                    price: s.price,
+                    tag: s.tag
+                })));
+            }
         };
-        fetchRealProperties();
+        fetchData();
     }, []);
 
     const toggleSearchDropdown = (name) => {
@@ -87,10 +108,10 @@ const Home = () => {
 
     // Slideshow logic
     useEffect(() => {
-        console.log('Slideshow initialized with', slides.length, 'slides');
+        if (homeSlides.length === 0) return;
         const timer = setInterval(() => {
             setCurrentSlide((prev) => {
-                const next = (prev + 1) % slides.length;
+                const next = (prev + 1) % homeSlides.length;
                 console.log('Slide transition:', prev, '->', next);
                 return next;
             });
@@ -242,7 +263,7 @@ const Home = () => {
 
                         {/* Slideshow */}
                         <div className="fullscreen-slideshow">
-                            {slides.map((slide, idx) => (
+                            {homeSlides.map((slide, idx) => (
                                 <div
                                     key={idx}
                                     className={`hero-slide ${idx === currentSlide ? 'active' : ''}`}
@@ -258,31 +279,14 @@ const Home = () => {
                                 </div>
                             ))}
 
-                            {/* Debug Indicator */}
-                            <div style={{
-                                position: 'absolute',
-                                top: '20px',
-                                right: '20px',
-                                background: 'rgba(212, 175, 55, 0.9)',
-                                color: '#000',
-                                padding: '10px 20px',
-                                borderRadius: '8px',
-                                fontWeight: 'bold',
-                                fontSize: '16px',
-                                zIndex: 100,
-                                fontFamily: 'monospace'
-                            }}>
-                                SLIDE: {currentSlide + 1} / {slides.length}
-                            </div>
-
                             {/* Navigation Dots */}
-                            <div className="slider-dots">
-                                {slides.map((_, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`slider-dot ${idx === currentSlide ? 'active' : ''}`}
-                                        onClick={() => setCurrentSlide(idx)}
-                                    />
+                            <div className="slide-indicators">
+                                {homeSlides.map((_, index) => (
+                                    <button
+                                        key={index}
+                                        className={`indicator ${index === currentSlide ? 'active' : ''}`}
+                                        onClick={() => setCurrentSlide(index)}
+                                    ></button>
                                 ))}
                             </div>
                         </div>
@@ -487,108 +491,80 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* Explore Ahmedabad Section */}
-            <div className="explore-ahmedabad-section">
-                <div className="explore-header-container">
-                    <Link to="/explore?city=Ahmedabad" style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <h2>Explore Ahmedabad <ChevronRight size={24} style={{ verticalAlign: 'middle' }} /></h2>
-                    </Link>
-                    <div className="header-divider"></div>
+
+
+            {/* NEW PROPERTY LISTING SECTION */}
+            <div className="new-prop-listing-container">
+                {/* LEFT CONTAINER: Popular Projects */}
+                <div className="prop-listing-column left-projects">
+                    <h2 className="new-col-header">Popular Projects</h2>
+
+                    {/* Tabs */}
+                    <div className="prop-tabs">
+                        {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
+                            <button
+                                key={tab}
+                                className={`prop-tab-btn ${activeProjectTab === tab.toLowerCase() ? 'active' : ''}`}
+                                onClick={() => setActiveProjectTab(tab.toLowerCase())}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Grid (2x2) */}
+                    <div className="prop-grid-2x2">
+                        {exploreCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeProjectTab] || 0].items.slice(0, 4).map((item) => (
+                            <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
+                                <div className="new-prop-img-box">
+                                    <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                </div>
+                                <div className="new-prop-details">
+                                    <h4 className="new-prop-title">{item.listingTitle}</h4>
+                                    <p className="new-prop-loc">{item.location}</p>
+                                    <p className="new-prop-price">{item.price}</p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+
+                    <Link to="/explore" className="new-see-all-btn">See All</Link>
                 </div>
 
-                <div className="explore-grid">
-                    {exploreCategories.map((category) => (
-                        <div key={category.id} className="explore-column">
-                            <div className="column-header">
-                                <h3>{category.title}</h3>
-                            </div>
-                            <div className="reel-container">
-                                {category.items.map((item) => (
-                                    <Link to={`/property/${item.id}`} key={item.id} className="property-card-reel">
-                                        <div className="card-reel-image">
-                                            <img src={item.image} alt={item.listingTitle} loading="lazy" />
-                                            {item.isReal && (
-                                                <div className="verified-badge-reel" style={{
-                                                    position: 'absolute',
-                                                    top: '10px',
-                                                    left: '10px',
-                                                    background: 'rgba(11, 31, 23, 0.85)',
-                                                    color: '#E3BC5A',
-                                                    padding: '4px 8px',
-                                                    borderRadius: '4px',
-                                                    fontSize: '10px',
-                                                    fontWeight: 'bold',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '4px',
-                                                    border: '1px solid #E3BC5A',
-                                                    backdropFilter: 'blur(4px)',
-                                                    zIndex: 2
-                                                }}>
-                                                    <ShieldCheck size={12} /> VERIFIED
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="card-reel-details">
-                                            <h4 className="reel-prop-title">{item.listingTitle}</h4>
-                                            <span className="reel-prop-builder">{item.builder}</span>
-                                            <div className="reel-prop-specs">
-                                                <span>{item.config}</span>
-                                                <span className="dot">•</span>
-                                                <span>{item.location}</span>
-                                            </div>
-                                            <div className="reel-prop-price">{item.price}</div>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                            <div className="column-footer">
-                                <Link to={`/explore?city=Ahmedabad&type=${category.title.toLowerCase()}`} className="see-all-btn" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>See All</Link>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+                {/* RIGHT CONTAINER: Popular Owner Property */}
+                <div className="prop-listing-column right-owners">
+                    <h2 className="new-col-header">Popular Owner Property</h2>
 
-            {/* Explore Gandhinagar Section */}
-            <div className="explore-ahmedabad-section">
-                <div className="explore-header-container">
-                    <Link to="/explore?city=Gandhinagar" style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <h2>Explore Gandhinagar <ChevronRight size={24} style={{ verticalAlign: 'middle' }} /></h2>
-                    </Link>
-                    <div className="header-divider"></div>
-                </div>
+                    {/* Tabs */}
+                    <div className="prop-tabs">
+                        {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
+                            <button
+                                key={tab}
+                                className={`prop-tab-btn ${activeOwnerTab === tab.toLowerCase() ? 'active' : ''}`}
+                                onClick={() => setActiveOwnerTab(tab.toLowerCase())}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
 
-                <div className="explore-grid">
-                    {exploreGandhinagarCategories.map((category) => (
-                        <div key={category.id} className="explore-column">
-                            <div className="column-header">
-                                <h3>{category.title}</h3>
-                            </div>
-                            <div className="reel-container">
-                                {category.items.map((item) => (
-                                    <Link to={`/property/${item.id}`} key={item.id} className="property-card-reel">
-                                        <div className="card-reel-image">
-                                            <img src={item.image} alt={item.listingTitle} loading="lazy" />
-                                        </div>
-                                        <div className="card-reel-details">
-                                            <h4 className="reel-prop-title">{item.listingTitle}</h4>
-                                            <span className="reel-prop-builder">{item.builder}</span>
-                                            <div className="reel-prop-specs">
-                                                <span>{item.config}</span>
-                                                <span className="dot">•</span>
-                                                <span>{item.location}</span>
-                                            </div>
-                                            <div className="reel-prop-price">{item.price}</div>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                            <div className="column-footer">
-                                <Link to={`/explore?city=Gandhinagar&type=${category.title.toLowerCase()}`} className="see-all-btn" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>See All</Link>
-                            </div>
-                        </div>
-                    ))}
+                    {/* Grid (2x2) */}
+                    <div className="prop-grid-2x2">
+                        {exploreGandhinagarCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeOwnerTab] || 0].items.slice(0, 4).map((item) => (
+                            <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
+                                <div className="new-prop-img-box">
+                                    <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                </div>
+                                <div className="new-prop-details">
+                                    <h4 className="new-prop-title">{item.listingTitle}</h4>
+                                    <p className="new-prop-loc">{item.location}</p>
+                                    <p className="new-prop-price">{item.price}</p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+
+                    <Link to="/explore" className="new-see-all-btn">See All</Link>
                 </div>
             </div>
 
