@@ -1,11 +1,17 @@
 /* --- MAIN CONTAINER --- */
+.home-page-root {
+    background-color: #ffffff;
+    color: #000000;
+    min-height: 100vh;
+}
+
 .homepage-wrapper-fullscreen {
     height: calc(100vh - 80px);
     /* Subtract header height */
     width: 100vw;
     overflow: hidden;
-    background: var(--bg-dark);
-    color: white;
+    background: transparent;
+    color: #000000;
 }
 
 .split-hero-container {
@@ -21,6 +27,7 @@
     position: absolute;
     top: 0;
     left: 0;
+    color: #ffffff;
     width: 35vw;
     /* Narrower width to start between Logo "Realty" and "Sell" */
     min-width: 420px;
@@ -1325,6 +1332,7 @@
     align-items: center;
     justify-content: space-between;
 }
+
 /* --- EXPLORE GRID V2 (Checkerboard) --- */
 .explore-grid-v2 {
     display: grid;
@@ -1353,7 +1361,8 @@
 }
 
 .category-header-v2 h3 {
-    color: #E3BC5A; /* Gold */
+    color: #E3BC5A;
+    /* Gold */
     font-size: 1.4rem;
     font-weight: 600;
     margin: 0;
@@ -1363,7 +1372,8 @@
 
 .reel-container-v2 {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 2 items side-by-side */
+    grid-template-columns: 1fr 1fr;
+    /* 2 items side-by-side */
     gap: 20px;
 }
 
@@ -1376,11 +1386,13 @@
 
 .dual-header-wrapper {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Two main columns */
+    grid-template-columns: 1fr 1fr;
+    /* Two main columns */
     gap: 60px;
 }
 
-.featured-col-left, .owners-col-right {
+.featured-col-left,
+.owners-col-right {
     display: flex;
     flex-direction: column;
     gap: 40px;
@@ -1406,6 +1418,7 @@
     .explore-grid-v2 {
         grid-template-columns: 1fr;
     }
+
     .dual-header-wrapper {
         grid-template-columns: 1fr;
         gap: 60px;
@@ -1438,7 +1451,8 @@
 
 .new-col-header {
     text-align: center;
-    color: #E3BC5A; /* Gold */
+    color: #E3BC5A;
+    /* Gold */
     font-size: 1.8rem;
     font-weight: bold;
     margin-bottom: 25px;
@@ -1462,7 +1476,8 @@
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    border-radius: 4px; /* Rounded corners */
+    border-radius: 4px;
+    /* Rounded corners */
     transition: all 0.3s ease;
 }
 
@@ -1514,7 +1529,8 @@
 }
 
 .new-prop-card:hover .new-prop-img-box img {
-    transform: scale(1.05); /* Subtle zoom */
+    transform: scale(1.05);
+    /* Subtle zoom */
 }
 
 .new-prop-details {
@@ -1593,6 +1609,15 @@ img {
 
 
 .prop-tabs {
-    flex-wrap: wrap; /* Ensure tabs wrap on mobile */
+    flex-wrap: wrap;
+    /* Ensure tabs wrap on mobile */
 }
-
+/* LIGHT THEME OVERRIDES FOR LISTINGS */
+.new-col-header { color: #1B4D3E !important; }
+.prop-tab-btn { border-color: #1B4D3E !important; color: #1B4D3E !important; }
+.prop-tab-btn.active { background-color: #1B4D3E !important; color: #ffffff !important; }
+.new-prop-title { color: #1B4D3E !important; }
+.new-prop-loc { color: #555555 !important; }
+.new-prop-price { color: #8B6914 !important; }
+.new-see-all-btn { border-color: #1B4D3E !important; color: #1B4D3E !important; }
+.new-see-all-btn:hover { background-color: #1B4D3E !important; color: #ffffff !important; }

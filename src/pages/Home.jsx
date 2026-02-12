@@ -50,8 +50,10 @@ const Home = () => {
     const [showFinancialOptions, setShowFinancialOptions] = useState(false);
 
     // New Layout State
-    const [activeProjectTab, setActiveProjectTab] = useState('flats'); // 'flats' or 'bungalows'
-    const [activeOwnerTab, setActiveOwnerTab] = useState('flats'); // 'flats' or 'bungalows'
+    const [activeAhdProjectTab, setActiveAhdProjectTab] = useState('flats');
+    const [activeAhdOwnerTab, setActiveAhdOwnerTab] = useState('flats');
+    const [activeGnrProjectTab, setActiveGnrProjectTab] = useState('flats');
+    const [activeGnrOwnerTab, setActiveGnrOwnerTab] = useState('flats');
     const slideshowRef = useRef(null);
     const [selectedBudget, setSelectedBudget] = useState({ min: '', max: '' });
 
@@ -494,77 +496,164 @@ const Home = () => {
 
 
             {/* NEW PROPERTY LISTING SECTION */}
-            <div className="new-prop-listing-container">
-                {/* LEFT CONTAINER: Popular Projects */}
-                <div className="prop-listing-column left-projects">
-                    <h2 className="new-col-header">Popular Projects</h2>
 
-                    {/* Tabs */}
-                    <div className="prop-tabs">
-                        {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
-                            <button
-                                key={tab}
-                                className={`prop-tab-btn ${activeProjectTab === tab.toLowerCase() ? 'active' : ''}`}
-                                onClick={() => setActiveProjectTab(tab.toLowerCase())}
-                            >
-                                {tab}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Grid (2x2) */}
-                    <div className="prop-grid-2x2">
-                        {exploreCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeProjectTab] || 0].items.slice(0, 4).map((item) => (
-                            <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
-                                <div className="new-prop-img-box">
-                                    <img src={item.image} alt={item.listingTitle} loading="lazy" />
-                                </div>
-                                <div className="new-prop-details">
-                                    <h4 className="new-prop-title">{item.listingTitle}</h4>
-                                    <p className="new-prop-loc">{item.location}</p>
-                                    <p className="new-prop-price">{item.price}</p>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-
-                    <Link to="/explore" className="new-see-all-btn">See All</Link>
+            {/* Explore Ahmedabad Section */}
+            <div className="explore-ahmedabad-section">
+                <div className="explore-header-container" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Link to="/explore?city=Ahmedabad" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <h2 style={{ margin: 0, color: '#1B4D3E' }}>Explore Ahmedabad</h2>
+                        <ChevronRight size={28} color="#1B4D3E" />
+                    </Link>
                 </div>
 
-                {/* RIGHT CONTAINER: Popular Owner Property */}
-                <div className="prop-listing-column right-owners">
-                    <h2 className="new-col-header">Popular Owner Property</h2>
+                <div className="new-prop-listing-container">
+                    {/* LEFT CONTAINER: Popular Projects (Ahmedabad) */}
+                    <div className="prop-listing-column left-projects">
+                        <h2 className="new-col-header">Popular Projects</h2>
 
-                    {/* Tabs */}
-                    <div className="prop-tabs">
-                        {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
-                            <button
-                                key={tab}
-                                className={`prop-tab-btn ${activeOwnerTab === tab.toLowerCase() ? 'active' : ''}`}
-                                onClick={() => setActiveOwnerTab(tab.toLowerCase())}
-                            >
-                                {tab}
-                            </button>
-                        ))}
+                        <div className="prop-tabs">
+                            {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    className={`prop-tab-btn ${activeAhdProjectTab === tab.toLowerCase() ? 'active' : ''}`}
+                                    onClick={() => setActiveAhdProjectTab(tab.toLowerCase())}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="prop-grid-2x2">
+                            {exploreCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeAhdProjectTab] || 0].items.slice(0, 4).map((item) => (
+                                <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
+                                    <div className="new-prop-img-box">
+                                        <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                    </div>
+                                    <div className="new-prop-details">
+                                        <h4 className="new-prop-title">{item.listingTitle}</h4>
+                                        <p className="new-prop-loc">{item.location}</p>
+                                        <p className="new-prop-price">{item.price}</p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+
+                        <Link to="/explore?city=Ahmedabad" className="new-see-all-btn">See All</Link>
                     </div>
 
-                    {/* Grid (2x2) */}
-                    <div className="prop-grid-2x2">
-                        {exploreGandhinagarCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeOwnerTab] || 0].items.slice(0, 4).map((item) => (
-                            <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
-                                <div className="new-prop-img-box">
-                                    <img src={item.image} alt={item.listingTitle} loading="lazy" />
-                                </div>
-                                <div className="new-prop-details">
-                                    <h4 className="new-prop-title">{item.listingTitle}</h4>
-                                    <p className="new-prop-loc">{item.location}</p>
-                                    <p className="new-prop-price">{item.price}</p>
-                                </div>
-                            </Link>
-                        ))}
+                    {/* RIGHT CONTAINER: Popular Owner Property (Ahmedabad) */}
+                    <div className="prop-listing-column right-owners">
+                        <h2 className="new-col-header">Popular Owner Property</h2>
+
+                        <div className="prop-tabs">
+                            {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    className={`prop-tab-btn ${activeAhdOwnerTab === tab.toLowerCase() ? 'active' : ''}`}
+                                    onClick={() => setActiveAhdOwnerTab(tab.toLowerCase())}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="prop-grid-2x2">
+                            {exploreCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeAhdOwnerTab] || 0].items.slice(0, 4).map((item) => (
+                                <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
+                                    <div className="new-prop-img-box">
+                                        <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                    </div>
+                                    <div className="new-prop-details">
+                                        <h4 className="new-prop-title">{item.listingTitle}</h4>
+                                        <p className="new-prop-loc">{item.location}</p>
+                                        <p className="new-prop-price">{item.price}</p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+
+                        <Link to="/explore?city=Ahmedabad" className="new-see-all-btn">See All</Link>
+                    </div>
+                </div>
+            </div>
+
+            {/* Explore Gandhinagar Section */}
+            <div className="explore-gandhinagar-section" style={{ marginTop: '60px' }}>
+                <div className="explore-header-container" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Link to="/explore?city=Gandhinagar" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <h2 style={{ margin: 0, color: '#1B4D3E' }}>Explore Gandhinagar</h2>
+                        <ChevronRight size={28} color="#1B4D3E" />
+                    </Link>
+                </div>
+
+                <div className="new-prop-listing-container">
+                    {/* LEFT CONTAINER: Popular Projects (Gandhinagar) */}
+                    <div className="prop-listing-column left-projects">
+                        <h2 className="new-col-header">Popular Projects</h2>
+
+                        <div className="prop-tabs">
+                            {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    className={`prop-tab-btn ${activeGnrProjectTab === tab.toLowerCase() ? 'active' : ''}`}
+                                    onClick={() => setActiveGnrProjectTab(tab.toLowerCase())}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="prop-grid-2x2">
+                            {exploreGandhinagarCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeGnrProjectTab] || 0].items.slice(0, 4).map((item) => (
+                                <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
+                                    <div className="new-prop-img-box">
+                                        <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                    </div>
+                                    <div className="new-prop-details">
+                                        <h4 className="new-prop-title">{item.listingTitle}</h4>
+                                        <p className="new-prop-loc">{item.location}</p>
+                                        <p className="new-prop-price">{item.price}</p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+
+                        <Link to="/explore?city=Gandhinagar" className="new-see-all-btn">See All</Link>
                     </div>
 
-                    <Link to="/explore" className="new-see-all-btn">See All</Link>
+                    {/* RIGHT CONTAINER: Popular Owner Property (Gandhinagar) */}
+                    <div className="prop-listing-column right-owners">
+                        <h2 className="new-col-header">Popular Owner Property</h2>
+
+                        <div className="prop-tabs">
+                            {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    className={`prop-tab-btn ${activeGnrOwnerTab === tab.toLowerCase() ? 'active' : ''}`}
+                                    onClick={() => setActiveGnrOwnerTab(tab.toLowerCase())}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="prop-grid-2x2">
+                            {exploreGandhinagarCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeGnrOwnerTab] || 0].items.slice(0, 4).map((item) => (
+                                <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
+                                    <div className="new-prop-img-box">
+                                        <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                    </div>
+                                    <div className="new-prop-details">
+                                        <h4 className="new-prop-title">{item.listingTitle}</h4>
+                                        <p className="new-prop-loc">{item.location}</p>
+                                        <p className="new-prop-price">{item.price}</p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+
+                        <Link to="/explore?city=Gandhinagar" className="new-see-all-btn">See All</Link>
+                    </div>
                 </div>
             </div>
 
