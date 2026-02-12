@@ -501,8 +501,8 @@ const Home = () => {
             <div className="explore-ahmedabad-section">
                 <div className="explore-header-container" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Link to="/explore?city=Ahmedabad" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <h2 style={{ margin: 0, color: '#1B4D3E' }}>Explore Ahmedabad</h2>
-                        <ChevronRight size={28} color="#1B4D3E" />
+                        <h2 style={{ margin: 0, color: '#E3BC5A' }}>Explore Ahmedabad</h2>
+                        <ChevronRight size={28} color="#E3BC5A" />
                     </Link>
                 </div>
 
@@ -581,8 +581,8 @@ const Home = () => {
             <div className="explore-gandhinagar-section" style={{ marginTop: '60px' }}>
                 <div className="explore-header-container" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Link to="/explore?city=Gandhinagar" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <h2 style={{ margin: 0, color: '#1B4D3E' }}>Explore Gandhinagar</h2>
-                        <ChevronRight size={28} color="#1B4D3E" />
+                        <h2 style={{ margin: 0, color: '#E3BC5A' }}>Explore Gandhinagar</h2>
+                        <ChevronRight size={28} color="#E3BC5A" />
                     </Link>
                 </div>
 

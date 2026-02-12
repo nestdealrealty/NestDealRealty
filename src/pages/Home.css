@@ -1612,12 +1612,49 @@ img {
     flex-wrap: wrap;
     /* Ensure tabs wrap on mobile */
 }
-/* LIGHT THEME OVERRIDES FOR LISTINGS */
-.new-col-header { color: #1B4D3E !important; }
-.prop-tab-btn { border-color: #1B4D3E !important; color: #1B4D3E !important; }
-.prop-tab-btn.active { background-color: #1B4D3E !important; color: #ffffff !important; }
-.new-prop-title { color: #1B4D3E !important; }
-.new-prop-loc { color: #555555 !important; }
-.new-prop-price { color: #8B6914 !important; }
-.new-see-all-btn { border-color: #1B4D3E !important; color: #1B4D3E !important; }
-.new-see-all-btn:hover { background-color: #1B4D3E !important; color: #ffffff !important; }
+
+/* LIGHT THEME OVERRIDES FOR LISTINGS - WHITE BG, GOLD TEXT */
+.new-col-header {
+    color: #E3BC5A !important;
+}
+
+.prop-tab-btn {
+    border-color: #E3BC5A !important;
+    color: #E3BC5A !important;
+}
+
+.prop-tab-btn.active {
+    background-color: #E3BC5A !important;
+    color: #000000 !important;
+}
+
+/* Ensure Explore sections are white */
+.explore-ahmedabad-section,
+.explore-gandhinagar-section,
+.new-prop-listing-container,
+.prop-listing-column {
+    background-color: #ffffff;
+}
+
+/* Force dark property titles on white bg */
+.new-prop-title {
+    color: #000000 !important;
+}
+
+.new-prop-loc {
+    color: #555555 !important;
+}
+
+.new-prop-price {
+    color: #E3BC5A !important;
+}
+
+.new-see-all-btn {
+    border-color: #E3BC5A !important;
+    color: #E3BC5A !important;
+}
+
+.new-see-all-btn:hover {
+    background-color: #E3BC5A !important;
+    color: #000000 !important;
+}
