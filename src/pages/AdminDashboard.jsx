@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase';
 import { Navigate } from 'react-router-dom';
-import { Check, X, MapPin, Search, Phone, User, MessageCircle, FileText, Activity, Home } from 'lucide-react';
+import { X, MapPin, MessageCircle, Activity, Home } from 'lucide-react';
 
 const ADMIN_EMAIL = 'minecraftxbox1389@gmail.com';
 
@@ -12,8 +12,11 @@ const AdminDashboard = () => {
     const [properties, setProperties] = useState([]);
     const [valuations, setValuations] = useState([]);
     const [leads, setLeads] = useState([]);
+    const [slides, setSlides] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedProperty, setSelectedProperty] = useState(null);
+    const [slideForm, setSlideForm] = useState({ image_file: null, title: '', price: '', tag: '' });
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         if (user?.email === ADMIN_EMAIL) {
@@ -24,10 +27,11 @@ const AdminDashboard = () => {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [propsRes, valsRes, leadsRes] = await Promise.all([
+            const [propsRes, valsRes, leadsRes, slidesRes] = await Promise.all([
                 supabase.from('properties').select('*').order('created_at', { ascending: false }),
                 supabase.from('valuations').select('*').order('created_at', { ascending: false }),
-                supabase.from('leads').select('*, properties(project_name)').order('created_at', { ascending: false })
+                supabase.from('leads').select('*, properties(project_name)').order('created_at', { ascending: false }),
+                supabase.from('home_slides').select('*').order('created_at', { ascending: false })
             ]);
 
             if (propsRes.error) throw propsRes.error;
@@ -37,6 +41,7 @@ const AdminDashboard = () => {
             setProperties(propsRes.data || []);
             setValuations(valsRes.data || []);
             setLeads(leadsRes.data || []);
+            setSlides(slidesRes.data || []);
         } catch (err) {
             console.error('Error fetching admin data:', err);
         } finally {
@@ -60,6 +65,77 @@ const AdminDashboard = () => {
             alert(`Updated status to ${status}`);
         } catch (err) {
             alert('Failed to update status');
+        }
+    };
+
+    const handleAddSlide = async (e) => {
+        e.preventDefault();
+        if (slides.length >= 5) {
+            alert("Maximum 5 slides allowed.");
+            return;
+        }
+
+        if (!slideForm.image_file) {
+            alert("Please select an image file.");
+            return;
+        }
+
+        setUploading(true);
+        try {
+            // 1. Upload Image to Supabase Storage
+            const file = slideForm.image_file;
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}.${fileExt}`;
+            const filePath = `slides/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('property-images') // Reusing existing bucket
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            // 2. Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('property-images')
+                .getPublicUrl(filePath);
+
+            // 3. Insert Slide Record
+            const newSlide = {
+                image_url: publicUrl,
+                title: slideForm.title,
+                price: slideForm.price,
+                tag: slideForm.tag
+            };
+
+            const { data, error } = await supabase.from('home_slides').insert([newSlide]).select();
+            if (error) throw error;
+
+            setSlides([data[0], ...slides]);
+            setSlideForm({ image_file: null, title: '', price: '', tag: '' });
+            alert("Slide added successfully!");
+        } catch (error) {
+            console.error("Error adding slide:", error);
+            alert("Failed to add slide. Ensure you have upload permissions.");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDeleteSlide = async (id) => {
+        if (slides.length <= 2) {
+            alert("Minimum 2 slides required.");
+            return;
+        }
+        if (!window.confirm("Delete this slide?")) return;
+
+        try {
+            const { error } = await supabase.from('home_slides').delete().eq('id', id);
+            if (error) throw error;
+            setSlides(slides.filter(s => s.id !== id));
+            alert("Slide deleted.");
+        } catch (error) {
+            console.error("Error deleting slide:", error);
+            alert("Failed to delete slide.");
         }
     };
 
@@ -157,6 +233,9 @@ const AdminDashboard = () => {
                 <div onClick={() => setActiveTab('leads')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'leads' ? '#E3BC5A20' : 'transparent', color: activeTab === 'leads' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <MessageCircle size={20} /> Leads / Contacts
                 </div>
+                <div onClick={() => setActiveTab('slides')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'slides' ? '#E3BC5A20' : 'transparent', color: activeTab === 'slides' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <MapPin size={20} /> Slideshow
+                </div>
             </div>
 
             {/* Content */}
@@ -220,6 +299,74 @@ const AdminDashboard = () => {
                                         </div>
                                         <div>Note: {l.message}</div>
                                     </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'slides' && (
+                    <div>
+                        <h2>Homepage Slideshow Management</h2>
+                        <p style={{ color: '#888', marginBottom: '20px' }}>Manage the rotating banner images on the homepage. (Min: 2, Max: 5)</p>
+
+                        {/* Add Slide Form */}
+                        <form onSubmit={handleAddSlide} style={{ background: '#1A1F1D', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
+                            <h3 style={{ marginTop: 0, color: '#E3BC5A' }}>Add New Slide</h3>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div style={{ gridColumn: '1/-1' }}>
+                                    <label style={{ display: 'block', marginBottom: '5px', color: '#888' }}>Upload Image</label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        required
+                                        style={{ padding: '10px', background: '#333', border: '1px solid #444', color: '#fff', borderRadius: '4px', width: '100%' }}
+                                        onChange={e => setSlideForm({ ...slideForm, image_file: e.target.files[0] })}
+                                    />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Title (e.g., The Planet, Ahmedabad)"
+                                    style={{ padding: '10px', background: '#333', border: '1px solid #444', color: '#fff', borderRadius: '4px' }}
+                                    value={slideForm.title}
+                                    onChange={e => setSlideForm({ ...slideForm, title: e.target.value })}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Price (e.g., ₹75L - 1.2Cr)"
+                                    style={{ padding: '10px', background: '#333', border: '1px solid #444', color: '#fff', borderRadius: '4px' }}
+                                    value={slideForm.price}
+                                    onChange={e => setSlideForm({ ...slideForm, price: e.target.value })}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Tag (e.g., Premium Flat)"
+                                    style={{ padding: '10px', background: '#333', border: '1px solid #444', color: '#fff', borderRadius: '4px' }}
+                                    value={slideForm.tag}
+                                    onChange={e => setSlideForm({ ...slideForm, tag: e.target.value })}
+                                />
+                                <button type="submit" disabled={slides.length >= 5 || uploading} style={{ gridColumn: '1/-1', padding: '12px', background: slides.length >= 5 || uploading ? '#555' : '#E3BC5A', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: slides.length >= 5 || uploading ? 'not-allowed' : 'pointer' }}>
+                                    {uploading ? 'Uploading...' : slides.length >= 5 ? 'Maximum Limit Reached (5)' : 'Add Slide'}
+                                </button>
+                            </div>
+                        </form>
+
+                        {/* Slides List */}
+                        <div style={{ display: 'grid', gap: '15px' }}>
+                            {slides.map(slide => (
+                                <div key={slide.id} style={{ background: '#1A1F1D', padding: '15px', borderRadius: '8px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                                    <img src={slide.image_url} alt="Slide" style={{ width: '150px', height: '80px', objectFit: 'cover', borderRadius: '4px' }} />
+                                    <div style={{ flex: 1 }}>
+                                        <h4 style={{ margin: '0 0 5px 0' }}>{slide.title || 'Untitled'}</h4>
+                                        <div style={{ fontSize: '0.9rem', color: '#888' }}>{slide.price} • <span style={{ color: '#E3BC5A' }}>{slide.tag}</span></div>
+                                    </div>
+                                    <button
+                                        onClick={() => handleDeleteSlide(slide.id)}
+                                        disabled={slides.length <= 2}
+                                        style={{ padding: '8px 15px', background: slides.length <= 2 ? '#555' : '#FF5252', color: '#fff', border: 'none', borderRadius: '4px', cursor: slides.length <= 2 ? 'not-allowed' : 'pointer' }}
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
                             ))}
                         </div>
