@@ -112,6 +112,8 @@ export default function ProjectDetails() {
     const [similarProjects, setSimilarProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeConfigIndex, setActiveConfigIndex] = useState(0);
+    const [activePlotIndex, setActivePlotIndex] = useState(0);
+    const [activeVillaIndex, setActiveVillaIndex] = useState(0);
     const [activeImage, setActiveImage] = useState(0);
     const [activeTowerIndex, setActiveTowerIndex] = useState(0);
     const [isBrochureModalOpen, setIsBrochureModalOpen] = useState(false);
@@ -346,6 +348,14 @@ export default function ProjectDetails() {
                     stroke: #FFFFFF !important;
                     color: #FFFFFF !important;
                 }
+                .shortlist-btn {
+                    transition: all 0.3s ease;
+                }
+                .shortlist-btn:hover {
+                    background: #5E7D5A !important;
+                    color: #FFFFFF !important;
+                    transform: scale(1.1);
+                }
             `}</style>
             
             {/* HERO SECTION INJECTED HERE */}
@@ -387,30 +397,89 @@ export default function ProjectDetails() {
                                 {project.locality} {project.city}
                             </span>
                         </div>
-                        {project.brochure_url && (
-                            <button 
-                                onClick={() => setIsBrochureModalOpen(true)}
-                                className="brochure-btn-premium"
-                                style={{ 
-                                    background: THEME.gold, 
-                                    color: '#FFF', 
-                                    border: 'none', 
-                                    padding: '12px 30px', 
-                                    borderRadius: '50px', 
-                                    fontWeight: '600', 
-                                    cursor: 'pointer', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: '8px', 
-                                    transition: 'all 0.3s ease',
-                                    fontSize: '0.95rem',
-                                    letterSpacing: '1px'
-                                }}
-                            >
-                                <Download size={18} /> GET BROCHURE
-                            </button>
-                        )}
+                        <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
+                            {project.brochure_url && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    <button 
+                                        onClick={() => setIsBrochureModalOpen(true)}
+                                        className="brochure-btn-premium"
+                                        style={{ 
+                                            background: THEME.gold, 
+                                            color: '#FFF', 
+                                            border: 'none', 
+                                            padding: '12px 30px', 
+                                            borderRadius: '50px', 
+                                            fontWeight: '600', 
+                                            cursor: 'pointer', 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            gap: '8px', 
+                                            transition: 'all 0.3s ease',
+                                            fontSize: '0.95rem',
+                                            letterSpacing: '1px'
+                                        }}
+                                    >
+                                        <Download size={18} /> GET BROCHURE
+                                    </button>
+                                    {project.rera_id && (
+                                        <div style={{ 
+                                            display: 'inline-flex', 
+                                            alignItems: 'center', 
+                                            gap: '6px', 
+                                            background: 'rgba(255,255,255,0.1)', 
+                                            backdropFilter: 'blur(10px)',
+                                            border: '1px solid rgba(255,255,255,0.2)',
+                                            padding: '6px 14px',
+                                            borderRadius: '6px',
+                                            color: '#FFF',
+                                            fontSize: '0.85rem',
+                                            fontWeight: '600',
+                                            letterSpacing: '0.5px',
+                                            marginTop: '5px'
+                                        }}>
+                                            <BadgeCheck size={16} style={{ color: '#4ADE80' }} />
+                                            RERA - {project.rera_id}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            <div style={{ display: 'flex', gap: '15px' }}>
+                                <button 
+                                    onClick={handleShare}
+                                    style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', color: '#FFF', padding: '12px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}
+                                    onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.4)'}
+                                    onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                                >
+                                    <Share2 size={20} />
+                                </button>
+                                <button 
+                                    style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', color: '#FFF', padding: '12px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}
+                                    onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.4)'}
+                                    onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                                >
+                                    <Heart size={20} />
+                                </button>
+                            </div>
+                        </div>
                     </div>
+                </div>
+                
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(245, 245, 239, 0.95)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${THEME.border}`, zIndex: 10, display: 'flex', justifyContent: 'center', gap: '40px', padding: '15px 0' }}>
+                    {(project.property_type === 'Plots' ? ['Overview', 'Floor Plan', 'Phases', 'Amenities', 'Location'] : ['Overview', 'Floor Plan', 'Amenities', 'Location']).map(sec => (
+                        <button 
+                            key={sec}
+                            onClick={() => {
+                                const id = sec.toLowerCase().replace(' ', '-');
+                                const el = document.getElementById(id);
+                                if (el) window.scrollTo({ top: el.offsetTop - 120, behavior: 'smooth' });
+                            }}
+                            style={{ background: 'none', border: 'none', color: THEME.text, fontWeight: '500', fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase', transition: 'all 0.3s' }}
+                            onMouseOver={(e) => e.currentTarget.style.color = THEME.gold}
+                            onMouseOut={(e) => e.currentTarget.style.color = THEME.text}
+                        >
+                            {sec}
+                        </button>
+                    ))}
                 </div>
             </header>
 
@@ -419,77 +488,135 @@ export default function ProjectDetails() {
                     <ChevronLeft size={16} /> Back to Search
                 </Link>
 
-                {/* Main 2-Column Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1.5fr', gap: '50px', alignItems: 'start', marginBottom: '80px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: project.property_type === 'Plots' ? '1.8fr 1fr' : '1.5fr 1fr', gap: '50px', alignItems: 'start', marginBottom: '80px' }}>
                     
-                    {/* Left Column: Property Technical Details */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '60px' }}>
-                        
-                        {/* Floor Plan Section (Unified) */}
-                        {allConfigs.length > 0 && (
-                            <section>
-                                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', color: THEME.text, marginBottom: '25px', fontWeight: '500', letterSpacing: '1px' }}>
-                                    {project.name} Floor Plan
-                                </h2>
-                                
+                        {project.property_type === 'Plots' ? (
+                            <>
+                                <section id="floor-plan">
+                                    <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.2rem', color: THEME.text, marginBottom: '30px', fontWeight: '600' }}>TYPES OF PLOTS</h2>
+                                    
+                                    <div style={{ display: 'flex', gap: '12px', marginBottom: '30px', overflowX: 'auto', paddingBottom: '10px' }}>
+                                        {project.plot_config?.map((plot, idx) => (
+                                            <button 
+                                                key={idx}
+                                                onClick={() => setActivePlotIndex(idx)}
+                                                style={{
+                                                    padding: '10px 25px', background: activePlotIndex === idx ? `${THEME.gold}15` : 'transparent',
+                                                    color: activePlotIndex === idx ? THEME.gold : THEME.muted,
+                                                    border: `1px solid ${activePlotIndex === idx ? THEME.gold : THEME.border}`,
+                                                    borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                {plot.size_sqft} Sq.ft
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {project.plot_config?.[activePlotIndex] && (
+                                        <div style={{ background: THEME.card, padding: '40px', borderRadius: '24px', border: `1px solid ${THEME.border}`, display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '40px', alignItems: 'center' }}>
+                                            <div style={{ background: '#F8F8F8', borderRadius: '16px', overflow: 'hidden', height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${THEME.border}` }}>
+                                                {project.plot_config[activePlotIndex].map_url ? (
+                                                    <img src={project.plot_config[activePlotIndex].map_url} alt="Plot Plan" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} />
+                                                ) : (
+                                                    <div style={{ color: THEME.muted }}>No Map Uploaded</div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <h3 style={{ fontSize: '2rem', margin: '0 0 10px 0', color: THEME.text }}>{project.plot_config[activePlotIndex].size_sqft} sq.ft Premium Plot</h3>
+                                                <div style={{ color: THEME.gold, fontSize: '1.8rem', fontWeight: '800', marginBottom: '25px' }}>₹{project.plot_config[activePlotIndex].price_per_sqft} <span style={{ fontSize: '0.9rem', opacity: 0.7 }}>per sq.ft</span></div>
+                                                <div style={{ display: 'grid', gap: '15px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${THEME.border}`, paddingBottom: '10px' }}>
+                                                        <span style={{ color: THEME.muted }}>SUPER BUILT UP AREA</span>
+                                                        <span style={{ fontWeight: 'bold' }}>{project.plot_config[activePlotIndex].sba_percent}%</span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <span style={{ color: THEME.muted }}>CONSTRUCTION AREA</span>
+                                                        <span style={{ fontWeight: 'bold' }}>{project.plot_config[activePlotIndex].construction_percent}%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </section>
+
+                                {project.villa_config && project.villa_config.length > 0 && (
+                                    <section id="villas">
+                                        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.2rem', color: THEME.text, marginBottom: '30px', fontWeight: '600' }}>TYPES OF VILLA</h2>
+                                        <div style={{ display: 'flex', gap: '12px', marginBottom: '30px', overflowX: 'auto', paddingBottom: '10px' }}>
+                                            {project.villa_config.map((villa, idx) => (
+                                                <button 
+                                                    key={idx}
+                                                    onClick={() => setActiveVillaIndex(idx)}
+                                                    style={{
+                                                        padding: '10px 25px', background: activeVillaIndex === idx ? `${THEME.gold}15` : 'transparent',
+                                                        color: activeVillaIndex === idx ? THEME.gold : THEME.muted,
+                                                        border: `1px solid ${activeVillaIndex === idx ? THEME.gold : THEME.border}`,
+                                                        borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s'
+                                                    }}
+                                                >
+                                                    {villa.bhk_type}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        {project.villa_config[activeVillaIndex] && (
+                                            <div style={{ background: THEME.card, padding: '40px', borderRadius: '24px', border: `1px solid ${THEME.border}`, display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '40px', alignItems: 'center' }}>
+                                                <div style={{ background: '#F8F8F8', borderRadius: '16px', overflow: 'hidden', height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${THEME.border}` }}>
+                                                    {project.villa_config[activeVillaIndex].map_url ? (
+                                                        <img src={project.villa_config[activeVillaIndex].map_url} alt="Villa Plan" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} />
+                                                    ) : (
+                                                        <div style={{ color: THEME.muted }}>No Map Uploaded</div>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <h3 style={{ fontSize: '2rem', margin: '0 0 10px 0', color: THEME.text }}>Premium {project.villa_config[activeVillaIndex].bhk_type} Villa</h3>
+                                                    <div style={{ color: THEME.gold, fontSize: '2.2rem', fontWeight: '800', marginBottom: '10px' }}>{project.villa_config[activeVillaIndex].price}</div>
+                                                    <p style={{ color: THEME.muted, fontSize: '1.1rem', marginBottom: '25px' }}>Built-up Area: {project.villa_config[activeVillaIndex].built_up} Sq.ft</p>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                                        <div style={{ background: THEME.dark, padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
+                                                            <div style={{ color: THEME.muted, fontSize: '0.7rem' }}>BEDROOMS</div>
+                                                            <div style={{ fontWeight: 'bold' }}>{project.villa_config[activeVillaIndex].bedrooms}</div>
+                                                        </div>
+                                                        <div style={{ background: THEME.dark, padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
+                                                            <div style={{ color: THEME.muted, fontSize: '0.7rem' }}>BATHROOMS</div>
+                                                            <div style={{ fontWeight: 'bold' }}>{project.villa_config[activeVillaIndex].bathrooms || 3}</div>
+                                                        </div>
+                                                        <div style={{ background: THEME.dark, padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
+                                                            <div style={{ color: THEME.muted, fontSize: '0.7rem' }}>BALCONIES</div>
+                                                            <div style={{ fontWeight: 'bold' }}>{project.villa_config[activeVillaIndex].balconies || 1}</div>
+                                                        </div>
+                                                        <div style={{ background: THEME.dark, padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
+                                                            <div style={{ color: THEME.muted, fontSize: '0.7rem' }}>FLOORS</div>
+                                                            <div style={{ fontWeight: 'bold' }}>{project.villa_config[activeVillaIndex].floors || 'G+1'}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </section>
+                                )}
+                            </>
+                        ) : (
+                            <section id="floor-plan">
+                                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.5rem', color: THEME.text, marginBottom: '25px', fontWeight: '500', letterSpacing: '1px' }}>Floor Plan</h2>
                                 <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', overflowX: 'auto', paddingBottom: '10px', borderBottom: `1px solid ${THEME.border}` }}>
                                     {allConfigs.map((config, idx) => (
-                                        <button 
-                                            key={idx}
-                                            onClick={() => setActiveConfigIndex(idx)}
-                                            style={{ 
-                                                padding: '12px 30px', 
-                                                background: activeConfigIndex === idx ? (config.isPenthouse ? `linear-gradient(90deg, ${THEME.gold}30, transparent)` : `${THEME.gold}15`) : 'transparent', 
-                                                color: activeConfigIndex === idx ? THEME.gold : THEME.muted, 
-                                                border: `1px solid ${activeConfigIndex === idx ? THEME.gold : 'transparent'}`, 
-                                                borderBottom: activeConfigIndex === idx ? `2px solid ${THEME.gold}` : 'none',
-                                                borderRadius: '8px 8px 0 0', 
-                                                fontSize: '1.2rem', 
-                                                fontWeight: 'bold', 
-                                                cursor: 'pointer',
-                                                whiteSpace: 'nowrap',
-                                                transition: 'all 0.2s'
-                                            }}
-                                        >
+                                        <button key={idx} onClick={() => setActiveConfigIndex(idx)} style={{ padding: '12px 30px', background: activeConfigIndex === idx ? (config.isPenthouse ? `linear-gradient(90deg, ${THEME.gold}30, transparent)` : `${THEME.gold}15`) : 'transparent', color: activeConfigIndex === idx ? THEME.gold : THEME.muted, border: `1px solid ${activeConfigIndex === idx ? THEME.gold : 'transparent'}`, borderBottom: activeConfigIndex === idx ? `2px solid ${THEME.gold}` : 'none', borderRadius: '8px 8px 0 0', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
                                             {config.bedrooms} BHK {config.isPenthouse && 'Penthouse'}
                                         </button>
                                     ))}
                                 </div>
-
                                 {activeConfig && (
-                                    <div style={{ 
-                                        display: 'grid', 
-                                        gridTemplateColumns: '1fr 1.5fr', 
-                                        gap: '40px', 
-                                        background: THEME.card, 
-                                        padding: '30px', 
-                                        borderRadius: '16px', 
-                                        border: `1px solid ${THEME.border}`,
-                                        boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
-                                    }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '40px', background: THEME.card, padding: '30px', borderRadius: '24px', border: `1px solid ${THEME.border}`, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
                                         <div>
                                             <div style={{ marginBottom: '30px' }}>
-                                                <h3 style={{ fontSize: '1.8rem', margin: '0 0 5px 0', color: activeConfig.isPenthouse ? THEME.gold : THEME.cardText }}>
-                                                    {activeConfig.bedrooms} BHK {activeConfig.isPenthouse ? 'Luxury Penthouse' : 'Premium Flat'}
-                                                </h3>
-                                                <p style={{ color: THEME.cardMuted, fontSize: '1.1rem', margin: 0 }}>
-                                                    {activeConfig.area} Sq.ft • {activeConfig.isPenthouse ? `Floor ${activeConfig.floor_number}` : 'Carpet Area'}
-                                                </p>
-                                                <div style={{ color: activeConfig.isPenthouse ? THEME.cardText : THEME.gold, fontSize: '1.6rem', fontWeight: 'bold', marginTop: '10px' }}>
-                                                    {activeConfig.price}
-                                                </div>
+                                                <h3 style={{ fontSize: '1.8rem', margin: '0 0 5px 0', color: activeConfig.isPenthouse ? THEME.gold : THEME.cardText }}>{activeConfig.bedrooms} BHK {activeConfig.isPenthouse ? 'Luxury Penthouse' : 'Premium Flat'}</h3>
+                                                <p style={{ color: THEME.cardMuted, fontSize: '1.1rem', margin: 0 }}>{activeConfig.area} Sq.ft • {activeConfig.isPenthouse ? `Floor ${activeConfig.floor_number}` : 'Carpet Area'}</p>
+                                                <div style={{ color: activeConfig.isPenthouse ? THEME.cardText : THEME.gold, fontSize: '1.6rem', fontWeight: 'bold', marginTop: '10px' }}>{activeConfig.price}</div>
                                             </div>
-                                            
                                             {!activeConfig.isPenthouse && (
                                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                                    {[
-                                                        { label: 'General Toilet', val: activeConfig.general_toilet },
-                                                        { label: 'Personal Toilet', val: activeConfig.personal_toilet },
-                                                        { label: 'Sky Patio', val: activeConfig.sky_patio_balcony },
-                                                        { label: 'Washyard', val: activeConfig.washyard },
-                                                        { label: 'Car Parking', val: activeConfig.car_parking },
-                                                        { label: 'Floor', val: activeConfig.floor_number || 'Multiple' }
-                                                    ].map((item, i) => (
+                                                    {[{ label: 'General Toilet', val: activeConfig.general_toilet }, { label: 'Personal Toilet', val: activeConfig.personal_toilet }, { label: 'Sky Patio', val: activeConfig.sky_patio_balcony }, { label: 'Washyard', val: activeConfig.washyard }, { label: 'Car Parking', val: activeConfig.car_parking }, { label: 'Floor', val: activeConfig.floor_number || 'Multiple' }].map((item, i) => (
                                                         <div key={i} style={{ background: '#FFFFFF', padding: '15px', borderRadius: '12px', border: `1px solid ${THEME.border}`, boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
                                                             <div style={{ color: THEME.muted, fontSize: '0.75rem', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{item.label}</div>
                                                             <div style={{ fontWeight: '600', fontSize: '1rem', color: THEME.text }}>{item.val}</div>
@@ -498,37 +625,20 @@ export default function ProjectDetails() {
                                                 </div>
                                             )}
                                         </div>
-
-                                        {/* Map Preview */}
                                         <div style={{ background: THEME.card, borderRadius: '12px', border: `1px solid ${THEME.border}`, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                                             <div style={{ padding: '12px 20px', background: THEME.dark, borderBottom: `1px solid ${THEME.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '0.9rem', color: THEME.gold, fontWeight: 'bold' }}>
-                                                    {activeConfig.isPenthouse ? 'PENTHOUSE' : `${activeConfig.bedrooms} BHK`} LAYOUT MAP
-                                                </span>
-                                                {activeConfig.map_url && (
-                                                    <button onClick={() => window.open(activeConfig.map_url, '_blank')} style={{ background: 'none', border: 'none', color: THEME.gold, cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '500' }}>
-                                                        <Maximize2 size={14} /> Fullscreen
-                                                    </button>
-                                                )}
+                                                <span style={{ fontSize: '0.9rem', color: THEME.gold, fontWeight: 'bold' }}>{activeConfig.isPenthouse ? 'PENTHOUSE' : `${activeConfig.bedrooms} BHK`} LAYOUT MAP</span>
+                                                {activeConfig.map_url && <button onClick={() => window.open(activeConfig.map_url, '_blank')} style={{ background: 'none', border: 'none', color: THEME.gold, cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '500' }}><Maximize2 size={14} /> Fullscreen</button>}
                                             </div>
-                                            <div style={{ flex: 1, padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                {activeConfig.map_url ? (
-                                                    <img src={activeConfig.map_url} alt="Layout" style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain' }} />
-                                                ) : (
-                                                    <div style={{ color: THEME.cardMuted }}>No Layout Map Uploaded</div>
-                                                )}
-                                            </div>
+                                            <div style={{ flex: 1, padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{activeConfig.map_url ? <img src={activeConfig.map_url} alt="Layout" style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain' }} /> : <div style={{ color: THEME.cardMuted }}>No Layout Map Uploaded</div>}</div>
                                         </div>
                                     </div>
                                 )}
                             </section>
                         )}
 
-                        {/* Amenities */}
-                        <section ref={amenitiesRef}>
-                            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', color: THEME.text, marginBottom: '25px', fontWeight: '500', letterSpacing: '1px' }}>
-                                AMENITIES
-                            </h2>
+                        <section id="amenities" ref={amenitiesRef}>
+                            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', color: THEME.text, marginBottom: '25px', fontWeight: '500', letterSpacing: '1px' }}>AMENITIES</h2>
                             <div style={{ background: THEME.card, padding: '35px', borderRadius: '16px', border: `1px solid ${THEME.border}`, color: THEME.text, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '25px 20px' }}>
                                     {(showAllAmenities ? project.amenities : project.amenities?.slice(0, 8))?.map((am, i) => {
@@ -546,231 +656,54 @@ export default function ProjectDetails() {
                                 </div>
                                 {project.amenities?.length > 8 && (
                                     <div style={{ marginTop: '25px', paddingTop: '20px' }}>
-                                        <button 
-                                            onClick={() => setShowAllAmenities(!showAllAmenities)}
-                                            style={{ background: 'none', border: 'none', color: '#1A1A1A', fontWeight: '700', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: '0.95rem' }}
-                                        >
-                                            {showAllAmenities ? 'Show less' : 'Show more'}
-                                        </button>
+                                        <button onClick={() => setShowAllAmenities(!showAllAmenities)} style={{ background: 'none', border: 'none', color: '#1A1A1A', fontWeight: '700', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: '0.95rem' }}>{showAllAmenities ? 'Show less' : 'Show more'}</button>
                                     </div>
                                 )}
                             </div>
                         </section>
 
-                        {/* Location Map */}
                         {project.google_map_link && (
-                            <section>
+                            <section id="location">
                                 <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', color: THEME.text, marginBottom: '25px', fontWeight: '500', letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     Project Location
-                                    <a 
-                                        href={project.google_map_link} 
-                                        target="_blank" 
-                                        rel="noreferrer"
-                                        style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: `${THEME.gold}15`, color: THEME.gold, borderRadius: '8px', textDecoration: 'none', fontWeight: '600' }}
-                                    >
+                                    <a href={project.google_map_link} target="_blank" rel="noreferrer" style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: `${THEME.gold}15`, color: THEME.gold, borderRadius: '8px', textDecoration: 'none', fontWeight: '600' }}>
                                         <Navigation size={16} /> Open in Google Maps
                                     </a>
                                 </h2>
                                 <div style={{ width: '100%', height: '450px', borderRadius: '16px', overflow: 'hidden', border: `1px solid ${THEME.border}`, background: THEME.card, position: 'relative', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                                    <iframe 
-                                        src={`https://maps.google.com/maps?q=${encodeURIComponent(`${project.name} ${project.locality} ${project.city}`)}&output=embed`}
-                                        style={{ width: '100%', height: '100%', border: 0 }} 
-                                        allowFullScreen="" 
-                                        loading="lazy" 
-                                        referrerPolicy="no-referrer-when-downgrade"
-                                        title="Project Location"
-                                    ></iframe>
+                                    <iframe src={`https://maps.google.com/maps?q=${encodeURIComponent(`${project.name} ${project.locality} ${project.city}`)}&output=embed`} style={{ width: '100%', height: '100%', border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Project Location"></iframe>
                                 </div>
                             </section>
                         )}
-
                     </div>
 
-                    {/* Right Column: Sidebar (Sticky) */}
                     <div style={{ position: 'sticky', top: '100px', display: 'flex', flexDirection: 'column', gap: '25px' }}>
-                        
-                        {/* Empty Space preserved to align the Form correctly if needed, or simply render the Form at top */}
-
-
-                        {/* Contact Form Card */}
-                        <div style={{ background: THEME.card, borderRadius: '16px', border: `1px solid ${THEME.border}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                            {/* Trend Banner */}
-                            <div style={{ background: `${THEME.gold}15`, color: THEME.gold, padding: '10px', fontSize: '0.85rem', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                                <TrendingUp size={16} /> Most viewed project in this area
-                            </div>
-                            
-                            <div style={{ padding: '30px' }}>
-                                {/* Seller Info */}
-                                <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
-                                    <div style={{ width: '60px', height: '60px', background: THEME.dark, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: `1px solid ${THEME.border}` }}>
-                                        <img src={Logo} alt="Nest Deal Logo" style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
-                                    </div>
-                                    <div>
-                                        <div style={{ color: THEME.cardMuted, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Contact Seller</div>
-                                        <div style={{ color: THEME.cardText, fontSize: '1.2rem', fontWeight: 'bold', margin: '2px 0' }}>NEST DEAL REALTY</div>
-                                        <div style={{ color: THEME.gold, fontSize: '0.9rem', fontWeight: '600' }}>+91 84696 30555</div>
-                                    </div>
-                                </div>
-
-                                {/* Form Fields */}
-                                {submitted ? (
-                                    <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                                        <div style={{ width: '60px', height: '60px', background: `${THEME.gold}20`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px' }}>
-                                            <CheckCircle2 color={THEME.gold} size={30} />
-                                        </div>
-                                        <h3 style={{ margin: '0 0 5px 0', color: THEME.gold }}>Request Sent!</h3>
-                                        <p style={{ margin: 0, fontSize: '0.9rem', color: THEME.cardMuted }}>Our team will contact you shortly.</p>
-                                        <button onClick={() => setSubmitted(false)} style={{ background: 'none', border: 'none', color: THEME.gold, fontSize: '0.8rem', marginTop: '15px', cursor: 'pointer', textDecoration: 'underline' }}>Send another request</button>
-                                    </div>
-                                ) : (
-                                    <form onSubmit={handleInquiry} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                        <div style={{ position: 'relative' }}>
-                                            <User size={18} style={{ position: 'absolute', left: '15px', top: '15.5px', color: THEME.muted }} />
-                                            <input 
-                                                required
-                                                placeholder="Name"
-                                                value={inquiryForm.name}
-                                                onChange={(e) => setInquiryForm({...inquiryForm, name: e.target.value})}
-                                                style={{ width: '100%', padding: '15px 15px 15px 45px', background: THEME.dark, border: `1px solid ${THEME.border}`, borderRadius: '12px', color: THEME.text, outline: 'none', fontSize: '0.95rem' }}
-                                            />
-                                        </div>
-                                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                            <Phone size={18} style={{ position: 'absolute', left: '15px', color: THEME.muted }} />
-                                            <span style={{ position: 'absolute', left: '45px', color: THEME.muted, fontWeight: 'bold' }}>+91</span>
-                                            <input 
-                                                required
-                                                type="tel"
-                                                maxLength={10}
-                                                placeholder="Mobile Number"
-                                                value={inquiryForm.phone}
-                                                onChange={(e) => setInquiryForm({...inquiryForm, phone: e.target.value.replace(/\D/g,'')})}
-                                                style={{ width: '100%', padding: '15px 15px 15px 85px', background: THEME.dark, border: `1px solid ${THEME.border}`, borderRadius: '12px', color: THEME.text, outline: 'none', fontSize: '0.95rem' }}
-                                            />
-                                        </div>
-                                        <div style={{ position: 'relative' }}>
-                                            <Mail size={18} style={{ position: 'absolute', left: '15px', top: '15.5px', color: THEME.muted }} />
-                                            <input 
-                                                type="email"
-                                                placeholder="Email Address"
-                                                value={inquiryForm.email}
-                                                onChange={(e) => setInquiryForm({...inquiryForm, email: e.target.value})}
-                                                style={{ width: '100%', padding: '15px 15px 15px 45px', background: THEME.dark, border: `1px solid ${THEME.border}`, borderRadius: '12px', color: THEME.text, outline: 'none', fontSize: '0.95rem' }}
-                                            />
-                                        </div>
-
-                                        <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
-                                            <input 
-                                                type="checkbox" 
-                                                checked={inquiryForm.agreed} 
-                                                onChange={(e) => setInquiryForm({...inquiryForm, agreed: e.target.checked})}
-                                                style={{ marginTop: '3px', cursor: 'pointer', accentColor: THEME.gold }}
-                                            />
-                                            <label style={{ fontSize: '0.75rem', color: THEME.cardMuted, lineHeight: '1.4' }}>
-                                                I agree to be contacted by Nest Deal agents via phone or email regarding this property.
-                                            </label>
-                                        </div>
-
-                                        <button 
-                                            type="submit"
-                                            style={{ width: '100%', padding: '16px', background: THEME.gold, border: 'none', borderRadius: '12px', color: '#FFFFFF', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', marginTop: '5px', transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(94, 125, 90, 0.2)' }}
-                                            onMouseOver={(e) => e.currentTarget.style.filter = 'brightness(1.1)'}
-                                            onMouseOut={(e) => e.currentTarget.style.filter = 'brightness(1)'}
-                                        >
-                                            Get Contact Details
-                                        </button>
-                                    </form>
-                                )}
+                        <div id="overview" style={{ background: THEME.card, padding: '30px', borderRadius: '24px', border: `1px solid ${THEME.border}`, color: THEME.text, boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
+                            <h3 style={{ marginTop: 0, marginBottom: '25px', fontSize: '1.2rem', color: THEME.gold, borderBottom: `1px solid ${THEME.border}`, paddingBottom: '15px' }}>OVERVIEW</h3>
+                            <div style={{ display: 'grid', gap: '20px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Property Type</span><span style={{ fontWeight: 'bold' }}>{project.property_type}</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Status</span><span style={{ fontWeight: 'bold' }}>{project.construction_status}</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Total Plot Area</span><span style={{ fontWeight: 'bold' }}>{project.total_plot_area} Sq.ft</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Total Plots</span><span style={{ fontWeight: 'bold' }}>{project.total_plots}</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Price Range</span><span style={{ fontWeight: 'bold', color: THEME.gold }}>₹{project.min_price} - ₹{project.max_price}</span></div>
                             </div>
                         </div>
 
-                        {/* Shortlist Card */}
-                        <div style={{ background: THEME.card, padding: '25px', borderRadius: '16px', border: `1px solid ${THEME.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: THEME.text, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                            <div>
-                                <h4 style={{ margin: '0 0 5px 0', fontSize: '1.1rem' }}>Still deciding?</h4>
-                                <p style={{ margin: 0, fontSize: '0.85rem', color: THEME.cardMuted }}>Shortlist this property for now & easily come back to it later.</p>
-                            </div>
-                            <button style={{ width: '45px', height: '45px', borderRadius: '50%', background: THEME.dark, border: `1px solid ${THEME.border}`, color: THEME.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                                <Heart size={20} />
-                            </button>
-                        </div>
-
-                        {/* Overview block */}
-                        <div style={{ background: THEME.card, padding: '25px', borderRadius: '16px', border: `1px solid ${THEME.border}`, color: THEME.text, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                            <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '1.1rem', color: THEME.gold }}>OVERVIEW</h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                <div><div style={{color: THEME.cardMuted, fontSize: '0.75rem'}}>PROPERTY TYPE</div><div style={{fontWeight: 'bold', fontSize: '0.95rem'}}>{project.property_type?.toUpperCase()}</div></div>
-                                <div><div style={{color: THEME.cardMuted, fontSize: '0.75rem'}}>STATUS</div><div style={{fontWeight: 'bold', fontSize: '0.95rem'}}>{project.construction_status || 'Under Construction'}</div></div>
-                                <div><div style={{color: THEME.cardMuted, fontSize: '0.75rem'}}>TOTAL AREA</div><div style={{fontWeight: 'bold', fontSize: '0.95rem'}}>{project.total_plot_area} Sq.ft</div></div>
-                                <div><div style={{color: THEME.cardMuted, fontSize: '0.75rem'}}>TOTAL UNITS</div><div style={{fontWeight: 'bold', fontSize: '0.95rem'}}>{project.total_units}</div></div>
-                                <div><div style={{color: THEME.cardMuted, fontSize: '0.75rem'}}>LAUNCH DATE</div><div style={{fontWeight: 'bold', fontSize: '0.95rem'}}>{project.launch_date || 'N/A'}</div></div>
-                                <div><div style={{color: THEME.cardMuted, fontSize: '0.75rem'}}>POSSESSION DATE</div><div style={{fontWeight: 'bold', fontSize: '0.95rem'}}>{project.possession_date || 'N/A'}</div></div>
-                            </div>
-                        </div>
-
-                        {/* Tower Details (Sidebar Block) */}
-                        {project.towers && project.towers.length > 0 && (
-                            <div style={{ background: THEME.card, padding: '25px', borderRadius: '16px', border: `1px solid ${THEME.border}`, color: THEME.text, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                                <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '1.1rem', color: THEME.gold }}>TOWER DETAILS</h3>
-                                
-                                {/* Selection Tabs */}
-                                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '20px', paddingBottom: '8px', borderBottom: `1px solid ${THEME.border}` }}>
-                                    {project.towers.map((tower, idx) => (
-                                        <button 
-                                            key={idx}
-                                            onClick={() => setActiveTowerIndex(idx)}
-                                            style={{ 
-                                                padding: '6px 15px', 
-                                                background: activeTowerIndex === idx ? `${THEME.gold}15` : 'transparent', 
-                                                color: activeTowerIndex === idx ? THEME.gold : THEME.cardMuted, 
-                                                border: `1px solid ${activeTowerIndex === idx ? THEME.gold : 'transparent'}`,
-                                                borderRadius: '4px',
-                                                cursor: 'pointer',
-                                                fontSize: '0.85rem',
-                                                fontWeight: 'bold',
-                                                whiteSpace: 'nowrap'
-                                            }}
-                                        >
-                                            {tower.type}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* Active Tower Details */}
-                                {project.towers[activeTowerIndex] && (
-                                        <div style={{ display: 'grid', gap: '15px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${THEME.border}50`, paddingBottom: '8px' }}>
-                                                <span style={{ color: THEME.cardMuted, fontSize: '0.9rem' }}>Story Count</span>
-                                                <span style={{ fontWeight: 'bold' }}>G + {project.towers[activeTowerIndex].story}</span>
+                        {project.property_type === 'Plots' && project.phases?.length > 0 && (
+                            <div id="phases" style={{ background: THEME.card, padding: '30px', borderRadius: '24px', border: `1px solid ${THEME.border}`, color: THEME.text, boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
+                                <h3 style={{ marginTop: 0, marginBottom: '25px', fontSize: '1.2rem', color: THEME.gold, borderBottom: `1px solid ${THEME.border}`, paddingBottom: '15px' }}>TOTAL PHASES</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                                    {project.phases.map((phase, pIdx) => (
+                                        <div key={pIdx} style={{ borderBottom: pIdx < project.phases.length - 1 ? `1px dashed ${THEME.border}` : 'none', paddingBottom: '20px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                                                <span style={{ fontWeight: '800', color: THEME.text, textTransform: 'uppercase' }}>{phase.name}</span>
+                                                <span style={{ color: THEME.gold, fontWeight: 'bold' }}>{phase.total_units} UNITS</span>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${THEME.border}50`, paddingBottom: '8px' }}>
-                                                <span style={{ color: THEME.cardMuted, fontSize: '0.9rem' }}>Total Units</span>
-                                                <span style={{ fontWeight: 'bold' }}>{project.towers[activeTowerIndex].total_units || 'N/A'}</span>
-                                            </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${THEME.border}50`, paddingBottom: '8px' }}>
-                                                <span style={{ color: THEME.cardMuted, fontSize: '0.9rem' }}>Flat per Floor</span>
-                                                <span style={{ fontWeight: 'bold' }}>{project.towers[activeTowerIndex].units_per_floor}</span>
-                                            </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                <span style={{ color: THEME.muted, fontSize: '0.9rem' }}>Lift Count</span>
-                                                <span style={{ fontWeight: 'bold' }}>{project.towers[activeTowerIndex].lift_per_floor}</span>
-                                            </div>
-                                        </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Nearby Landmarks */}
-                        {project.landmarks && project.landmarks.length > 0 && (
-                            <div style={{ background: THEME.card, padding: '25px', borderRadius: '16px', border: `1px solid ${THEME.border}`, color: THEME.text, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                                <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin color={THEME.gold} size={18} /> Nearby Landmarks</h3>
-                                <div style={{ display: 'grid', gap: '20px', maxHeight: '300px', overflowY: 'auto', paddingRight: '5px' }}>
-                                    {project.landmarks.map((lm, i) => (
-                                        <div key={i}>
-                                            <div style={{ color: THEME.gold, fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>{lm.title}</div>
-                                            <div style={{ display: 'grid', gap: '6px', paddingLeft: '10px', borderLeft: `2px solid ${THEME.gold}30` }}>
-                                                {lm.items?.map((item, idx) => (
-                                                    <div key={idx} style={{ color: THEME.cardMuted, fontSize: '0.85rem', display: 'flex', gap: '8px' }}>
-                                                        <span style={{ color: THEME.gold }}>•</span> {item}
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '10px' }}>
+                                                {phase.plot_distributions?.map((dist, dIdx) => (
+                                                    <div key={dIdx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                                                        <span style={{ color: THEME.muted }}>• {dist.count} Plots</span>
+                                                        <span style={{ fontWeight: '600' }}>{dist.size} Sq.ft</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -780,70 +713,44 @@ export default function ProjectDetails() {
                             </div>
                         )}
 
+                        <div style={{ background: THEME.card, borderRadius: '16px', border: `1px solid ${THEME.border}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                            <div style={{ background: `${THEME.gold}15`, color: THEME.gold, padding: '10px', fontSize: '0.85rem', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><TrendingUp size={16} /> Most viewed project in this area</div>
+                            <div style={{ padding: '30px' }}>
+                                <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
+                                    <div style={{ width: '60px', height: '60px', background: THEME.dark, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: `1px solid ${THEME.border}` }}><img src={Logo} alt="Nest Deal Logo" style={{ width: '80%', height: '80%', objectFit: 'contain' }} /></div>
+                                    <div><div style={{ color: THEME.cardMuted, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Contact Seller</div><div style={{ color: THEME.cardText, fontSize: '1.2rem', fontWeight: 'bold', margin: '2px 0' }}>NEST DEAL REALTY</div><div style={{ color: THEME.gold, fontSize: '0.9rem', fontWeight: '600' }}>+91 84696 30555</div></div>
+                                </div>
+                                {submitted ? <div style={{ textAlign: 'center', padding: '20px 0' }}><div style={{ width: '60px', height: '60px', background: `${THEME.gold}20`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px' }}><CheckCircle2 color={THEME.gold} size={30} /></div><h3 style={{ margin: '0 0 5px 0', color: THEME.gold }}>Request Sent!</h3><p style={{ margin: 0, fontSize: '0.9rem', color: THEME.cardMuted }}>Our team will contact you shortly.</p><button onClick={() => setSubmitted(false)} style={{ background: 'none', border: 'none', color: THEME.gold, fontSize: '0.8rem', marginTop: '15px', cursor: 'pointer', textDecoration: 'underline' }}>Send another request</button></div> : 
+                                <form onSubmit={handleInquiry} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}><div style={{ position: 'relative' }}><User size={18} style={{ position: 'absolute', left: '15px', top: '15.5px', color: THEME.muted }} /><input required placeholder="Name" value={inquiryForm.name} onChange={(e) => setInquiryForm({...inquiryForm, name: e.target.value})} style={{ width: '100%', padding: '15px 15px 15px 45px', background: THEME.dark, border: `1px solid ${THEME.border}`, borderRadius: '12px', color: THEME.text, outline: 'none', fontSize: '0.95rem' }} /></div><div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}><Phone size={18} style={{ position: 'absolute', left: '15px', color: THEME.muted }} /><span style={{ position: 'absolute', left: '45px', color: THEME.muted, fontWeight: 'bold' }}>+91</span><input required type="tel" maxLength={10} placeholder="Mobile Number" value={inquiryForm.phone} onChange={(e) => setInquiryForm({...inquiryForm, phone: e.target.value.replace(/\D/g,'')})} style={{ width: '100%', padding: '15px 15px 15px 85px', background: THEME.dark, border: `1px solid ${THEME.border}`, borderRadius: '12px', color: THEME.text, outline: 'none', fontSize: '0.95rem' }} /></div><div style={{ position: 'relative' }}><Mail size={18} style={{ position: 'absolute', left: '15px', top: '15.5px', color: THEME.muted }} /><input type="email" placeholder="Email Address" value={inquiryForm.email} onChange={(e) => setInquiryForm({...inquiryForm, email: e.target.value})} style={{ width: '100%', padding: '15px 15px 15px 45px', background: THEME.dark, border: `1px solid ${THEME.border}`, borderRadius: '12px', color: THEME.text, outline: 'none', fontSize: '0.95rem' }} /></div><div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}><input type="checkbox" checked={inquiryForm.agreed} onChange={(e) => setInquiryForm({...inquiryForm, agreed: e.target.checked})} style={{ marginTop: '3px', cursor: 'pointer', accentColor: THEME.gold }} /><label style={{ fontSize: '0.75rem', color: THEME.cardMuted, lineHeight: '1.4' }}>I agree to be contacted by Nest Deal agents via phone or email regarding this property.</label></div><button type="submit" style={{ width: '100%', padding: '16px', background: THEME.gold, border: 'none', borderRadius: '12px', color: '#FFFFFF', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', marginTop: '5px', transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(94, 125, 90, 0.2)' }} onMouseOver={(e) => e.currentTarget.style.filter = 'brightness(1.1)'} onMouseOut={(e) => e.currentTarget.style.filter = 'brightness(1)'}>Get Contact Details</button></form>}
+                            </div>
+                        </div>
+
+                        {project.landmarks?.length > 0 && (
+                            <div style={{ background: THEME.card, padding: '25px', borderRadius: '16px', border: `1px solid ${THEME.border}`, color: THEME.text, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                                <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin color={THEME.gold} size={18} /> Nearby Landmarks</h3>
+                                <div style={{ display: 'grid', gap: '20px', maxHeight: '300px', overflowY: 'auto', paddingRight: '5px' }}>
+                                    {project.landmarks.map((lm, i) => (
+                                        <div key={i}><div style={{ color: THEME.gold, fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}><MapPin size={14} /> {lm.title}</div><div style={{ display: 'grid', gap: '6px', paddingLeft: '10px', borderLeft: `2px solid ${THEME.gold}30` }}>{lm.items?.map((item, idx) => (<div key={idx} style={{ color: THEME.cardMuted, fontSize: '0.85rem', display: 'flex', gap: '8px' }}><span style={{ color: THEME.gold }}>•</span> {item}</div>))}</div></div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {similarProjects.length > 0 && (
-                    <div style={{ marginTop: '20px', marginBottom: '80px' }}>
-                        <PropertySlider title="Similar Projects in Area" properties={similarProjects} baseRoute="/project" />
-                    </div>
-                )}
-
+                {similarProjects.length > 0 && <div style={{ marginTop: '20px', marginBottom: '80px' }}><PropertySlider title="Similar Projects in Area" properties={similarProjects} baseRoute="/project" /></div>}
                 <div style={{ height: '100px' }}></div>
             </div>
 
-            {/* Premium Brochure Modal */}
             {isBrochureModalOpen && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(5px)' }}>
                     <div style={{ background: THEME.card, width: '100%', maxWidth: '450px', borderRadius: '16px', border: `1px solid ${THEME.border}`, padding: '40px', position: 'relative', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', color: THEME.text }}>
-                        <button 
-                            onClick={() => { setIsBrochureModalOpen(false); setBrochureStep(1); }}
-                            style={{ position: 'absolute', top: '25px', right: '25px', background: 'none', border: 'none', color: THEME.muted, cursor: 'pointer' }}
-                        >✕</button>
-
-                        <div style={{ textAlign: 'center', marginBottom: '35px' }}>
-                            <div style={{ width: '70px', height: '70px', background: `${THEME.gold}15`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', border: `1px solid ${THEME.gold}30` }}>
-                                <Download color={THEME.gold} size={30} />
-                            </div>
-                            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', margin: '0 0 10px 0', color: THEME.text, fontWeight: '500' }}>Project Brochure</h2>
-                            <p style={{ color: THEME.muted, fontSize: '0.95rem', margin: 0 }}>
-                                Enter your details to instantly download the premium project brochure.
-                            </p>
-                        </div>
-
+                        <button onClick={() => setIsBrochureModalOpen(false)} style={{ position: 'absolute', top: '25px', right: '25px', background: 'none', border: 'none', color: THEME.muted, cursor: 'pointer' }}>✕</button>
+                        <div style={{ textAlign: 'center', marginBottom: '35px' }}><div style={{ width: '70px', height: '70px', background: `${THEME.gold}15`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', border: `1px solid ${THEME.gold}30` }}><Download color={THEME.gold} size={30} /></div><h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', margin: '0 0 10px 0', color: THEME.text, fontWeight: '500' }}>Project Brochure</h2><p style={{ color: THEME.muted, fontSize: '0.95rem', margin: 0 }}>Enter your details to instantly download the premium project brochure.</p></div>
                         <form onSubmit={handleBrochureDownload} style={{ display: 'grid', gap: '20px' }}>
-                            <div style={{ position: 'relative' }}>
-                                <User size={18} style={{ position: 'absolute', left: '15px', top: '15.5px', color: THEME.muted }} />
-                                <input 
-                                    required
-                                    placeholder="Full Name"
-                                    value={brochureForm.name}
-                                    onChange={(e) => setBrochureForm({...brochureForm, name: e.target.value})}
-                                    style={{ width: '100%', padding: '15px 15px 15px 45px', background: THEME.dark, border: `1px solid ${THEME.border}`, borderRadius: '12px', color: THEME.text, outline: 'none' }}
-                                />
-                            </div>
-                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                <Phone size={18} style={{ position: 'absolute', left: '15px', color: THEME.muted }} />
-                                <span style={{ position: 'absolute', left: '45px', color: THEME.gold, fontWeight: 'bold' }}>+91</span>
-                                <input 
-                                    required
-                                    type="tel"
-                                    maxLength={10}
-                                    placeholder="Enter 10-digit Mobile"
-                                    value={brochureForm.phone}
-                                    onChange={(e) => setBrochureForm({...brochureForm, phone: e.target.value.replace(/\D/g,'')})}
-                                    style={{ width: '100%', padding: '15px 15px 15px 85px', background: THEME.dark, border: `1px solid ${THEME.border}`, borderRadius: '12px', color: THEME.text, outline: 'none', fontSize: '1.1rem' }}
-                                />
-                            </div>
-                            <button 
-                                type="submit"
-                                disabled={verifying}
-                                style={{ width: '100%', padding: '16px', background: THEME.gold, color: '#FFFFFF', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', marginTop: '10px', transition: 'all 0.2s', opacity: verifying ? 0.7 : 1, boxShadow: '0 4px 15px rgba(94, 125, 90, 0.2)' }}
-                                onMouseOver={(e) => !verifying && (e.currentTarget.style.filter = 'brightness(1.1)')}
-                                onMouseOut={(e) => !verifying && (e.currentTarget.style.filter = 'brightness(1)')}
-                            >
-                                {verifying ? "Processing..." : "DOWNLOAD NOW"}
-                            </button>
+                            <div style={{ position: 'relative' }}><User size={18} style={{ position: 'absolute', left: '15px', top: '15.5px', color: THEME.muted }} /><input required placeholder="Full Name" value={brochureForm.name} onChange={(e) => setBrochureForm({...brochureForm, name: e.target.value})} style={{ width: '100%', padding: '15px 15px 15px 45px', background: THEME.dark, border: `1px solid ${THEME.border}`, borderRadius: '12px', color: THEME.text, outline: 'none' }} /></div>
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}><Phone size={18} style={{ position: 'absolute', left: '15px', color: THEME.muted }} /><span style={{ position: 'absolute', left: '45px', color: THEME.gold, fontWeight: 'bold' }}>+91</span><input required type="tel" maxLength={10} placeholder="Enter 10-digit Mobile" value={brochureForm.phone} onChange={(e) => setBrochureForm({...brochureForm, phone: e.target.value.replace(/\D/g,'')})} style={{ width: '100%', padding: '15px 15px 15px 85px', background: THEME.dark, border: `1px solid ${THEME.border}`, borderRadius: '12px', color: THEME.text, outline: 'none', fontSize: '1.1rem' }} /></div>
+                            <button type="submit" disabled={verifying} style={{ width: '100%', padding: '16px', background: THEME.gold, color: '#FFFFFF', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', marginTop: '10px', transition: 'all 0.2s', opacity: verifying ? 0.7 : 1, boxShadow: '0 4px 15px rgba(94, 125, 90, 0.2)' }} onMouseOver={(e) => !verifying && (e.currentTarget.style.filter = 'brightness(1.1)')} onMouseOut={(e) => !verifying && (e.currentTarget.style.filter = 'brightness(1)')}>{verifying ? "Processing..." : "DOWNLOAD NOW"}</button>
                         </form>
                         
                         <p style={{ textAlign: 'center', color: THEME.muted, fontSize: '0.75rem', marginTop: '25px', lineHeight: '1.5' }}>

@@ -539,7 +539,7 @@ const PostProject = () => {
                             <button onClick={() => {
                                 if (validateStep1()) {
                                     if (formData.property_type === 'Plots') {
-                                        navigate(`/post-plot-project?name=${encodeURIComponent(formData.name)}&developer=${encodeURIComponent(formData.developer || '')}`);
+                                        navigate(`/post-plot-project?name=${encodeURIComponent(formData.name)}&developer=${encodeURIComponent(formData.developer || '')}&locality=${encodeURIComponent(formData.locality || '')}${editId ? `&editId=${editId}` : ''}`);
                                     } else {
                                         setStep(2);
                                     }
