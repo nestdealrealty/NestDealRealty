@@ -40,6 +40,7 @@ const Home = () => {
     const [activeLocation, setActiveLocation] = useState('Ahmedabad');
     const [isValuationOpen, setIsValuationOpen] = useState(false);
     const [realProperties, setRealProperties] = useState([]);
+    const [realProjects, setRealProjects] = useState([]);
     const [homeSlides, setHomeSlides] = useState(defaultSlides);
 
     // Search States
@@ -76,8 +77,31 @@ const Home = () => {
                     builder: p.contact_name || 'Individual Seller',
                     config: p.bhk || p.property_type,
                     location: p.locality,
+                    city: p.city,
+                    type: p.property_type?.toLowerCase(),
                     price: `₹ ${p.cost?.toLocaleString('en-IN')}`,
                     isReal: true
+                })));
+            }
+
+            // Fetch Projects
+            const { data: projectsData, error: projError } = await supabase
+                .from('projects')
+                .select('*')
+                .eq('status', 'approved')
+                .order('created_at', { ascending: false });
+
+            if (projectsData && !projError) {
+                setRealProjects(projectsData.map(p => ({
+                    id: p.id,
+                    image: p.images?.[0]?.url || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
+                    listingTitle: p.name,
+                    builder: p.developer,
+                    location: p.locality,
+                    city: p.city,
+                    type: p.property_type?.toLowerCase(),
+                    price: p.configurations?.[0]?.price || 'Call for Price',
+                    isProject: true
                 })));
             }
 
@@ -124,97 +148,52 @@ const Home = () => {
         };
     }, []);
 
-    // Debug: Log current slide on every render
     useEffect(() => {
-        console.log('Current slide index:', currentSlide);
-    }, [currentSlide]);
-
-    const priceOptions = ['₹ 20 Lac', '₹ 25 Lac', '₹ 30 Lac', '₹ 35 Lac', '₹ 40 Lac', '₹ 50 Lac', '₹ 75 Lac', '₹ 1 Cr', '₹ 1.5 Cr', '₹ 2 Cr+'];
+        if (realProjects.length > 0) {
+            console.log("🏠 Approved Projects found:", realProjects.length);
+        }
+    }, [realProjects]);
 
     const exploreCategories = [
         {
             id: 'flats',
             title: 'Flats',
             items: [
-                ...realProperties,
-                { id: 1, image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80', listingTitle: 'Trident Experia', builder: 'A. Shridhar', config: '3 BHK Flat', location: 'Vaishnodevi, Ahmedabad', price: '₹ 76.00 L' },
-                { id: 2, image: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?auto=format&fit=crop&w=400&q=80', listingTitle: 'Sky City', builder: 'Goyal & Co', config: '4 BHK Flat', location: 'Shela, Ahmedabad', price: '₹ 1.25 Cr' },
-                { id: 3, image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80', listingTitle: 'The Metallis', builder: 'Daanish Info', config: '3 BHK Flat', location: 'S.G Highway', price: '₹ 95.00 L' },
-                { id: 4, image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=400&q=80', listingTitle: 'Orchid Legacy', builder: 'Goyal & Co', config: '3 BHK Flat', location: 'Applewoods, SP Ring Rd', price: '₹ 88.50 L' },
-                { id: 5, image: 'https://images.unsplash.com/photo-1502005229762-cf1afd38088d?auto=format&fit=crop&w=400&q=80', listingTitle: 'Shivalik Sharda', builder: 'Shivalik Group', config: '4 BHK Flat', location: 'Ambawadi', price: '₹ 2.40 Cr' },
+                ...realProjects.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && (p.type?.includes('flat') || !p.type)),
+                ...realProperties.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && p.type?.includes('flat')),
+                { id: 101, image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80', listingTitle: 'Trident Experia', builder: 'A. Shridhar', config: '3 BHK Flat', location: 'Vaishnodevi, Ahmedabad', price: '₹ 76.00 L' },
             ]
         },
         {
             id: 'bungalows',
             title: 'Bungalows',
             items: [
-                { id: 1, image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b91d?auto=format&fit=crop&w=400&q=80', listingTitle: 'Adani Shantigram', builder: 'Adani Realty', config: '4 BHK Villa', location: 'S.G Highway', price: '₹ 3.50 Cr' },
-                { id: 2, image: 'https://images.unsplash.com/photo-1600596542815-22b845074a34?auto=format&fit=crop&w=400&q=80', listingTitle: 'Arvind Uplands', builder: 'Arvind SmartSpaces', config: '5 BHK Villa', location: 'Rancharda', price: '₹ 5.20 Cr' },
-                { id: 3, image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80', listingTitle: 'Gulmohar Greens', builder: 'Gulmohar', config: '3 BHK Villa', location: 'Sanand Road', price: '₹ 2.10 Cr' },
-                { id: 4, image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80', listingTitle: 'Bakeri Serenity', builder: 'Bakeri Group', config: '3 BHK Bungalow', location: 'Vejalpur', price: '₹ 2.75 Cr' },
+                ...realProjects.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && (p.type?.includes('bung') || p.type?.includes('vil'))),
+                ...realProperties.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && (p.type?.includes('bung') || p.type?.includes('vil'))),
+                { id: 102, image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b91d?auto=format&fit=crop&w=400&q=80', listingTitle: 'Adani Shantigram', builder: 'Adani Realty', config: '4 BHK Villa', location: 'S.G Highway', price: '₹ 3.50 Cr' },
             ]
         },
         {
             id: 'commercial',
             title: 'Commercial',
             items: [
-                { id: 1, image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80', listingTitle: 'Mondeal Heights', builder: 'HN Safal', config: 'Office Space', location: 'S.G Highway', price: '₹ 65.00 L' },
-                { id: 2, image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80', listingTitle: 'Westgate', builder: 'True Value', config: 'Corporate Office', location: 'S.G Highway', price: '₹ 1.10 Cr' },
-                { id: 3, image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=400&q=80', listingTitle: 'Titanium City', builder: 'Goyal & Co', config: 'Shop / Showroom', location: 'Prahladnagar', price: '₹ 2.50 Cr' },
-                { id: 4, image: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=400&q=80', listingTitle: 'Privilon', builder: 'Safal', config: 'Retail Space', location: 'Iscon Cross Rd', price: '₹ 1.80 Cr' },
+                ...realProjects.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && p.type?.includes('comm')),
+                ...realProperties.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && p.type?.includes('comm')),
+                { id: 103, image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80', listingTitle: 'Mondeal Heights', builder: 'HN Safal', config: 'Office Space', location: 'S.G Highway', price: '₹ 65.00 L' },
             ]
         },
         {
             id: 'plots',
             title: 'Plots',
             items: [
-                { id: 1, image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=400&q=80', listingTitle: 'Glade One', builder: 'Arvind', config: 'Golf Plot', location: 'Sanand', price: '₹ 1.50 Cr' },
-                { id: 2, image: 'https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?auto=format&fit=crop&w=400&q=80', listingTitle: 'Kensville Golf', builder: 'Savvy', config: 'Residenital Plot', location: 'Bavla Rd', price: '₹ 85.00 L' },
-                { id: 3, image: 'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=400&q=80', listingTitle: 'Forest Hills', builder: 'Ganesh Housing', config: 'Farm Plot', location: 'Thol', price: '₹ 2.25 Cr' },
-                { id: 4, image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80', listingTitle: 'Suramya Abode', builder: 'Synthite', config: 'Weekend Home Plot', location: 'Rancharda', price: '₹ 3.00 Cr' },
+                ...realProjects.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && p.type?.includes('plot')),
+                ...realProperties.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && p.type?.includes('plot')),
+                { id: 104, image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=400&q=80', listingTitle: 'Glade One', builder: 'Arvind', config: 'Golf Plot', location: 'Sanand', price: '₹ 1.50 Cr' },
             ]
         },
     ];
 
-    const exploreGandhinagarCategories = [
-        {
-            id: 'flats-gandhinagar',
-            title: 'Flats',
-            items: [
-                { id: 1, image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80', listingTitle: 'Gift City Heights', builder: 'Gift Group', config: '3 BHK Flat', location: 'Gift City, Gandhinagar', price: '₹ 85.00 L' },
-                { id: 2, image: 'https://images.unsplash.com/photo-1515263487990-61b07816b324?auto=format&fit=crop&w=400&q=80', listingTitle: 'Sargasan Elite', builder: 'Sargasan Builders', config: '2 BHK Flat', location: 'Sargasan, Gandhinagar', price: '₹ 55.00 L' },
-                { id: 3, image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80', listingTitle: 'Raysan Pride', builder: 'Raysan Developers', config: '4 BHK Flat', location: 'Raysan, Gandhinagar', price: '₹ 1.10 Cr' },
-                { id: 4, image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=400&q=80', listingTitle: 'Kudasan Residency', builder: 'Kudasan Group', config: '3 BHK Flat', location: 'Kudasan, Gandhinagar', price: '₹ 72.00 L' },
-            ]
-        },
-        {
-            id: 'bungalows-gandhinagar',
-            title: 'Bungalows',
-            items: [
-                { id: 1, image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b91d?auto=format&fit=crop&w=400&q=80', listingTitle: 'Infocity Villas', builder: 'Infocity Group', config: '4 BHK Villa', location: 'Infocity, Gandhinagar', price: '₹ 2.50 Cr' },
-                { id: 2, image: 'https://images.unsplash.com/photo-1600596542815-22b845074a34?auto=format&fit=crop&w=400&q=80', listingTitle: 'Pethapur Bungalows', builder: 'Pethapur Estates', config: '3 BHK Bungalow', location: 'Pethapur, Gandhinagar', price: '₹ 1.80 Cr' },
-                { id: 3, image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80', listingTitle: 'Swagat Flamingo', builder: 'Swagat Group', config: '5 BHK Villa', location: 'Sargasan', price: '₹ 3.20 Cr' },
-            ]
-        },
-        {
-            id: 'commercial-gandhinagar',
-            title: 'Commercial',
-            items: [
-                { id: 1, image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80', listingTitle: 'Gift One Tower', builder: 'Gift City', config: 'Office Space', location: 'Gift City', price: '₹ 95.00 L' },
-                { id: 2, image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80', listingTitle: 'Reliance Circle Hub', builder: 'Reliance', config: 'Showroom', location: 'Reliance Circle', price: '₹ 2.50 Cr' },
-                { id: 3, image: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=400&q=80', listingTitle: 'Sector 11 Complex', builder: 'Govt Approved', config: 'Shop', location: 'Sector 11', price: '₹ 45.00 L' },
-            ]
-        },
-        {
-            id: 'plots-gandhinagar',
-            title: 'Plots',
-            items: [
-                { id: 1, image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=400&q=80', listingTitle: 'Vavol Plots', builder: 'Vavol Land', config: 'Residential Plot', location: 'Vavol', price: '₹ 60.00 L' },
-                { id: 2, image: 'https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?auto=format&fit=crop&w=400&q=80', listingTitle: 'Chiloda Green', builder: 'Chiloda Developers', config: 'Farm Plot', location: 'Chiloda', price: '₹ 1.20 Cr' },
-                { id: 3, image: 'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=400&q=80', listingTitle: 'Randesan Plots', builder: 'Randesan Group', config: 'Investment Plot', location: 'Randesan', price: '₹ 90.00 L' },
-            ]
-        },
-    ];
+    const exploreGandhinagarCategories = exploreCategories;
 
     return (
         <div className="home-page-root">
@@ -493,8 +472,6 @@ const Home = () => {
                 </div>
             </div>
 
-
-
             {/* NEW PROPERTY LISTING SECTION */}
 
             {/* Explore Ahmedabad Section */}
@@ -525,7 +502,7 @@ const Home = () => {
 
                         <div className="prop-grid-2x2">
                             {exploreCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeAhdProjectTab] || 0].items.slice(0, 4).map((item) => (
-                                <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
+                                <Link to={item.isProject ? `/project/${item.id}` : `/property/${item.id}`} key={item.id} className="new-prop-card">
                                     <div className="new-prop-img-box">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                     </div>
@@ -559,7 +536,7 @@ const Home = () => {
 
                         <div className="prop-grid-2x2">
                             {exploreCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeAhdOwnerTab] || 0].items.slice(0, 4).map((item) => (
-                                <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
+                                <Link to={item.isProject ? `/project/${item.id}` : `/property/${item.id}`} key={item.id} className="new-prop-card">
                                     <div className="new-prop-img-box">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                     </div>
@@ -605,7 +582,7 @@ const Home = () => {
 
                         <div className="prop-grid-2x2">
                             {exploreGandhinagarCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeGnrProjectTab] || 0].items.slice(0, 4).map((item) => (
-                                <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
+                                <Link to={item.isProject ? `/project/${item.id}` : `/property/${item.id}`} key={item.id} className="new-prop-card">
                                     <div className="new-prop-img-box">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                     </div>
@@ -639,7 +616,7 @@ const Home = () => {
 
                         <div className="prop-grid-2x2">
                             {exploreGandhinagarCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeGnrOwnerTab] || 0].items.slice(0, 4).map((item) => (
-                                <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
+                                <Link to={item.isProject ? `/project/${item.id}` : `/property/${item.id}`} key={item.id} className="new-prop-card">
                                     <div className="new-prop-img-box">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                     </div>
@@ -706,3 +683,4 @@ const Home = () => {
 };
 
 export default Home;
+

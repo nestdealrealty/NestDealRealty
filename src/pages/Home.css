@@ -1500,19 +1500,24 @@
 }
 
 .new-prop-card {
-    background: #1A1F1D;
-    border-radius: 12px;
+    background: linear-gradient(145deg, #1A1F1D 0%, #0D100F 100%);
+    border: 1px solid rgba(227, 188, 90, 0.15);
+    /* Subtle gold border */
+    border-radius: 14px;
     overflow: hidden;
     text-decoration: none;
     color: inherit;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: flex;
     flex-direction: column;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .new-prop-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(227, 188, 90, 0.2);
+    border-color: rgba(227, 188, 90, 0.5);
+    /* Highlight gold border on hover */
 }
 
 .new-prop-img-box {
@@ -1636,13 +1641,16 @@ img {
     background-color: #ffffff;
 }
 
-/* Force dark property titles on white bg */
+/* Force legible golden/bright text titles on the dark cards */
 .new-prop-title {
-    color: #000000 !important;
+    color: #E3BC5A !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    /* added subtle shadow for pop */
 }
 
 .new-prop-loc {
-    color: #555555 !important;
+    color: #DDDDDD !important;
+    /* Brighter grey/white for visibility */
 }
 
 .new-prop-price {

@@ -141,6 +141,9 @@ const Header = () => {
                 </nav>
 
                 <div className="header-actions">
+                    <Link to="/post-project" className="post-property-btn project-btn">
+                        <span>Post Project</span> <span className="free-tag">NEW</span>
+                    </Link>
                     <Link to="/post-property" className="post-property-btn">
                         <span>Post Property</span> <span className="free-tag">FREE</span>
                     </Link>

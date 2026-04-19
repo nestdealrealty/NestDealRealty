@@ -1,0 +1,433 @@
+/* ProjectDetails.css - Altezza Luxury Theme Hero Section Only */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Playfair+Display:wght@400;500;600&display=swap');
+
+/* Typography Classes */
+.lux-heading-primary {
+    font-family: 'Playfair Display', serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    font-size: 4.5rem;
+    line-height: 1.1;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .lux-heading-primary { font-size: 2.5rem; letter-spacing: 2px; }
+}
+
+.lux-heading-section {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 2.2rem;
+    margin-bottom: 50px;
+    text-align: center;
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.lux-heading-section::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: #8B735B;
+}
+
+/* Hero Section */
+.lux-hero {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    background-color: #1A1A1A;
+}
+
+.lux-hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    transition: transform 10s ease;
+}
+
+.lux-hero:hover .lux-hero-bg {
+    transform: scale(1.05);
+}
+
+.lux-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.4) 100%);
+    z-index: 2;
+}
+
+.lux-hero-content {
+    position: absolute;
+    bottom: 12%;
+    left: 5%;
+    z-index: 3;
+    color: white;
+    max-width: 1000px;
+}
+
+.lux-hero-content h1 {
+    color: white;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.lux-hero-tagline {
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    color: #FFFFFF;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 6px 14px;
+    margin-bottom: 25px;
+    display: inline-block;
+}
+
+.lux-hero-details {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+    color: #FFFFFF;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+.lux-hero-price {
+    font-size: 1.1rem;
+    color: #DDDDDD;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.lux-hero-price span {
+    font-size: 2.2rem;
+    color: #D4AF37; /* Soft gold accent */
+    font-weight: 700;
+}
+
+/* Glassmorphism Sticky Nav */
+.lux-sticky-nav {
+    position: sticky;
+    top: 80px; /* Belowmain header */
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding: 20px 5%;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    transition: all 0.3s ease;
+}
+
+.lux-sticky-nav a {
+    text-decoration: none;
+    color: #1A1A1A;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    transition: color 0.3s;
+}
+
+.lux-sticky-nav a:hover {
+    color: #8B735B;
+}
+
+/* Content Sections */
+.lux-section {
+    padding: 120px 5%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.lux-section-alt {
+    background-color: #F9F9F9;
+    width: 100%;
+}
+
+.lux-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Interactive Gallery */
+.lux-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: 300px;
+    gap: 20px;
+}
+
+.lux-gallery-item {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.lux-gallery-item.large {
+    grid-column: span 8;
+    grid-row: span 2;
+}
+.lux-gallery-item.small {
+    grid-column: span 4;
+}
+@media (max-width: 900px) {
+    .lux-gallery-item.large, .lux-gallery-item.small {
+        grid-column: span 12;
+        grid-row: span 1;
+    }
+}
+
+.lux-gallery-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.lux-gallery-item:hover .lux-gallery-img {
+    transform: scale(1.08);
+}
+
+/* Floor Plans Tabbed Component */
+.lux-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 50px;
+    flex-wrap: wrap;
+}
+
+.lux-tab-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #777;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 10px 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.lux-tab-btn.active {
+    color: #1A1A1A;
+    border-bottom-color: #8B735B;
+}
+
+.lux-layout-container {
+    background: #FFFFFF;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+}
+
+.lux-layout-img {
+    max-width: 100%;
+    height: auto;
+    max-height: 600px;
+    object-fit: contain;
+}
+
+/* Amenities Grid */
+.lux-amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 50px 30px;
+}
+
+.lux-amenity-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.4s ease;
+}
+
+.lux-amenity-card:hover {
+    transform: scale(1.1);
+}
+
+.lux-amenity-icon {
+    margin-bottom: 25px;
+    color: #8B735B;
+    /* Simulate thin stroke */
+    stroke-width: 1.2px;
+}
+
+.lux-amenity-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333333;
+    letter-spacing: 0.5px;
+}
+
+/* Key Statistics */
+.lux-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .lux-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.lux-stat-block {
+    padding: 40px 20px;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.lux-stat-block .stat-num {
+    font-size: 4.5rem;
+    font-weight: 800;
+    color: #8B735B;
+    margin-bottom: 15px;
+    line-height: 1;
+}
+
+.lux-stat-block .stat-text {
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    color: #777777;
+    letter-spacing: 2px;
+    font-weight: 600;
+}
+
+/* Inquiry Form */
+.lux-inquiry-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+@media (max-width: 900px) {
+    .lux-inquiry-container { grid-template-columns: 1fr; }
+}
+
+.lux-inquiry-text h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.lux-inquiry-text p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.lux-inquiry-box {
+    background: #1A1A1A;
+    color: #FFFFFF;
+    padding: 50px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+}
+
+.lux-input-group {
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.lux-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding: 15px 0;
+    color: #FFFFFF;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+    font-family: inherit;
+}
+
+.lux-input:focus {
+    border-bottom-color: #8B735B;
+}
+
+.lux-input::placeholder {
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+.lux-btn-primary {
+    background: #8B735B;
+    color: #FFFFFF;
+    border: none;
+    padding: 20px 40px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.3s;
+}
+
+.lux-btn-primary:hover {
+    background: #6A5642;
+}
+
+/* GSAP Mimic Classes */
+.gsap-reveal {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 1s cubic-bezier(0.25, 1, 0.5, 1), transform 1s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.gsap-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.lux-rera-footer {
+    background: #0A0A0A;
+    color: #777;
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    line-height: 1.6;
+}
+
+.lux-rera-footer strong {
+    color: #AAA;
+}

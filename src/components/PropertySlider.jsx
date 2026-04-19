@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Maximize2, MapPin, ArrowUpRight } from 'luci
 import { useNavigate } from 'react-router-dom';
 import './PropertySlider.css';
 
-const PropertyCard = ({ property }) => {
+const PropertyCard = ({ property, baseRoute = '/property' }) => {
     const navigate = useNavigate();
 
     const handleDoubleClick = () => {
@@ -12,7 +12,7 @@ const PropertyCard = ({ property }) => {
         document.body.style.transition = 'opacity 0.3s ease';
 
         setTimeout(() => {
-            navigate(`/property/${property.id}`);
+            navigate(`${baseRoute}/${property.id}`);
             document.body.style.opacity = '1';
         }, 300);
     };
@@ -67,7 +67,7 @@ const PropertyCard = ({ property }) => {
     );
 };
 
-const PropertySlider = ({ title, properties }) => {
+const PropertySlider = ({ title, properties, baseRoute = '/property' }) => {
     const sliderRef = useRef(null);
 
     const scroll = (direction) => {
@@ -100,7 +100,7 @@ const PropertySlider = ({ title, properties }) => {
 
                 <div className="slider-wrapper" ref={sliderRef}>
                     {properties.map((property) => (
-                        <PropertyCard key={property.id} property={property} />
+                        <PropertyCard key={property.id} property={property} baseRoute={baseRoute} />
                     ))}
                 </div>
             </div>

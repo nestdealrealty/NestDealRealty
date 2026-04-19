@@ -239,6 +239,15 @@
     box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
 }
 
+.project-btn {
+    background: #1B4D3E; /* Dark Green */
+    border: 1px solid var(--accent);
+}
+
+.project-btn:hover {
+    box-shadow: 0 4px 12px rgba(27, 77, 62, 0.5);
+}
+
 .free-tag {
     background: white;
     color: black;

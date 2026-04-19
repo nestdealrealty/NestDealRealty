@@ -1,24 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary: #1B4D3E;
-  /* Original Dark Green */
-  --primary-dark: #0a1f18;
-  /* Near Black Green for BG */
-  --primary-glow: rgba(27, 77, 62, 0.3);
-  --secondary: #0D1612;
-  /* Darker Surface */
-  --accent: #D4AF37;
-  /* Gold */
-  --accent-orange: #F2994A;
-  /* Orange accent */
-  --accent-glow: rgba(212, 175, 55, 0.2);
-  --text-main: #FFFFFF;
-  --text-muted: #A0AEC0;
-  --bg-dark: #070B09;
-  --bg-card: #121A16;
-  --border-color: rgba(212, 175, 55, 0.15);
-  /* Subtle Gold border */
+  --primary: #D4AF37;
+  /* Premium Gold */
+  --primary-dark: #b5952f;
+  /* Deep Gold for hover */
+  --primary-glow: rgba(212, 175, 55, 0.3);
+  --secondary: #ffffff;
+  /* White Surface */
+  --accent: #111111;
+  /* Sleek Obsidian Black for contrast */
+  --accent-orange: #f39c12;
+  /* Warm secondary accent */
+  --accent-glow: rgba(0, 0, 0, 0.08);
+  --text-main: #1a1a1a;
+  /* Deep dark text for high legibility */
+  --text-muted: #6b7280;
+  /* Sophisticated grey */
+  --bg-dark: #FAFAFA;
+  /* Fresh, bright off-white background */
+  --bg-card: #ffffff;
+  /* Crisp white for cards */
+  --border-color: rgba(212, 175, 55, 0.25);
+  /* Delicate gold border */
   --white: #ffffff;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow: 0 4px 20px -1px rgba(0, 0, 0, 0.5);
@@ -88,4 +96,58 @@ button {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* --- Branding Layer for Plot Uploader --- */
+.plot-form-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.2) !important;
+  color: white;
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+}
+
+.plot-form-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+  outline: none;
+}
+
+.plot-card {
+  background: rgba(18, 26, 22, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.gold-btn {
+  background: var(--accent) !important;
+  color: #070B09 !important;
+  font-weight: 700 !important;
+  padding: 10px 24px;
+  border-radius: 100px;
+  transition: all 0.3s scale(1);
+}
+
+.gold-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+}
+
+/* Custom Scrollbar for Dark Mode */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: #2D3748;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }
