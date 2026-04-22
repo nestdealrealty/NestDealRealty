@@ -195,10 +195,10 @@ const PostProject = () => {
         amenities: [],
         landmarks: [{ title: '', items: [''] }],
         configurations: [{ 
-            bedrooms: 3, bhk_type: '3 BHK', bathrooms: 3, balconies: 1, living_rooms: 1, dining_areas: 1, kitchens: 1, kitchen_type: 'Modular',
-            super_built_up_area: '', built_up_area: '', carpet_area: '', plot_area: '', total_floors: '2',
-            store_room: 0, washyard: 1, servant_room: 0, garden_lawn: 0, porch: 0, private_terrace: 0,
-            area: '', price: '', map_url: '', map_file: null 
+            bedrooms: 3, halls: 1, kitchens: 1, kitchen_type: 'Modular',
+            balcony: 1, foyer: 1, drawing_living_dining: 1, store_room: 0, washyard: 1, servant_room: 0,
+            general_toilet: 1, personal_toilet: 2, dressing_room: 0, vestibule: 0, sky_patio_balcony: 0, pooja_room: 0, car_parking: 1,
+            floor_number: '', area: '', price: '', map_url: '', map_file: null 
         }],
         penthouse_configurations: [],
         towers: [{ type: '', bhk: '3', lift_per_floor: '', units_per_floor: '', story: '1', total_units: '' }],
@@ -224,11 +224,10 @@ const PostProject = () => {
         setFormData(prev => ({
             ...prev,
             configurations: [...prev.configurations, { 
-                bedrooms: 3, halls: 1, kitchens: 1, 
-                balcony: 1, foyer: 1, drawing_living_dining: 1,
-                patio: 0, store: 0, washyard: 1, servant_room: 0,
-                toilet: 3, pooja_room: 0, car_parking: 1,
-                area: '', price: '' 
+                bedrooms: 3, halls: 1, kitchens: 1, kitchen_type: 'Normal',
+                balcony: 1, foyer: 0, drawing_living_dining: 1, store_room: 0, washyard: 1, servant_room: 0,
+                general_toilet: 1, personal_toilet: 2, dressing_room: 0, vestibule: 0, sky_patio_balcony: 0, pooja_room: 0, car_parking: 1,
+                floor_number: '', area: '', price: '', map_url: '', map_file: null 
             }]
         }));
     };
@@ -258,12 +257,10 @@ const PostProject = () => {
         setFormData(prev => ({
             ...prev,
             penthouse_configurations: [...prev.penthouse_configurations, { 
-                bedrooms: 4, halls: 1, kitchens: 1, 
-                balcony: 2, foyer: 1, drawing_living_dining: 1,
-                store_room: 1, washyard: 1, servant_room: 1,
-                general_toilet: 1, personal_toilet: 4, pooja_room: 1, car_parking: 2,
-                dressing_room: 1, vestibule: 1, sky_patio_balcony: 1, floor_number: '',
-                area: '', price: '', map_url: '', map_file: null 
+                bedrooms: 4, halls: 1, kitchens: 1, kitchen_type: 'Modular',
+                balcony: 2, foyer: 1, drawing_living_dining: 1, store_room: 1, washyard: 1, servant_room: 1,
+                general_toilet: 1, personal_toilet: 4, dressing_room: 1, vestibule: 1, sky_patio_balcony: 1, pooja_room: 1, car_parking: 2,
+                floor_number: '', area: '', price: '', map_url: '', map_file: null 
             }]
         }));
     };
@@ -764,16 +761,16 @@ const PostProject = () => {
                                                         <button 
                                                             onClick={() => {
                                                                 const newConfig = [...formData.configurations];
-                                                                newConfig[idx][room.key] = Math.max(0, newConfig[idx][room.key] - 1);
+                                                                newConfig[idx][room.key] = Math.max(0, (newConfig[idx][room.key] || 0) - 1);
                                                                 updateForm('configurations', newConfig);
                                                             }}
                                                             style={{ background: 'none', border: 'none', color: THEME.gold, cursor: 'pointer' }}
                                                         ><Minus size={16} /></button>
-                                                        <span style={{ minWidth: '20px', fontWeight: 'bold' }}>{config[room.key]}</span>
+                                                        <span style={{ minWidth: '20px', fontWeight: 'bold' }}>{config[room.key] || 0}</span>
                                                         <button 
                                                             onClick={() => {
                                                                 const newConfig = [...formData.configurations];
-                                                                newConfig[idx][room.key] = newConfig[idx][room.key] + 1;
+                                                                newConfig[idx][room.key] = (newConfig[idx][room.key] || 0) + 1;
                                                                 updateForm('configurations', newConfig);
                                                             }}
                                                             style={{ background: 'none', border: 'none', color: THEME.gold, cursor: 'pointer' }}
@@ -807,16 +804,16 @@ const PostProject = () => {
                                                             <button 
                                                                 onClick={() => {
                                                                     const newConfig = [...formData.configurations];
-                                                                    newConfig[idx][detail.key] = Math.max(0, newConfig[idx][detail.key] - 1);
+                                                                    newConfig[idx][detail.key] = Math.max(0, (newConfig[idx][detail.key] || 0) - 1);
                                                                     updateForm('configurations', newConfig);
                                                                 }}
                                                                 style={{ background: 'none', border: 'none', color: THEME.muted, cursor: 'pointer' }}
                                                             ><Minus size={12} /></button>
-                                                            <span style={{ fontSize: '0.85rem', fontWeight: 'bold', minWidth: '15px', textAlign: 'center' }}>{config[detail.key]}</span>
+                                                            <span style={{ fontSize: '0.85rem', fontWeight: 'bold', minWidth: '15px', textAlign: 'center' }}>{config[detail.key] || 0}</span>
                                                             <button 
                                                                 onClick={() => {
                                                                     const newConfig = [...formData.configurations];
-                                                                    newConfig[idx][detail.key] = newConfig[idx][detail.key] + 1;
+                                                                    newConfig[idx][detail.key] = (newConfig[idx][detail.key] || 0) + 1;
                                                                     updateForm('configurations', newConfig);
                                                                 }}
                                                                 style={{ background: 'none', border: 'none', color: THEME.muted, cursor: 'pointer' }}
