@@ -90,7 +90,7 @@ const PropertyDetails = () => {
                         const mappedProperty = {
                             id: data.id,
                             title: data.project_name || "Property for " + data.looking_to,
-                            tagline: data.property_type + " in " + data.locality,
+                            tagline: data.tagline || (data.property_type + " in " + data.locality),
                             developer: data.contact_name,
                             location: `${data.locality}, ${data.city}`,
                             address: data.address,

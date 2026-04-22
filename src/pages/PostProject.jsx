@@ -171,6 +171,7 @@ const PostProject = () => {
 
     const [formData, setFormData] = useState({
         name: '',
+        tagline: 'Signature Homes',
         developer: '',
         locality: '',
         city: 'Ahmedabad',
@@ -196,7 +197,8 @@ const PostProject = () => {
         landmarks: [{ title: '', items: [''] }],
         configurations: [{ 
             bedrooms: 3, halls: 1, kitchens: 1, kitchen_type: 'Modular',
-            balcony: 1, foyer: 1, drawing_living_dining: 1, store_room: 0, washyard: 1, servant_room: 0,
+            balcony: 1, foyer: 1, drawing_living_dining: 1, master_bedroom: 0, children_room: 0, study_room: 0,
+            store_room: 0, washyard: 1, servant_room: 0,
             general_toilet: 1, personal_toilet: 2, dressing_room: 0, vestibule: 0, sky_patio_balcony: 0, pooja_room: 0, car_parking: 1,
             floor_number: '', area: '', price: '', map_url: '', map_file: null 
         }],
@@ -225,7 +227,8 @@ const PostProject = () => {
             ...prev,
             configurations: [...prev.configurations, { 
                 bedrooms: 3, halls: 1, kitchens: 1, kitchen_type: 'Normal',
-                balcony: 1, foyer: 0, drawing_living_dining: 1, store_room: 0, washyard: 1, servant_room: 0,
+                balcony: 1, foyer: 0, drawing_living_dining: 1, master_bedroom: 0, children_room: 0, study_room: 0,
+                store_room: 0, washyard: 1, servant_room: 0,
                 general_toilet: 1, personal_toilet: 2, dressing_room: 0, vestibule: 0, sky_patio_balcony: 0, pooja_room: 0, car_parking: 1,
                 floor_number: '', area: '', price: '', map_url: '', map_file: null 
             }]
@@ -258,7 +261,8 @@ const PostProject = () => {
             ...prev,
             penthouse_configurations: [...prev.penthouse_configurations, { 
                 bedrooms: 4, halls: 1, kitchens: 1, kitchen_type: 'Modular',
-                balcony: 2, foyer: 1, drawing_living_dining: 1, store_room: 1, washyard: 1, servant_room: 1,
+                balcony: 2, foyer: 1, drawing_living_dining: 1, master_bedroom: 1, children_room: 1, study_room: 1,
+                store_room: 1, washyard: 1, servant_room: 1,
                 general_toilet: 1, personal_toilet: 4, dressing_room: 1, vestibule: 1, sky_patio_balcony: 1, pooja_room: 1, car_parking: 2,
                 floor_number: '', area: '', price: '', map_url: '', map_file: null 
             }]
@@ -388,6 +392,7 @@ const PostProject = () => {
                 user_id: user.id,
                 user_email: formData.user_email || user.email,
                 name: formData.name,
+                tagline: formData.tagline || 'Signature Homes',
                 developer: formData.developer,
                 locality: formData.locality,
                 city: formData.city,
@@ -567,6 +572,7 @@ const PostProject = () => {
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                             {renderInput("Project Name", "name", "e.g., Param Nest", "text", errors.name)}
+                            {renderInput("Custom Tagline", "tagline", "e.g., Signature Homes")}
                             {renderInput("Developer Name", "developer", "e.g., Venus Group", "text", errors.developer)}
                             
 
@@ -613,7 +619,7 @@ const PostProject = () => {
                             <button onClick={() => {
                                 if (validateStep1()) {
                                     if (formData.property_type === 'Plots') {
-                                        navigate(`/post-plot-project?name=${encodeURIComponent(formData.name)}&developer=${encodeURIComponent(formData.developer || '')}&locality=${encodeURIComponent(formData.locality || '')}${editId ? `&editId=${editId}` : ''}`);
+                                        navigate(`/post-plot-project?name=${encodeURIComponent(formData.name)}&tagline=${encodeURIComponent(formData.tagline || 'Signature Homes')}&developer=${encodeURIComponent(formData.developer || '')}&locality=${encodeURIComponent(formData.locality || '')}${editId ? `&editId=${editId}` : ''}`);
                                     } else {
                                         setStep(2);
                                     }
@@ -787,6 +793,9 @@ const PostProject = () => {
                                                     { label: 'Balcony', key: 'balcony' },
                                                     { label: 'Personal Foyer', key: 'foyer' },
                                                     { label: 'Drawing/Living', key: 'drawing_living_dining' },
+                                                    { label: 'Master Bedroom', key: 'master_bedroom' },
+                                                    { label: 'Children\'s Room', key: 'children_room' },
+                                                    { label: 'Study Room', key: 'study_room' },
                                                     { label: 'Store Room', key: 'store_room' },
                                                     { label: 'Washyard', key: 'washyard' },
                                                     { label: 'Servant Room', key: 'servant_room' },
@@ -794,7 +803,7 @@ const PostProject = () => {
                                                     { label: 'Personal Toilet', key: 'personal_toilet' },
                                                     { label: 'Dressing Room', key: 'dressing_room' },
                                                     { label: 'Vestibule', key: 'vestibule' },
-                                                    { label: 'Sky Patio/Balcony', key: 'sky_patio_balcony' },
+                                                    { label: 'Balcony', key: 'sky_patio_balcony' },
                                                     { label: 'Pooja Room', key: 'pooja_room' },
                                                     { label: 'Car Parking', key: 'car_parking' }
                                                 ].map(detail => (

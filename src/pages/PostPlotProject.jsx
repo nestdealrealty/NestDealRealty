@@ -168,6 +168,7 @@ const PostPlotProject = () => {
                     min_price: data.min_price || '',
                     max_price: data.max_price || '',
                     images: Array.isArray(data.images) ? data.images.map(img => ({ url: typeof img === 'string' ? img : img.url })) : [],
+                    tagline: data.tagline || 'Signature Homes',
                     google_map_link: data.google_map_link || '',
                     video_url: data.video_url || '',
                     amenities: Array.isArray(data.amenities) ? data.amenities : []
@@ -185,6 +186,7 @@ const PostPlotProject = () => {
     // Form State
     const [formData, setFormData] = useState({
         project_name: searchParams.get('name') || '',
+        tagline: searchParams.get('tagline') || 'Signature Homes',
         developer: searchParams.get('developer') || '',
         locality: searchParams.get('locality') || '',
         city: 'Ahmedabad',
@@ -314,6 +316,7 @@ const PostPlotProject = () => {
             const payload = {
                 user_id: user.id,
                 name: formData.project_name,
+                tagline: formData.tagline || 'Signature Homes',
                 developer: formData.developer,
                 locality: formData.locality,
                 city: formData.city,
@@ -419,6 +422,7 @@ const PostPlotProject = () => {
                         <Section title="PROJECT STATUS" icon={Building2}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         {renderSelect("Construction Status", formData.construction_status, (v) => updateForm('construction_status', v), ['Upcoming', 'Under Construction', 'Ready to Move'])}
+                        {renderInput("Custom Tagline", formData.tagline, (v) => updateForm('tagline', v), "e.g. Signature Homes")}
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <label style={{ color: THEME.muted, fontSize: '0.8rem', marginBottom: '6px' }}>Project City</label>
                             <div style={{ padding: '10px 12px', background: `${THEME.gold}10`, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.gold, fontSize: '0.9rem', fontWeight: 'bold' }}>

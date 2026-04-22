@@ -390,7 +390,7 @@ export default function ProjectDetails() {
                         <div className="lux-hero-details" style={{ margin: 0 }}>
                             <span className="detail-item">
                                 <BedDouble size={18} /> 
-                                {project.configurations?.[0]?.bedrooms ? `${project.configurations[0].bedrooms} BHK Signature Homes` : 'Premium Residences'}
+                                {project.configurations?.[0]?.bedrooms ? `${project.configurations[0].bedrooms} BHK ${project.tagline || 'Signature Homes'}` : (project.tagline || 'Premium Residences')}
                             </span>
                             <span className="detail-item">
                                 <MapPin size={18} /> 
@@ -465,7 +465,7 @@ export default function ProjectDetails() {
                 </div>
                 
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(245, 245, 239, 0.95)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${THEME.border}`, zIndex: 10, display: 'flex', justifyContent: 'center', gap: '40px', padding: '15px 0' }}>
-                    {(project.property_type === 'Plots' ? ['Overview', 'Floor Plan', 'Phases', 'Amenities', 'Location'] : ['Overview', 'Floor Plan', 'Amenities', 'Location']).map(sec => (
+                    {(project.property_type === 'Plots' ? ['Overview', 'Floor Plan', 'Phases', 'Amenities', 'Location'] : ['Overview', 'Floor Plan', 'Towers', 'Amenities', 'Location']).map(sec => (
                         <button 
                             key={sec}
                             onClick={() => {
@@ -616,10 +616,31 @@ export default function ProjectDetails() {
                                             </div>
                                             {!activeConfig.isPenthouse && (
                                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                                    {[{ label: 'General Toilet', val: activeConfig.general_toilet }, { label: 'Personal Toilet', val: activeConfig.personal_toilet }, { label: 'Sky Patio', val: activeConfig.sky_patio_balcony }, { label: 'Washyard', val: activeConfig.washyard }, { label: 'Car Parking', val: activeConfig.car_parking }, { label: 'Floor', val: activeConfig.floor_number || 'Multiple' }].map((item, i) => (
+                                                    {[
+                                                        { label: 'General Toilet', key: 'general_toilet' },
+                                                        { label: 'Personal Toilet', key: 'personal_toilet' },
+                                                        { label: 'Master Bedroom', key: 'master_bedroom' },
+                                                        { label: 'Children\'s Room', key: 'children_room' },
+                                                        { label: 'Study Room', key: 'study_room' },
+                                                        { label: 'Store Room', key: 'store_room' },
+                                                        { label: 'Washyard', key: 'washyard' },
+                                                        { label: 'Servant Room', key: 'servant_room' },
+                                                        { label: 'Dressing Room', key: 'dressing_room' },
+                                                        { label: 'Vestibule', key: 'vestibule' },
+                                                        { label: 'Balcony', key: 'balcony' },
+                                                        { label: 'Balcony', key: 'sky_patio_balcony' },
+                                                        { label: 'Pooja Room', key: 'pooja_room' },
+                                                        { label: 'Personal Foyer', key: 'foyer' },
+                                                        { label: 'Drawing/Living', key: 'drawing_living_dining' },
+                                                        { label: 'Car Parking', key: 'car_parking' },
+                                                        { label: 'Floor', key: 'floor_number' }
+                                                    ].filter(item => {
+                                                        const val = activeConfig[item.key];
+                                                        return val && val !== '0' && val !== 0;
+                                                    }).map((item, i) => (
                                                         <div key={i} style={{ background: '#FFFFFF', padding: '15px', borderRadius: '12px', border: `1px solid ${THEME.border}`, boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
                                                             <div style={{ color: THEME.muted, fontSize: '0.75rem', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{item.label}</div>
-                                                            <div style={{ fontWeight: '600', fontSize: '1rem', color: THEME.text }}>{item.val}</div>
+                                                            <div style={{ fontWeight: '600', fontSize: '1rem', color: THEME.text }}>{activeConfig[item.key]}</div>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -634,6 +655,39 @@ export default function ProjectDetails() {
                                         </div>
                                     </div>
                                 )}
+                            </section>
+                        )}
+                        {project.towers && project.towers.length > 0 && (
+                            <section id="towers" style={{ marginTop: '40px' }}>
+                                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.2rem', color: THEME.text, marginBottom: '30px', fontWeight: '600' }}>TOWER DETAILS</h2>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '25px' }}>
+                                    {project.towers.map((tower, idx) => (
+                                        <div key={idx} style={{ background: THEME.card, padding: '30px', borderRadius: '20px', border: `1px solid ${THEME.border}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: `1px solid ${THEME.border}50`, paddingBottom: '12px' }}>
+                                                <h4 style={{ margin: 0, color: THEME.gold, fontSize: '1.2rem', fontWeight: '800' }}>Tower {tower.type || (idx + 1)}</h4>
+                                                <span style={{ background: `${THEME.gold}15`, color: THEME.gold, padding: '6px 15px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{tower.bhk} BHK</span>
+                                            </div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                <div style={{ background: '#FAFAFA', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
+                                                    <div style={{ color: THEME.muted, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>FLOORS</div>
+                                                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: THEME.text }}>{tower.story}</div>
+                                                </div>
+                                                <div style={{ background: '#FAFAFA', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
+                                                    <div style={{ color: THEME.muted, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>UNITS/FLOOR</div>
+                                                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: THEME.text }}>{tower.units_per_floor}</div>
+                                                </div>
+                                                <div style={{ background: '#FAFAFA', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
+                                                    <div style={{ color: THEME.muted, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>LIFTS/FLOOR</div>
+                                                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: THEME.text }}>{tower.lift_per_floor}</div>
+                                                </div>
+                                                <div style={{ background: '#FAFAFA', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
+                                                    <div style={{ color: THEME.muted, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>TOTAL UNITS</div>
+                                                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: THEME.text }}>{tower.total_units}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </section>
                         )}
 
@@ -683,8 +737,15 @@ export default function ProjectDetails() {
                             <div style={{ display: 'grid', gap: '20px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Property Type</span><span style={{ fontWeight: 'bold' }}>{project.property_type}</span></div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Status</span><span style={{ fontWeight: 'bold' }}>{project.construction_status}</span></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Total Plot Area</span><span style={{ fontWeight: 'bold' }}>{project.total_plot_area} Sq.ft</span></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Total Plots</span><span style={{ fontWeight: 'bold' }}>{project.total_plots}</span></div>
+                                {project.property_type === 'Plots' && (
+                                    <>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Total Plot Area</span><span style={{ fontWeight: 'bold' }}>{project.total_plot_area} Sq.ft</span></div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Total Plots</span><span style={{ fontWeight: 'bold' }}>{project.total_plots}</span></div>
+                                    </>
+                                )}
+                                {project.property_type !== 'Plots' && project.total_units && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Total Units</span><span style={{ fontWeight: 'bold' }}>{project.total_units}</span></div>
+                                )}
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Price Range</span><span style={{ fontWeight: 'bold', color: THEME.gold }}>₹{project.min_price} - ₹{project.max_price}</span></div>
                             </div>
                         </div>
