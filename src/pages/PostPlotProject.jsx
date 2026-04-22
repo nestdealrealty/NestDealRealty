@@ -7,7 +7,7 @@ import {
     MapPin, Ruler, BedDouble, Bath, Car, ArrowLeft, Home, 
     Trees, Flower2, Dumbbell, PartyPopper, ShieldCheck, Camera, Waves,
     Leaf, Accessibility, Repeat, DoorOpen, Lock, Map, UserCheck, PhoneForwarded, Footprints, Heart,
-    Check, Lamp
+    Check, Lamp, Users
 } from 'lucide-react';
 import { supabase } from '../supabase';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
@@ -110,12 +110,40 @@ const PostPlotProject = () => {
     const [searchParams] = useSearchParams();
     const editId = searchParams.get('editId');
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    const [step, setStep] = useState(1);
     useEffect(() => {
+        if (!user) {
+            navigate('/login', { state: { from: '/post-plot-project' } });
+            return;
+        }
+        fetchUserProfile();
         if (editId) {
             fetchProjectForEdit();
         }
-    }, [editId]);
+    }, [editId, user, navigate]);
+
+    const fetchUserProfile = async () => {
+        try {
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            if (error && error.code !== 'PGRST116') throw error;
+            if (data) {
+                setFormData(prev => ({
+                    ...prev,
+                    sourceName: data.full_name || '',
+                    sourceNumber: data.phone || '',
+                    sourceEmail: data.email || user.email || '',
+                    sourceEnrollCode: data.enroll_code || ''
+                }));
+            } else {
+                setFormData(prev => ({
+                    ...prev,
+                    sourceEmail: user.email || ''
+                }));
+            }
+        } catch (err) {
+            console.error("Error fetching profile:", err);
+        }
+    };
 
     const fetchProjectForEdit = async () => {
         try {
@@ -185,7 +213,13 @@ const PostPlotProject = () => {
         images: [], // { url, file }
         google_map_link: '',
         video_url: '',
-        amenities: []
+        amenities: [],
+
+        // Source Details
+        sourceName: '',
+        sourceNumber: '',
+        sourceEmail: '',
+        sourceEnrollCode: ''
     });
 
     const [previews, setPreviews] = useState([]);
@@ -302,7 +336,13 @@ const PostPlotProject = () => {
                 google_map_link: formData.google_map_link,
                 video_url: formData.video_url,
                 amenities: formData.amenities,
-                status: editId ? (formData.status || 'pending') : 'pending'
+                status: editId ? (formData.status || 'pending') : 'pending',
+
+                // Source Details
+                source_name: formData.sourceName,
+                source_number: formData.sourceNumber,
+                source_email: formData.sourceEmail,
+                source_enroll_code: formData.sourceEnrollCode
             };
 
             const { error } = editId 
@@ -328,12 +368,55 @@ const PostPlotProject = () => {
                     <ArrowLeft size={18} /> Back to Step 1
                 </Link>
 
-                <div style={{ marginBottom: '40px' }}>
-                    <h1 style={{ fontSize: '2.2rem', margin: 0, fontFamily: 'Outfit, sans-serif' }}>Configure Plot Project</h1>
-                    <p style={{ color: THEME.gold, margin: '5px 0' }}>Step 2: Detailed Configurations & Phases</p>
+                {/* Progress Bar */}
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '40px' }}>
+                    {[0, 1].map(s => (
+                        <div key={s} style={{ flex: 1, height: '4px', background: step >= s ? THEME.gold : THEME.border, borderRadius: '2px' }} />
+                    ))}
                 </div>
 
-                <Section title="PROJECT STATUS" icon={Building2}>
+                {step === 0 && (
+                    <div className="animate-slide-up" style={{ background: THEME.cardBg, padding: '40px', borderRadius: '16px', border: `1px solid ${THEME.border}`, maxWidth: '600px', margin: '30px auto' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
+                            <div style={{ padding: '12px', background: `${THEME.gold}20`, borderRadius: '12px', color: THEME.gold }}><Users size={24} /></div>
+                            <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Source Details</h2>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                            {renderInput("User Name", formData.sourceName, (v) => updateForm('sourceName', v), "Enter Full Name")}
+                            {renderInput("User Number", formData.sourceNumber, (v) => updateForm('sourceNumber', v), "Enter Phone Number")}
+                            {renderInput("User Email", formData.sourceEmail, (v) => updateForm('sourceEmail', v), "Enter Email Address", "email")}
+                            <div style={{ background: '#E3BC5A10', padding: '20px', borderRadius: '12px', border: '1px dashed #E3BC5A40' }}>
+                                {renderInput("Enroll Code", formData.sourceEnrollCode, (v) => updateForm('sourceEnrollCode', v), "Assign Code (Optional)")}
+                                <p style={{ fontSize: '0.75rem', color: THEME.muted, margin: '10px 0 0 0' }}>
+                                    * Provided by Admin for trackings.
+                                </p>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '30px' }}>
+                            <button 
+                                onClick={() => {
+                                    if (!formData.sourceName || !formData.sourceNumber || !formData.sourceEmail) {
+                                        alert("Please fill all required source details");
+                                        return;
+                                    }
+                                    setStep(1);
+                                }} 
+                                style={{ padding: '12px 30px', background: THEME.gold, color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            >
+                                Continue <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {step === 1 && (
+                    <>
+                        <div style={{ marginBottom: '40px' }}>
+                            <h1 style={{ fontSize: '2.2rem', margin: 0, fontFamily: 'Outfit, sans-serif' }}>Configure Plot Project</h1>
+                            <p style={{ color: THEME.gold, margin: '5px 0' }}>Step 2: Detailed Configurations & Phases</p>
+                        </div>
+
+                        <Section title="PROJECT STATUS" icon={Building2}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         {renderSelect("Construction Status", formData.construction_status, (v) => updateForm('construction_status', v), ['Upcoming', 'Under Construction', 'Ready to Move'])}
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -599,7 +682,10 @@ const PostPlotProject = () => {
                         {isSubmitting ? <Loader2 className="animate-spin" size={24} /> : <Save size={24} />}
                         {isSubmitting ? 'UPLOADING...' : 'FINISH & SUBMIT PROJECT'}
                     </button>
+                    <button onClick={() => setStep(0)} style={{ marginTop: '20px', padding: '10px', background: 'none', border: 'none', color: THEME.muted, cursor: 'pointer', textDecoration: 'underline' }}>Back to Source Details</button>
                 </div>
+                    </>
+                )}
             </div>
         </div>
     );

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
@@ -10,6 +10,7 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -19,7 +20,8 @@ const Login = () => {
             setLoading(true);
             const { error: authError } = await logIn(emailRef.current.value, passwordRef.current.value);
             if (authError) throw authError;
-            navigate('/');
+            const from = location.state?.from || '/';
+            navigate(from);
         } catch (err) {
             setError('Failed to log in: ' + err.message);
         }

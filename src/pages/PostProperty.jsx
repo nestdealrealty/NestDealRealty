@@ -211,11 +211,44 @@ const ImageUploadSection = ({ images, onChange, THEME, error }) => {
 const PostProperty = () => {
     // Consolidated Steps: 1. Property Details (Everything), 2. Photos, 3. Success
     const [step, setStep] = useState(1);
+    const [profiles, setProfiles] = useState(null);
     const [errors, setErrors] = useState({});
     const [showAdditional, setShowAdditional] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const { user } = useAuth();
     const navigate = useNavigate();
+
+    React.useEffect(() => {
+        if (!user) {
+            navigate('/login', { state: { from: '/post-property' } });
+        } else {
+            fetchUserProfile();
+        }
+    }, [user, navigate]);
+
+    const fetchUserProfile = async () => {
+        try {
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            if (error && error.code !== 'PGRST116') throw error;
+            if (data) {
+                setProfiles(data);
+                setFormData(prev => ({
+                    ...prev,
+                    sourceName: data.full_name || '',
+                    sourceNumber: data.phone || '',
+                    sourceEmail: data.email || user.email || '',
+                    sourceEnrollCode: data.enroll_code || ''
+                }));
+            } else {
+                setFormData(prev => ({
+                    ...prev,
+                    sourceEmail: user.email || ''
+                }));
+            }
+        } catch (err) {
+            console.error("Error fetching profile:", err);
+        }
+    };
 
     const [formData, setFormData] = useState({
         // 1. LOOKING TO
@@ -283,6 +316,12 @@ const PostProperty = () => {
         drinkingAllowed: 'no',
         smokingAllowed: 'no',
 
+        // Source Details
+        sourceName: '',
+        sourceNumber: '',
+        sourceEmail: '',
+        sourceEnrollCode: '',
+
         // Photos
         images: []
     });
@@ -303,10 +342,17 @@ const PostProperty = () => {
         });
     };
 
-    const validateStep1 = () => {
+    const validateSource = () => {
         const newErrors = {};
+        if (!formData.sourceName) newErrors.sourceName = "Name is required";
+        if (!formData.sourceNumber) newErrors.sourceNumber = "Number is required";
+        if (!formData.sourceEmail) newErrors.sourceEmail = "Email is required";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
-        // Essential Validations
+    const validateDetails = () => {
+        const newErrors = {};
         if (!formData.propertyType) newErrors.propertyType = "Required";
         if (!formData.city) newErrors.city = "Required";
         if (!formData.project) newErrors.project = "Required";
@@ -315,7 +361,6 @@ const PostProperty = () => {
         if (!formData.cost) newErrors.cost = "Required";
 
         setErrors(newErrors);
-
         if (Object.keys(newErrors).length > 0) {
             const firstErrorId = Object.keys(newErrors)[0];
             const element = document.getElementById(firstErrorId);
@@ -325,18 +370,9 @@ const PostProperty = () => {
         return true;
     };
 
-    const validateStep2 = () => {
-        if (formData.images.length < 3) {
-            setErrors({ images: "Please upload at least 3 photos" });
-            return false;
-        }
-        setErrors({});
-        return true;
-    };
-
     const handleNext = () => {
-        if (step === 1 && !validateStep1()) return;
-        if (step === 2 && !validateStep2()) return;
+        if (step === 1 && !validateSource()) return;
+        if (step === 2 && !validateDetails()) return;
         setStep(prev => Math.min(prev + 1, 3));
     };
 
@@ -563,7 +599,77 @@ const PostProperty = () => {
         </div>
     );
 
-    const renderStep1 = () => {
+    const renderSourceDetails = () => (
+        <div className="animate-slide-up">
+            <SectionHeader title="Source Details" sub="Please provide the details of the person posting this property." />
+            
+            <TextInput 
+                id="sourceName" 
+                label="USER NAME" 
+                placeholder="Enter Full Name" 
+                value={formData.sourceName} 
+                onChange={(v) => updateForm('sourceName', v)} 
+                error={errors.sourceName} 
+            />
+            
+            <TextInput 
+                id="sourceNumber" 
+                label="USER NUMBER" 
+                placeholder="Enter Phone Number" 
+                value={formData.sourceNumber} 
+                onChange={(v) => updateForm('sourceNumber', v)} 
+                error={errors.sourceNumber} 
+            />
+            
+            <TextInput 
+                id="sourceEmail" 
+                label="USER E-MAIL" 
+                placeholder="Enter Email Address" 
+                value={formData.sourceEmail} 
+                onChange={(v) => updateForm('sourceEmail', v)} 
+                error={errors.sourceEmail} 
+            />
+
+            <div style={{ background: '#E3BC5A10', padding: '20px', borderRadius: '12px', border: '1px dashed #E3BC5A40', marginTop: '10px' }}>
+                <TextInput 
+                    id="sourceEnrollCode" 
+                    label="USER ENROLL-CODE" 
+                    placeholder="Enter your unique Enroll Code (Optional)" 
+                    value={formData.sourceEnrollCode} 
+                    onChange={(v) => updateForm('sourceEnrollCode', v)} 
+                />
+                <p style={{ fontSize: '0.75rem', color: THEME.muted, margin: '10px 0 0 0' }}>
+                    * Your Enroll Code is provided by the Admin. If you don't have one, you can leave it blank.
+                </p>
+            </div>
+
+            <div style={{ marginTop: '30px' }}>
+                <button
+                    type="button"
+                    onClick={() => {
+                        const newErrors = {};
+                        if (!formData.sourceName) newErrors.sourceName = "Name is required";
+                        if (!formData.sourceNumber) newErrors.sourceNumber = "Number is required";
+                        if (!formData.sourceEmail) newErrors.sourceEmail = "Email is required";
+                        
+                        if (Object.keys(newErrors).length > 0) {
+                            setErrors(newErrors);
+                            return;
+                        }
+                        setStep(2);
+                    }}
+                    style={{
+                        width: '100%', padding: '15px', background: THEME.gold, color: '#000',
+                        border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer'
+                    }}
+                >
+                    CONTINUE TO PROPERTY DETAILS
+                </button>
+            </div>
+        </div>
+    );
+
+    const renderPropertyDetails = () => {
         if (formData.lookingTo === 'pg') return renderPGForm();
 
         return (
@@ -852,9 +958,11 @@ const PostProperty = () => {
 
                 {/* Form Content */}
                 <form onSubmit={(e) => e.preventDefault()}>
-                    {step === 1 && renderStep1()}
+                    {step === 1 && renderSourceDetails()}
+                    
+                    {step === 2 && renderPropertyDetails()}
 
-                    {step === 2 && (
+                    {step === 3 && (
                         <div className="animate-slide-up">
                             <SectionHeader title="Property Photos" sub="Upload photos of your property to get better responses." />
                             <ImageUploadSection
@@ -863,14 +971,6 @@ const PostProperty = () => {
                                 THEME={THEME}
                                 error={errors.images}
                             />
-                        </div>
-                    )}
-
-                    {step === 3 && (
-                        <div className="animate-slide-up" style={{ textAlign: 'center', padding: '50px' }}>
-                            <Check size={50} color={THEME.green} />
-                            <h3 style={{ marginTop: '20px' }}>Ready to Post!</h3>
-                            <p style={{ color: THEME.muted }}>Review your details and click Post.</p>
                         </div>
                     )}
                 </form>

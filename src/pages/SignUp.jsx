@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../supabase';
 import './Auth.css';
 
 const SignUp = () => {
@@ -13,6 +14,7 @@ const SignUp = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     async function handleSocialLogin(provider) {
         try {
@@ -43,9 +45,20 @@ const SignUp = () => {
             const { data, error: authError } = await signUp(emailRef.current.value, passwordRef.current.value, meta);
             if (authError) throw authError;
 
+            // Create profile record if user was created
+            if (data?.user) {
+                await supabase.from('profiles').upsert({
+                    id: data.user.id,
+                    full_name: nameRef.current.value,
+                    phone: phoneRef.current.value,
+                    email: emailRef.current.value
+                });
+            }
+
             // Check if session was created immediately (no email confirm) or pending
             if (data?.session) {
-                navigate('/');
+                const from = location.state?.from || '/';
+                navigate(from);
             } else {
                 // Email confirmation required
                 setError('Success! Please check your email to confirm your account before logging in to save properties.');

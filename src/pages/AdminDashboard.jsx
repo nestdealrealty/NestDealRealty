@@ -112,7 +112,10 @@ const AdminDashboard = () => {
     const [valuations, setValuations] = useState([]);
     const [leads, setLeads] = useState([]);
     const [slides, setSlides] = useState([]);
+    const [profiles, setProfiles] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedUserProfile, setSelectedUserProfile] = useState(null);
+    const [userActivities, setUserActivities] = useState({ properties: [], projects: [] });
     const [selectedProperty, setSelectedProperty] = useState(null);
     const [selectedProject, setSelectedProject] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -143,11 +146,12 @@ const AdminDashboard = () => {
                 return data;
             };
 
-            const [propsData, projectsData, valsData, slidesData] = await Promise.all([
+            const [propsData, projectsData, valsData, slidesData, profilesData] = await Promise.all([
                 fetchTable('properties'),
                 fetchTable('projects'),
                 fetchTable('valuations'),
-                fetchTable('home_slides')
+                fetchTable('home_slides'),
+                fetchTable('profiles')
             ]);
 
             // Leads needs a join for both properties and projects
@@ -160,6 +164,7 @@ const AdminDashboard = () => {
             setProjects(projectsData);
             setValuations(valsData);
             setSlides(slidesData);
+            setProfiles(profilesData || []);
             setLeads(leadsData || []);
 
             if (projectsData.length === 0) {
@@ -325,6 +330,9 @@ const AdminDashboard = () => {
                 <div onClick={() => setActiveTab('slides')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'slides' ? '#E3BC5A20' : 'transparent', color: activeTab === 'slides' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <MapPin size={20} /> Slideshow
                 </div>
+                <div onClick={() => setActiveTab('users')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'users' ? '#E3BC5A20' : 'transparent', color: activeTab === 'users' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Users size={20} /> Users
+                </div>
             </div>
 
             {/* Content */}
@@ -409,6 +417,123 @@ const AdminDashboard = () => {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'users' && !selectedUserProfile && (
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '1px solid #333', paddingBottom: '20px' }}>
+                            <h2 style={{ margin: 0 }}>Registered Users</h2>
+                            <div style={{ padding: '8px 15px', background: `${THEME.gold}20`, borderRadius: '20px', color: THEME.gold, fontSize: '0.85rem' }}>
+                                Total: {profiles.length} Users
+                            </div>
+                        </div>
+                        <div style={{ background: THEME.card, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${THEME.border}` }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                <thead style={{ background: '#2A2F2D', color: THEME.gold }}>
+                                    <tr>
+                                        <th style={{ padding: '15px' }}>NAME</th>
+                                        <th style={{ padding: '15px' }}>EMAIL</th>
+                                        <th style={{ padding: '15px' }}>PHONE</th>
+                                        <th style={{ padding: '15px' }}>ENROLL CODE</th>
+                                        <th style={{ padding: '15px' }}>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {profiles.map(u => (
+                                        <tr key={u.id} style={{ borderBottom: `1px solid ${THEME.border}` }}>
+                                            <td style={{ padding: '15px' }}>{u.full_name || 'Anonymous'}</td>
+                                            <td style={{ padding: '15px', color: THEME.muted }}>{u.email}</td>
+                                            <td style={{ padding: '15px', color: THEME.muted }}>{u.phone || 'N/A'}</td>
+                                            <td style={{ padding: '15px' }}>
+                                                <input 
+                                                    type="text" 
+                                                    defaultValue={u.enroll_code} 
+                                                    onBlur={async (e) => {
+                                                        const newCode = e.target.value;
+                                                        if (newCode === u.enroll_code) return;
+                                                        try {
+                                                            const { error } = await supabase.from('profiles').update({ enroll_code: newCode }).eq('id', u.id);
+                                                            if (error) throw error;
+                                                            setProfiles(prev => prev.map(p => p.id === u.id ? { ...p, enroll_code: newCode } : p));
+                                                            alert("Enroll Code Updated");
+                                                        } catch (err) {
+                                                            alert("Failed to update Enroll Code: " + err.message);
+                                                        }
+                                                    }}
+                                                    placeholder="Assign Code"
+                                                    style={{ background: '#000', border: `1px solid ${THEME.border}`, color: THEME.gold, padding: '5px 10px', borderRadius: '4px', width: '120px' }}
+                                                />
+                                            </td>
+                                            <td style={{ padding: '15px' }}>
+                                                <button 
+                                                    onClick={async () => {
+                                                        const { data: userProps } = await supabase.from('properties').select('*').eq('user_id', u.id);
+                                                        const { data: userProjs } = await supabase.from('projects').select('*').eq('user_id', u.id);
+                                                        setUserActivities({ properties: userProps || [], projects: userProjs || [] });
+                                                        setSelectedUserProfile(u);
+                                                    }}
+                                                    style={{ background: THEME.gold, color: '#000', border: 'none', padding: '5px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem' }}
+                                                >
+                                                    VIEW PROFILE
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'users' && selectedUserProfile && (
+                    <div className="animate-slide-up">
+                        <button onClick={() => setSelectedUserProfile(null)} style={{ background: 'none', border: 'none', color: THEME.gold, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+                            <X size={18} /> Back to Users List
+                        </button>
+
+                        <div style={{ background: THEME.card, padding: '30px', borderRadius: '16px', border: `1px solid ${THEME.border}`, marginBottom: '30px' }}>
+                            <div style={{ borderBottom: `1px solid ${THEME.border}`, paddingBottom: '20px', marginBottom: '20px' }}>
+                                <h2 style={{ margin: 0 }}>{selectedUserProfile.full_name}</h2>
+                                <p style={{ color: THEME.muted, margin: '5px 0' }}>{selectedUserProfile.email} • {selectedUserProfile.phone || 'No Phone'}</p>
+                                <div style={{ display: 'inline-block', marginTop: '10px', padding: '5px 15px', background: `${THEME.gold}20`, color: THEME.gold, borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                    ENROLL CODE: {selectedUserProfile.enroll_code || 'NOT ASSIGNED'}
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+                                <div>
+                                    <h3 style={{ fontSize: '1rem', color: THEME.gold, marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <Home size={18} /> Properties Uploaded ({userActivities.properties.length})
+                                    </h3>
+                                    <div style={{ display: 'grid', gap: '10px' }}>
+                                        {userActivities.properties.length === 0 && <p style={{ color: '#666', fontSize: '0.9rem' }}>No properties uploaded yet.</p>}
+                                        {userActivities.properties.map(p => (
+                                            <div key={p.id} onClick={() => openProperty(p)} style={{ background: '#00000040', padding: '12px', borderRadius: '8px', cursor: 'pointer', border: `1px solid ${THEME.border}` }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                                                    <span>{p.project_name || p.property_type}</span>
+                                                    <span style={{ color: THEME.gold }}>₹{p.cost}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 style={{ fontSize: '1rem', color: THEME.gold, marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <Building2 size={18} /> Projects Uploaded ({userActivities.projects.length})
+                                    </h3>
+                                    <div style={{ display: 'grid', gap: '10px' }}>
+                                        {userActivities.projects.length === 0 && <p style={{ color: '#666', fontSize: '0.9rem' }}>No projects uploaded yet.</p>}
+                                        {userActivities.projects.map(p => (
+                                            <div key={p.id} onClick={() => openProject(p)} style={{ background: '#00000040', padding: '12px', borderRadius: '8px', cursor: 'pointer', border: `1px solid ${THEME.border}` }}>
+                                                <div style={{ fontSize: '0.9rem' }}>{p.name}</div>
+                                                <div style={{ fontSize: '0.75rem', color: THEME.muted }}>{p.developer}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

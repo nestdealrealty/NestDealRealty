@@ -82,15 +82,43 @@ const PostProject = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const editId = searchParams.get('editId');
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState(0);
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
 
+    const fetchUserProfile = async () => {
+        try {
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            if (error && error.code !== 'PGRST116') throw error;
+            if (data) {
+                setFormData(prev => ({
+                    ...prev,
+                    sourceName: data.full_name || '',
+                    sourceNumber: data.phone || '',
+                    sourceEmail: data.email || user.email || '',
+                    sourceEnrollCode: data.enroll_code || ''
+                }));
+            } else {
+                setFormData(prev => ({
+                    ...prev,
+                    sourceEmail: user.email || ''
+                }));
+            }
+        } catch (err) {
+            console.error("Error fetching profile:", err);
+        }
+    };
+
     useEffect(() => {
+        if (!user) {
+            navigate('/login', { state: { from: '/post-project' } });
+            return;
+        }
+        fetchUserProfile();
         if (editId) {
             fetchProjectForEdit();
         }
-    }, [editId]);
+    }, [editId, user, navigate]);
 
     const fetchProjectForEdit = async () => {
         try {
@@ -178,7 +206,13 @@ const PostProject = () => {
         brochure_file: null,
         video_url: '',
         tour_360_url: '',
-        google_map_link: ''
+        google_map_link: '',
+
+        // Source Details
+        sourceName: '',
+        sourceNumber: '',
+        sourceEmail: '',
+        sourceEnrollCode: ''
     });
 
     const updateForm = (key, value) => {
@@ -388,7 +422,13 @@ const PostProject = () => {
                 wall_finish: formData.wall_finish,
                 facing: formData.facing,
                 corner_property: formData.corner_property,
-                status: editId ? (formData.status || 'pending') : 'pending'
+                status: editId ? (formData.status || 'pending') : 'pending',
+                
+                // Source Details
+                source_name: formData.sourceName,
+                source_number: formData.sourceNumber,
+                source_email: formData.sourceEmail,
+                source_enroll_code: formData.sourceEnrollCode
             };
 
             if (editId) {
@@ -480,10 +520,46 @@ const PostProject = () => {
 
                 {/* Progress Bar */}
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '40px' }}>
-                    {[1, 2, 3].map(s => (
+                    {[0, 1, 2, 3].map(s => (
                         <div key={s} style={{ flex: 1, height: '4px', background: step >= s ? THEME.gold : THEME.border, borderRadius: '2px' }} />
                     ))}
                 </div>
+
+                {step === 0 && (
+                    <div className="animate-slide-up" style={{ background: THEME.cardBg, padding: '40px', borderRadius: '16px', border: `1px solid ${THEME.border}` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
+                            <div style={{ padding: '12px', background: `${THEME.gold}20`, borderRadius: '12px', color: THEME.gold }}><Users size={24} /></div>
+                            <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Source Details</h2>
+                        </div>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                            {renderInput("User Name", "sourceName", "Enter Full Name", "text")}
+                            {renderInput("User Number", "sourceNumber", "Enter Phone Number", "tel")}
+                            {renderInput("User Email", "sourceEmail", "Enter Email Address", "email")}
+                            <div style={{ background: '#E3BC5A10', padding: '20px', borderRadius: '12px', border: '1px dashed #E3BC5A40' }}>
+                                {renderInput("Enroll Code", "sourceEnrollCode", "Assign Code (Optional)", "text")}
+                                <p style={{ fontSize: '0.75rem', color: THEME.muted, margin: '10px 0 0 0' }}>
+                                    * Provided by Admin for trackings.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '30px' }}>
+                            <button 
+                                onClick={() => {
+                                    if (!formData.sourceName || !formData.sourceNumber || !formData.sourceEmail) {
+                                        alert("Please fill all required source details");
+                                        return;
+                                    }
+                                    setStep(1);
+                                }} 
+                                style={{ padding: '12px 30px', background: THEME.gold, color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            >
+                                Continue To Project Details <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {step === 1 && (
                     <div className="animate-slide-up" style={{ background: THEME.cardBg, padding: '40px', borderRadius: '16px', border: `1px solid ${THEME.border}` }}>
@@ -535,7 +611,8 @@ const PostProject = () => {
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+                            <button onClick={() => setStep(0)} style={{ background: 'none', border: 'none', color: THEME.muted, cursor: 'pointer', textDecoration: 'underline' }}>Back To Source Details</button>
                             <button onClick={() => {
                                 if (validateStep1()) {
                                     if (formData.property_type === 'Plots') {
