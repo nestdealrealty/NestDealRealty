@@ -150,7 +150,8 @@ const PostPlotProject = () => {
             const { data, error } = await supabase.from('projects').select('*').eq('id', editId).single();
             if (error) throw error;
             if (data) {
-                setFormData({
+                setFormData(prev => ({
+                    ...prev,
                     project_name: data.name,
                     developer: data.developer,
                     locality: data.locality,
@@ -171,10 +172,17 @@ const PostPlotProject = () => {
                     tagline: data.tagline || 'Signature Homes',
                     google_map_link: data.google_map_link || '',
                     video_url: data.video_url || '',
-                    amenities: Array.isArray(data.amenities) ? data.amenities : []
-                });
+                    amenities: Array.isArray(data.amenities) ? data.amenities : [],
+                    sourceName: data.source_name || prev.sourceName || '',
+                    sourceNumber: data.source_number || prev.sourceNumber || '',
+                    sourceEmail: data.source_email || prev.sourceEmail || '',
+                    sourceEnrollCode: data.source_enroll_code || prev.sourceEnrollCode || ''
+                }));
                 if (Array.isArray(data.images)) {
                     setPreviews(data.images.map(img => typeof img === 'string' ? img : img.url));
+                }
+                if (data.video_url) {
+                    updateForm('video_url', data.video_url);
                 }
             }
         } catch (err) {
@@ -215,6 +223,7 @@ const PostPlotProject = () => {
         images: [], // { url, file }
         google_map_link: '',
         video_url: '',
+        video_file: null,
         amenities: [],
 
         // Source Details
@@ -313,6 +322,13 @@ const PostPlotProject = () => {
                 return { ...rest, map_url };
             }));
 
+            // 3. Upload Video if exists
+            let finalVideoUrl = formData.video_url;
+            if (formData.video_file) {
+                const url = await uploadFile(formData.video_file);
+                if (url) finalVideoUrl = url;
+            }
+
             const payload = {
                 user_id: user.id,
                 name: formData.project_name,
@@ -337,7 +353,7 @@ const PostPlotProject = () => {
                 
                 images: imageUrls,
                 google_map_link: formData.google_map_link,
-                video_url: formData.video_url,
+                video_url: finalVideoUrl,
                 amenities: formData.amenities,
                 status: editId ? (formData.status || 'pending') : 'pending',
 
@@ -660,16 +676,76 @@ const PostPlotProject = () => {
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))', gap: '8px' }}>
                             {previews.map((src, i) => (
-                                <div key={i} style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '6px', overflow: 'hidden', border: `1px solid ${THEME.border}` }}>
+                                <div key={i} style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '6px', overflow: 'hidden', border: i === 0 ? `2px solid ${THEME.gold}` : `1px solid ${THEME.border}` }}>
                                     <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    <button onClick={(e) => { e.preventDefault(); removeImage(i); }} style={{ position: 'absolute', top: '2px', right: '2px', background: THEME.red, border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', padding: '1px' }}><X size={10} /></button>
+                                    <button onClick={(e) => { e.preventDefault(); removeImage(i); }} style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', color: '#fff', cursor: 'pointer', padding: '2px', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}><X size={10} /></button>
+                                    <button 
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (i === 0) return;
+                                            setFormData(prev => {
+                                                const newImages = [...prev.images];
+                                                const [movedImg] = newImages.splice(i, 1);
+                                                newImages.unshift(movedImg);
+                                                return { ...prev, images: newImages };
+                                            });
+                                            setPreviews(prev => {
+                                                const newPreviews = [...prev];
+                                                const [movedPrev] = newPreviews.splice(i, 1);
+                                                newPreviews.unshift(movedPrev);
+                                                return newPreviews;
+                                            });
+                                        }}
+                                        title="Set as Thumbnail"
+                                        style={{
+                                            position: 'absolute', bottom: '2px', left: '2px',
+                                            background: i === 0 ? THEME.gold : 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '4px',
+                                            padding: '2px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            color: i === 0 ? '#000' : '#fff', cursor: 'pointer', fontSize: '8px', fontWeight: 'bold', zIndex: 2
+                                        }}
+                                    >
+                                        {i === 0 ? 'Thumbnail' : 'Set Thumbnail'}
+                                    </button>
                                 </div>
                             ))}
                         </div>
                     </div>
                     <div style={{ marginTop: '20px' }}>
                         {renderInput("Google Maps Location Link", formData.google_map_link, (v) => updateForm('google_map_link', v), "https://maps.google.com/...")}
-                        {renderInput("YouTube Video Link", formData.video_url, (v) => updateForm('video_url', v), "https://youtube.com/watch?v=...")}
+                        
+                        <div style={{ marginTop: '25px', display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                            <div style={{ flex: 1 }}>
+                                {renderInput("Video URL (YouTube/Drive)", formData.video_url, (v) => updateForm('video_url', v), "https://youtube.com/watch?v=...")}
+                            </div>
+                            <div style={{ width: '200px' }}>
+                                <label style={{ 
+                                    border: `2px dashed ${THEME.gold}40`, height: '110px', borderRadius: '12px', 
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+                                    cursor: 'pointer', color: THEME.gold, background: formData.video_file ? `${THEME.gold}10` : 'transparent',
+                                    transition: 'all 0.3s ease'
+                                }}>
+                                    <Video size={24} />
+                                    <span style={{ fontSize: '0.8rem', marginTop: '8px', fontWeight: 'bold' }}>{formData.video_file ? 'Video Selected' : 'Upload Video'}</span>
+                                    <span style={{ fontSize: '0.65rem', color: THEME.muted, marginTop: '4px' }}>Max 50MB</span>
+                                    <input type="file" accept="video/*" hidden onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            if (file.size > 50 * 1024 * 1024) {
+                                                alert("Video size exceeds 50MB limit");
+                                                return;
+                                            }
+                                            updateForm('video_file', file);
+                                        }
+                                    }} />
+                                </label>
+                                {formData.video_file && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '6px' }}>
+                                        <span style={{ fontSize: '10px', color: THEME.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{formData.video_file.name}</span>
+                                        <button onClick={() => updateForm('video_file', null)} style={{ background: 'none', border: 'none', color: THEME.red, cursor: 'pointer' }}><X size={12} /></button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </Section>
 

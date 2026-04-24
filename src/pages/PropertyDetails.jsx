@@ -5,7 +5,7 @@ import {
     Star, Phone, User, Mail, School, Bus, ShoppingBag, Coffee, X,
     Maximize2, Calendar, Ruler, Car, Home, Layers, ExternalLink,
     ThumbsUp, ThumbsDown, Play, Building2, TrendingUp, FileText,
-    Hospital, Trees, Navigation, Calculator, ShieldCheck, Info, MessageSquare, CheckCircle
+    Hospital, Trees, Navigation, Calculator, ShieldCheck, Info, MessageSquare, CheckCircle, Video
 } from 'lucide-react';
 import { getPropertyById } from '../data/properties';
 import { supabase } from '../supabase';
@@ -101,6 +101,7 @@ const PropertyDetails = () => {
                             status: data.construction_status,
                             possession: data.available_from ? new Date(data.available_from).toLocaleDateString() : 'Ready',
                             furnishing: data.furnishing,
+                            video_url: data.video_url,
                             description: data.description || "No description provided.",
                             specs: [
                                 { icon: <Home size={20} />, label: "Bedrooms", value: data.bhk || "N/A" },
@@ -149,7 +150,17 @@ const PropertyDetails = () => {
         fetchProperty();
     }, [id]);
 
-    const galleryImages = property?.gallery || demoProperty.gallery || [];
+    const slides = [
+        ...(property?.video_url ? [{ type: 'video', url: property.video_url }] : []),
+        ...(property?.gallery || demoProperty.gallery || []).map(img => ({ type: 'image', url: img }))
+    ];
+
+    const isYouTube = (url) => url && (url.includes('youtube.com') || url.includes('youtu.be'));
+    const getYouTubeId = (url) => {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
 
     const [heroIndex, setHeroIndex] = useState(0);
     const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -166,6 +177,8 @@ const PropertyDetails = () => {
     const [helpfulFeedback, setHelpfulFeedback] = useState(null);
     const nearbyPlacesRef = useRef(null);
     const [activeSection, setActiveSection] = useState('overview');
+    const [activeAmenity, setActiveAmenity] = useState(null);
+    const [showAllAmenities, setShowAllAmenities] = useState(false);
 
     // Lead Form State
     const [leadForm, setLeadForm] = useState({ name: '', phone: '', email: '', whatsapp: '' });
@@ -197,13 +210,16 @@ const PropertyDetails = () => {
     // Auto-slide for Hero Section
     useEffect(() => {
         let interval;
-        if (isAutoPlaying && lightboxIndex === null && galleryImages.length > 0) {
+        const currentSlide = slides[heroIndex];
+        const isActuallyVideo = currentSlide?.type === 'video' && !isYouTube(currentSlide.url);
+
+        if (isAutoPlaying && lightboxIndex === null && slides.length > 0 && !isActuallyVideo) {
             interval = setInterval(() => {
-                setHeroIndex((prev) => (prev + 1) % galleryImages.length);
+                setHeroIndex((prev) => (prev + 1) % slides.length);
             }, 5000);
         }
         return () => clearInterval(interval);
-    }, [isAutoPlaying, lightboxIndex, galleryImages.length]);
+    }, [isAutoPlaying, lightboxIndex, slides.length, heroIndex]);
 
     // Keyboard navigation for lightbox
     useEffect(() => {
@@ -216,10 +232,10 @@ const PropertyDetails = () => {
                     document.body.style.overflow = 'auto';
                     break;
                 case 'ArrowLeft':
-                    setLightboxIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+                    setLightboxIndex((prev) => (prev - 1 + slides.length) % slides.length);
                     break;
                 case 'ArrowRight':
-                    setLightboxIndex((prev) => (prev + 1) % galleryImages.length);
+                    setLightboxIndex((prev) => (prev + 1) % slides.length);
                     break;
                 default:
                     break;
@@ -228,7 +244,7 @@ const PropertyDetails = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [lightboxIndex, galleryImages.length]);
+    }, [lightboxIndex, slides.length]);
 
     console.log('PropertyDetails render:', { id, property, loading });
 
@@ -298,12 +314,12 @@ const PropertyDetails = () => {
     };
 
     const nextHero = () => {
-        setHeroIndex((prev) => (prev + 1) % galleryImages.length);
+        setHeroIndex((prev) => (prev + 1) % slides.length);
         setIsAutoPlaying(false);
     };
 
     const prevHero = () => {
-        setHeroIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+        setHeroIndex((prev) => (prev - 1 + slides.length) % slides.length);
         setIsAutoPlaying(false);
     };
 
@@ -342,17 +358,67 @@ const PropertyDetails = () => {
                         className="hero-track"
                         style={{ transform: `translateX(-${heroIndex * 100}%)` }}
                     >
-                        {galleryImages.map((img, idx) => (
+                        {slides.map((slide, idx) => (
                             <div
                                 key={idx}
                                 className="hero-slide"
                                 onDoubleClick={() => openLightbox(idx)}
                             >
-                                <img
-                                    src={img}
-                                    alt={`Slide ${idx}`}
-                                    loading={idx === 0 ? "eager" : "lazy"}
-                                />
+                                {slide.type === 'video' ? (
+                                    <div style={{ width: '100%', height: '100%', background: '#000', position: 'relative', overflow: 'hidden' }}>
+                                        {/* Blurred Background */}
+                                        {isYouTube(slide.url) ? (
+                                            <iframe 
+                                                src={`https://www.youtube.com/embed/${getYouTubeId(slide.url)}?autoplay=1&mute=1&loop=1&playlist=${getYouTubeId(slide.url)}&controls=0&modestbranding=1`} 
+                                                style={{ width: '100%', height: '100%', border: 'none', transform: 'scale(1.5)', filter: 'blur(30px) brightness(0.6)' }}
+                                                allow="autoplay; encrypted-media"
+                                            />
+                                        ) : (
+                                            <video 
+                                                src={slide.url} 
+                                                autoPlay muted playsInline loop
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.2)', filter: 'blur(30px) brightness(0.6)' }} 
+                                            />
+                                        )}
+
+                                        {/* Main Media */}
+                                        <div style={{ position: 'absolute', inset: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                                            {isYouTube(slide.url) ? (
+                                                <iframe 
+                                                    src={`https://www.youtube.com/embed/${getYouTubeId(slide.url)}?autoplay=1&mute=1&loop=1&playlist=${getYouTubeId(slide.url)}&controls=0&modestbranding=1`} 
+                                                    style={{ width: '100%', height: '100%', border: 'none', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
+                                                    allow="autoplay; encrypted-media"
+                                                />
+                                            ) : (
+                                                <video 
+                                                    key={`video-${idx}-${heroIndex === idx}`}
+                                                    src={slide.url} 
+                                                    autoPlay muted playsInline 
+                                                    onEnded={() => setHeroIndex((prev) => (prev + 1) % slides.length)}
+                                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }} 
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={{ width: '100%', height: '100%', background: '#000', position: 'relative', overflow: 'hidden' }}>
+                                        {/* Blurred Image Background */}
+                                        <img 
+                                            src={slide.url} 
+                                            alt="blur-bg"
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.2)', filter: 'blur(30px) brightness(0.6)' }}
+                                        />
+                                        {/* Main Image */}
+                                        <div style={{ position: 'absolute', inset: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                                            <img
+                                                src={slide.url}
+                                                alt={`Slide ${idx}`}
+                                                loading={idx === 0 ? "eager" : "lazy"}
+                                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="image-overlay-gradient"></div>
                             </div>
                         ))}
@@ -368,7 +434,7 @@ const PropertyDetails = () => {
 
                     {/* Dot Indicators */}
                     <div className="hero-dots">
-                        {galleryImages.map((_, idx) => (
+                        {slides.map((_, idx) => (
                             <button
                                 key={idx}
                                 className={`hero-dot ${heroIndex === idx ? 'active' : ''}`}
@@ -612,12 +678,13 @@ const PropertyDetails = () => {
                                 <h2 className="section-title">Price & Floor Plan</h2>
                                 {/* ... content same as before but ensured ID is present ... */}
                                 {/* Unit Type Selector */}
-                                <div className="unit-type-selector">
+                                <div className="unit-type-selector" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '15px', scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
                                     {property.unitTypes.map((unitType, idx) => (
                                         <button
                                             key={idx}
                                             className={`unit-type-tab ${selectedUnitType === idx ? 'active' : ''}`}
                                             onClick={() => { setSelectedUnitType(idx); setSelectedSize(0); }}
+                                            style={{ flexShrink: 0, minWidth: '140px' }}
                                         >
                                             <span className="unit-type-name">{unitType.type}</span>
                                             <span className="unit-type-range">{unitType.priceRange}</span>
@@ -748,12 +815,37 @@ const PropertyDetails = () => {
                         <div className="pd-amenities-section" id="amenities">
                             <h2 className="section-title">Amenities</h2>
                             <div className="amenities-grid-v2">
-                                {property.amenities.map((item, idx) => (
-                                    <div key={idx} className="amenity-card-v2">
-                                        {item.icon}
-                                        <span>{item.name}</span>
-                                    </div>
-                                ))}
+                                {property.amenities.map((item, idx) => {
+                                    const amenityImages = {
+                                        'Swimming Pool': 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=500&q=80',
+                                        'Gymnasium': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=500&q=80',
+                                        'Club House': 'https://images.unsplash.com/photo-1520699918507-3c3e01c766a1?auto=format&fit=crop&w=500&q=80',
+                                        'Garden': 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=500&q=80',
+                                        'Children Play Area': 'https://images.unsplash.com/photo-1536431311719-398b6704d4cc?auto=format&fit=crop&w=500&q=80',
+                                        'Security': 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=500&q=80',
+                                        'Indoor Games': 'https://images.unsplash.com/photo-1611095777215-80bc8bd69707?auto=format&fit=crop&w=500&q=80',
+                                        'Yoga': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=500&q=80'
+                                    };
+                                    const bgImg = amenityImages[item.name] || 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=500&q=80';
+
+                                    return (
+                                        <div key={idx} className="dynamic-amenity-wrapper-v2">
+                                            <div className="dynamic-amenity-card-v2">
+                                                <img src={bgImg} className="dynamic-island-bg-v2" alt="" />
+                                                <div className="dynamic-island-overlay-v2" />
+                                                <div className="dynamic-island-header-v2">
+                                                    <div className="dynamic-island-icon-v2">
+                                                        {item.icon}
+                                                    </div>
+                                                    <div className="dynamic-island-title-v2">{item.name}</div>
+                                                </div>
+                                                <div className="dynamic-island-content-v2">
+                                                    Experience premium <strong>{item.name.toLowerCase()}</strong> facilities designed to provide you with luxury and utmost comfort.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -917,11 +1009,30 @@ const PropertyDetails = () => {
                             </button>
 
                             <div className="lb-image-wrapper">
-                                <img
-                                    src={galleryImages[lightboxIndex]}
-                                    alt="Zoomed View"
-                                    className="lb-main-img"
-                                />
+                                {slides[lightboxIndex]?.type === 'video' ? (
+                                    <div style={{ width: '100%', height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        {isYouTube(slides[lightboxIndex].url) ? (
+                                            <iframe 
+                                                src={`https://www.youtube.com/embed/${getYouTubeId(slides[lightboxIndex].url)}?autoplay=1`} 
+                                                style={{ width: '100%', aspectRatio: '16/9', maxWidth: '1000px', border: 'none' }}
+                                                allow="autoplay; encrypted-media; fullscreen"
+                                                allowFullScreen
+                                            />
+                                        ) : (
+                                            <video 
+                                                src={slides[lightboxIndex].url} 
+                                                controls autoPlay 
+                                                style={{ maxWidth: '90%', maxHeight: '80vh' }} 
+                                            />
+                                        )}
+                                    </div>
+                                ) : (
+                                    <img
+                                        src={slides[lightboxIndex]?.url}
+                                        alt="Zoomed View"
+                                        className="lb-main-img"
+                                    />
+                                )}
                             </div>
 
                             <button className="lb-nav next" onClick={nextLightbox}>
@@ -930,7 +1041,7 @@ const PropertyDetails = () => {
                         </div>
 
                         <div className="lb-footer">
-                            <div className="lb-counter">{lightboxIndex + 1} / {galleryImages.length}</div>
+                            <div className="lb-counter">{lightboxIndex + 1} / {slides.length}</div>
                         </div>
                     </div>
                 )

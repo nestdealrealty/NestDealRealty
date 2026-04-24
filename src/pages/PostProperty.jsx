@@ -186,7 +186,7 @@ const ImageUploadSection = ({ images, onChange, THEME, error }) => {
             {images.length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '15px' }}>
                     {images.map((img, idx) => (
-                        <div key={idx} style={{ position: 'relative', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${THEME.border}` }}>
+                        <div key={idx} style={{ position: 'relative', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: idx === 0 ? `2px solid ${THEME.gold}` : `1px solid ${THEME.border}` }}>
                             <img src={img.url} alt={`Preview ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             <button
                                 type="button"
@@ -195,10 +195,29 @@ const ImageUploadSection = ({ images, onChange, THEME, error }) => {
                                     position: 'absolute', top: '5px', right: '5px',
                                     background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%',
                                     width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    color: '#fff', cursor: 'pointer'
+                                    color: '#fff', cursor: 'pointer', zIndex: 2
                                 }}
                             >
                                 <X size={14} />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if(idx === 0) return;
+                                    const newImages = [...images];
+                                    const [moved] = newImages.splice(idx, 1);
+                                    newImages.unshift(moved);
+                                    onChange(newImages);
+                                }}
+                                title="Set as Thumbnail"
+                                style={{
+                                    position: 'absolute', bottom: '5px', left: '5px',
+                                    background: idx === 0 ? THEME.gold : 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '4px',
+                                    padding: '4px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: idx === 0 ? '#000' : '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold', zIndex: 2
+                                }}
+                            >
+                                {idx === 0 ? 'Thumbnail' : 'Set Thumbnail'}
                             </button>
                         </div>
                     ))}
@@ -322,6 +341,10 @@ const PostProperty = () => {
         sourceEmail: '',
         sourceEnrollCode: '',
 
+        // Media
+        videoUrl: '',
+        videoFile: null,
+
         // Photos
         images: []
     });
@@ -408,6 +431,26 @@ const PostProperty = () => {
                 imageUrls.push(publicUrlData.publicUrl);
             }
 
+            // 1.5 Upload Video
+            let finalVideoUrl = formData.videoUrl;
+            if (formData.videoFile) {
+                const file = formData.videoFile;
+                const fileExt = file.name.split('.').pop();
+                const fileName = `video_${Date.now()}.${fileExt}`;
+                const filePath = `${user.id}/videos/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('property-images')
+                    .upload(filePath, file);
+
+                if (!uploadError) {
+                    const { data: publicUrlData } = supabase.storage
+                        .from('property-images')
+                        .getPublicUrl(filePath);
+                    finalVideoUrl = publicUrlData.publicUrl;
+                }
+            }
+
             // 2. Prepare Data
             const payload = {
                 user_id: user.id,
@@ -447,6 +490,13 @@ const PostProperty = () => {
                 description: formData.description,
 
                 images: imageUrls,
+                video_url: finalVideoUrl,
+                
+                // Source Details
+                source_name: formData.sourceName,
+                source_number: formData.sourceNumber,
+                source_email: formData.sourceEmail,
+                source_enroll_code: formData.sourceEnrollCode,
 
                 // PG Fields
                 pg_name: formData.pgName,
@@ -964,13 +1014,75 @@ const PostProperty = () => {
 
                     {step === 3 && (
                         <div className="animate-slide-up">
-                            <SectionHeader title="Property Photos" sub="Upload photos of your property to get better responses." />
+                            <SectionHeader title="Property Media" sub="Upload photos & videos of your property to get better responses." />
                             <ImageUploadSection
                                 images={formData.images}
                                 onChange={(imgs) => updateForm('images', imgs)}
                                 THEME={THEME}
                                 error={errors.images}
                             />
+
+                            {/* Video Section */}
+                            <div style={{ marginTop: '30px', borderTop: `1px solid ${THEME.border}`, paddingTop: '30px' }}>
+                                <label style={{ display: 'block', color: THEME.muted, fontSize: '0.9rem', marginBottom: '15px' }}>ADD A VIDEO WALKTHROUGH</label>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                                    {formData.videoFile || formData.videoUrl ? (
+                                        <div style={{ 
+                                            position: 'relative', height: '200px', borderRadius: '12px', overflow: 'hidden', 
+                                            border: `1px solid ${THEME.gold}`, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                                        }}>
+                                            {formData.videoFile ? (
+                                                <video src={URL.createObjectURL(formData.videoFile)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                <div style={{ textAlign: 'center' }}>
+                                                    <Video color={THEME.gold} size={40} />
+                                                    <div style={{ color: THEME.gold, fontSize: '0.8rem', marginTop: '10px' }}>YouTube Link Added</div>
+                                                    <div style={{ fontSize: '0.7rem', color: THEME.muted, maxWidth: '250px', marginTop: '5px' }}>{formData.videoUrl}</div>
+                                                </div>
+                                            )}
+                                            <button 
+                                                type="button"
+                                                onClick={() => { updateForm('videoFile', null); updateForm('videoUrl', ''); }} 
+                                                style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '50%', width: '30px', height: '30px', color: '#fff', cursor: 'pointer', zIndex: 10 }}
+                                            >
+                                                <X size={18} />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <label style={{ 
+                                            border: `2px dashed ${THEME.gold}40`, height: '150px', borderRadius: '12px', 
+                                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+                                            cursor: 'pointer', color: THEME.muted, background: THEME.inputBg, transition: 'all 0.2s' 
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.borderColor = THEME.gold}
+                                        onMouseOut={(e) => e.currentTarget.style.borderColor = `${THEME.gold}40`}
+                                        >
+                                            <div style={{ padding: '12px', background: `${THEME.gold}15`, borderRadius: '50%', marginBottom: '10px' }}>
+                                                <Video color={THEME.gold} size={30} />
+                                            </div>
+                                            <span style={{ fontSize: '0.95rem', fontWeight: '500', color: THEME.text }}>Click to Upload Walkthrough Video</span>
+                                            <span style={{ fontSize: '0.75rem', color: THEME.muted, marginTop: '5px' }}>MP4, WebM (Max 50MB)</span>
+                                            <input type="file" accept="video/*" hidden onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    if (file.size > 50 * 1024 * 1024) {
+                                                        alert("Video size too large (Max 50MB)");
+                                                        return;
+                                                    }
+                                                    updateForm('videoFile', file);
+                                                }
+                                            }} />
+                                        </label>
+                                    )}
+                                    <TextInput 
+                                        id="videoUrl"
+                                        label="OR PASTE YOUTUBE / DRIVE LINK" 
+                                        placeholder="https://youtube.com/..." 
+                                        value={formData.videoUrl} 
+                                        onChange={(v) => updateForm('videoUrl', v)} 
+                                    />
+                                </div>
+                            </div>
                         </div>
                     )}
                 </form>

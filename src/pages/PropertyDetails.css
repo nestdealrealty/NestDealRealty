@@ -236,6 +236,11 @@ body {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 40px;
+    align-items: start;
+}
+
+.pd-main-col {
+    min-width: 0;
 }
 
 /* --- LEFT COLUMN CONTENT --- */
@@ -420,27 +425,129 @@ body {
     gap: 12px;
 }
 
-.amenity-card-v2 {
+.dynamic-amenity-wrapper-v2 {
+    position: relative;
+    height: 100px;
+}
+
+.dynamic-amenity-card-v2 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
     background: var(--bg-card);
-    padding: 24px 16px;
-    border-radius: var(--radius-md);
     border: 1px solid var(--border-subtle);
+    border-radius: 50px;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    cursor: default;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+}
+
+.dynamic-amenity-card-v2:hover {
+    height: 160px;
+    border-radius: 16px;
+    border-color: var(--brand-primary);
+    box-shadow: var(--shadow-soft);
+    z-index: 10;
+}
+
+.dynamic-island-header-v2 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
-    text-align: center;
-    transition: 0.3s;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    height: 100px;
+    box-sizing: border-box;
 }
 
-.amenity-card-v2:hover {
-    background: #ffffff;
-    border-color: var(--brand-primary);
-    box-shadow: var(--shadow-soft);
-}
-
-.amenity-icon-box {
+.dynamic-island-icon-v2 {
     color: var(--brand-primary);
+    transition: all 0.3s ease;
+}
+
+.dynamic-amenity-card-v2:hover .dynamic-island-icon-v2 {
+    transform: scale(1.1);
+}
+
+.dynamic-island-title-v2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.dynamic-island-content-v2 {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    padding: 0 16px 16px 16px;
+    font-size: 0.9rem;
+    color: #FFFFFF;
+    line-height: 1.5;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.dynamic-island-header-v2, .dynamic-island-title-v2 {
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.dynamic-amenity-card-v2:hover .dynamic-island-title-v2 {
+    color: #FFFFFF !important;
+}
+
+.dynamic-island-bg-v2 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: all 0.5s ease;
+    z-index: 0;
+    filter: brightness(0.6);
+}
+
+.dynamic-amenity-card-v2:hover .dynamic-island-bg-v2 {
+    opacity: 1;
+}
+
+.dynamic-island-overlay-v2 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 1;
+}
+
+.dynamic-amenity-card-v2:hover .dynamic-island-overlay-v2 {
+    opacity: 1;
+}
+
+.dynamic-amenity-card-v2:hover .dynamic-island-content-v2 {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.1s;
 }
 
 /* Map */

@@ -154,46 +154,27 @@ const Home = () => {
         }
     }, [realProjects]);
 
-    const exploreCategories = [
-        {
-            id: 'flats',
-            title: 'Flats',
-            items: [
-                ...realProjects.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && (p.type?.includes('flat') || !p.type)),
-                ...realProperties.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && p.type?.includes('flat')),
-                { id: 101, image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80', listingTitle: 'Trident Experia', builder: 'A. Shridhar', config: '3 BHK Flat', location: 'Vaishnodevi, Ahmedabad', price: '₹ 76.00 L' },
-            ]
-        },
-        {
-            id: 'bungalows',
-            title: 'Bungalows',
-            items: [
-                ...realProjects.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && (p.type?.includes('bung') || p.type?.includes('vil'))),
-                ...realProperties.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && (p.type?.includes('bung') || p.type?.includes('vil'))),
-                { id: 102, image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b91d?auto=format&fit=crop&w=400&q=80', listingTitle: 'Adani Shantigram', builder: 'Adani Realty', config: '4 BHK Villa', location: 'S.G Highway', price: '₹ 3.50 Cr' },
-            ]
-        },
-        {
-            id: 'commercial',
-            title: 'Commercial',
-            items: [
-                ...realProjects.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && p.type?.includes('comm')),
-                ...realProperties.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && p.type?.includes('comm')),
-                { id: 103, image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80', listingTitle: 'Mondeal Heights', builder: 'HN Safal', config: 'Office Space', location: 'S.G Highway', price: '₹ 65.00 L' },
-            ]
-        },
-        {
-            id: 'plots',
-            title: 'Plots',
-            items: [
-                ...realProjects.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && p.type?.includes('plot')),
-                ...realProperties.filter(p => p.city?.toLowerCase().includes(activeLocation.toLowerCase()) && p.type?.includes('plot')),
-                { id: 104, image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=400&q=80', listingTitle: 'Glade One', builder: 'Arvind', config: 'Golf Plot', location: 'Sanand', price: '₹ 1.50 Cr' },
-            ]
-        },
-    ];
+    const getProjectsForTab = (tab, city) => {
+        return realProjects.filter(p => {
+            const matchesCity = city ? p.city?.toLowerCase().includes(city.toLowerCase()) : true;
+            if (tab === 'flats') return matchesCity && (p.type?.includes('flat') || !p.type);
+            if (tab === 'bungalows') return matchesCity && (p.type?.includes('bung') || p.type?.includes('vil'));
+            if (tab === 'commercial') return matchesCity && p.type?.includes('comm');
+            if (tab === 'plots') return matchesCity && p.type?.includes('plot');
+            return matchesCity;
+        });
+    };
 
-    const exploreGandhinagarCategories = exploreCategories;
+    const getPropertiesForTab = (tab, city) => {
+        return realProperties.filter(p => {
+            const matchesCity = city ? p.city?.toLowerCase().includes(city.toLowerCase()) : true;
+            if (tab === 'flats') return matchesCity && p.type?.includes('flat');
+            if (tab === 'bungalows') return matchesCity && (p.type?.includes('bung') || p.type?.includes('vil'));
+            if (tab === 'commercial') return matchesCity && p.type?.includes('comm');
+            if (tab === 'plots') return matchesCity && p.type?.includes('plot');
+            return matchesCity;
+        });
+    };
 
     return (
         <div className="home-page-root">
@@ -501,8 +482,8 @@ const Home = () => {
                         </div>
 
                         <div className="prop-grid-2x2">
-                            {exploreCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeAhdProjectTab] || 0].items.slice(0, 4).map((item) => (
-                                <Link to={item.isProject ? `/project/${item.id}` : `/property/${item.id}`} key={item.id} className="new-prop-card">
+                            {getProjectsForTab(activeAhdProjectTab, 'Ahmedabad').slice(0, 4).map((item) => (
+                                <Link to={`/project/${item.id}`} key={item.id} className="new-prop-card">
                                     <div className="new-prop-img-box">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                     </div>
@@ -535,8 +516,8 @@ const Home = () => {
                         </div>
 
                         <div className="prop-grid-2x2">
-                            {exploreCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeAhdOwnerTab] || 0].items.slice(0, 4).map((item) => (
-                                <Link to={item.isProject ? `/project/${item.id}` : `/property/${item.id}`} key={item.id} className="new-prop-card">
+                            {getPropertiesForTab(activeAhdOwnerTab, 'Ahmedabad').slice(0, 4).map((item) => (
+                                <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
                                     <div className="new-prop-img-box">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                     </div>
@@ -581,8 +562,8 @@ const Home = () => {
                         </div>
 
                         <div className="prop-grid-2x2">
-                            {exploreGandhinagarCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeGnrProjectTab] || 0].items.slice(0, 4).map((item) => (
-                                <Link to={item.isProject ? `/project/${item.id}` : `/property/${item.id}`} key={item.id} className="new-prop-card">
+                            {getProjectsForTab(activeGnrProjectTab, 'Gandhinagar').slice(0, 4).map((item) => (
+                                <Link to={`/project/${item.id}`} key={item.id} className="new-prop-card">
                                     <div className="new-prop-img-box">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                     </div>
@@ -615,8 +596,8 @@ const Home = () => {
                         </div>
 
                         <div className="prop-grid-2x2">
-                            {exploreGandhinagarCategories[{ flats: 0, bungalows: 1, commercial: 2, plots: 3 }[activeGnrOwnerTab] || 0].items.slice(0, 4).map((item) => (
-                                <Link to={item.isProject ? `/project/${item.id}` : `/property/${item.id}`} key={item.id} className="new-prop-card">
+                            {getPropertiesForTab(activeGnrOwnerTab, 'Gandhinagar').slice(0, 4).map((item) => (
+                                <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
                                     <div className="new-prop-img-box">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                     </div>

@@ -2,12 +2,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { 
-    ChevronLeft, Maximize2, CheckCircle2, Navigation, MapPin, Share2, Download, TrendingUp, User, Phone, Mail, Heart,
+    ChevronLeft, ChevronRight, Maximize2, CheckCircle2, Navigation, MapPin, Share2, Download, TrendingUp, User, Phone, Mail, Heart,
     Trees, Flower2, Target, Car, Palmtree, Mountain, Dumbbell, PartyPopper, ShieldCheck, Camera, ParkingCircle, Award,
     ArrowUpToLine, Flame, Zap, Baby, Footprints, Gamepad2, Trophy, BadgeCheck, DoorClosed, Waves, Wine, ChefHat, 
     Bike, Lamp, GraduationCap, Flag, Bath, Mic2, Lock, WashingMachine, Repeat, UserCheck, 
     Droplets, Volleyball, Activity, Scissors, Gift, Calendar, Leaf, Tent, Users, Music, Sofa, Tv, Droplet, 
-    Joystick, Coffee, Library, Store, DoorOpen, Accessibility, Home, PhoneForwarded, Trash2, Building2, Globe, BedDouble
+    Joystick, Coffee, Library, Store, DoorOpen, Accessibility, Home, PhoneForwarded, Trash2, Building2, Globe, BedDouble, Video
 } from 'lucide-react';
 import './ProjectDetails.css';
 import Logo from '../assets/logo.jpg';
@@ -123,6 +123,7 @@ export default function ProjectDetails() {
     const [verifying, setVerifying] = useState(false);
     const [brochureStep, setBrochureStep] = useState(1);
     const [showAllAmenities, setShowAllAmenities] = useState(false);
+    const [activeAmenity, setActiveAmenity] = useState(null);
     const [pageBgColor, setPageBgColor] = useState(THEME.dark);
     const amenitiesRef = useRef(null);
 
@@ -255,23 +256,42 @@ export default function ProjectDetails() {
         }
     };
 
+    const slides = [
+        ...(project?.video_url ? [{ type: 'video', url: project.video_url }] : []),
+        ...(project?.images || []).map(img => ({ type: 'image', url: typeof img === 'string' ? img : (img?.url || '') }))
+    ];
+
+    const isYouTube = (url) => url && (url.includes('youtube.com') || url.includes('youtu.be'));
+    const getYouTubeId = (url) => {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
+
     // Slideshow logic
     useEffect(() => {
-        if (!project?.images || project.images.length <= 1) return;
+        if (slides.length <= 1) return;
         
+        // If current slide is a video and NOT a YouTube link, we wait for onEnded
+        const currentSlide = slides[activeImage];
+        const isActuallyVideo = currentSlide?.type === 'video' && !isYouTube(currentSlide.url);
+        
+        if (isActuallyVideo) return; 
+
         const interval = setInterval(() => {
-            setActiveImage((prev) => (prev + 1) % project.images.length);
-        }, 4000); // 4 seconds per slide
+            setActiveImage((prev) => (prev + 1) % slides.length);
+        }, 5000); 
 
         return () => clearInterval(interval);
-    }, [project?.images]);
+    }, [slides.length, activeImage]);
 
     if (loading) return <div style={{ padding: '100px', textAlign: 'center', color: THEME.gold, fontFamily: 'Outfit, sans-serif' }}>Loading Premium Project...</div>;
     if (!project) return <div style={{ padding: '100px', textAlign: 'center', color: THEME.text, fontFamily: 'Outfit, sans-serif' }}>Project not found.</div>;
 
     const allConfigs = [
-        ...(project.configurations || []).map(c => ({ ...c, isPenthouse: false })),
-        ...(project.penthouse_configurations || []).map(p => ({ ...p, isPenthouse: true }))
+        ...(project.configurations || []).map(c => ({ ...c, isPenthouse: false, isDuplex: false })),
+        ...(project.penthouse_configurations || []).map(p => ({ ...p, isPenthouse: true, isDuplex: false })),
+        ...(project.duplex_penthouse_configurations || []).map(d => ({ ...d, isPenthouse: true, isDuplex: true }))
     ];
     const activeConfig = allConfigs[activeConfigIndex];
 
@@ -325,27 +345,137 @@ export default function ProjectDetails() {
                     background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent);
                     animation: brochure-shine 4s infinite;
                 }
-                .amenity-card {
-                    transition: all 0.3s ease;
-                    padding: 8px;
-                    margin: -8px;
-                    border-radius: 12px;
+                .dynamic-amenity-wrapper {
+                    position: relative;
+                    height: 56px;
+                }
+
+                .dynamic-amenity-card {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 56px;
+                    background: #FFFFFF;
+                    border: 1px solid #EAEAEA;
+                    border-radius: 28px;
+                    overflow: hidden;
+                    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+                    display: flex;
+                    flex-direction: column;
+                    z-index: 1;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
                     cursor: default;
                 }
-                .amenity-card:hover {
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-                    background: #FFFFFF;
+
+                .dynamic-amenity-card:hover {
+                    height: 120px;
+                    border-radius: 16px;
+                    border-color: #5E7D5A;
+                    box-shadow: 0 15px 35px rgba(94, 125, 90, 0.15);
+                    z-index: 10;
                 }
-                .amenity-icon-box {
+
+                .dynamic-island-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 8px;
+                    height: 56px;
+                    box-sizing: border-box;
+                }
+
+                .dynamic-island-icon {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: #FAFAFA;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
                     transition: all 0.3s ease;
                 }
-                .amenity-card:hover .amenity-icon-box {
-                    border-color: #5E7D5A !important;
-                    background: #5E7D5A !important;
-                    transform: scale(1.05);
+
+                .dynamic-amenity-card:hover .dynamic-island-icon {
+                    background: #5E7D5A;
                 }
-                .amenity-card:hover .amenity-icon-box svg {
-                    stroke: #FFFFFF !important;
+
+                .dynamic-amenity-card:hover .dynamic-island-icon svg {
+                    color: #FFFFFF !important;
+                }
+
+                .dynamic-island-title {
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    color: #1A1A1A;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    flex: 1;
+                    padding-right: 15px;
+                }
+
+                .dynamic-island-content {
+                    opacity: 0;
+                    transform: translateY(10px);
+                    transition: all 0.3s ease;
+                    padding: 0 20px 20px 20px;
+                    font-size: 0.9rem;
+                    color: #FFFFFF;
+                    line-height: 1.5;
+                    text-align: left;
+                    position: relative;
+                    z-index: 2;
+                    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                }
+
+                .dynamic-amenity-card:hover .dynamic-island-content {
+                    opacity: 1;
+                    transform: translateY(0);
+                    transition-delay: 0.1s;
+                }
+
+                .dynamic-island-bg {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    opacity: 0;
+                    transition: all 0.5s ease;
+                    z-index: 0;
+                    filter: brightness(0.6);
+                }
+
+                .dynamic-amenity-card:hover .dynamic-island-bg {
+                    opacity: 1;
+                }
+
+                .dynamic-island-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+                    opacity: 0;
+                    transition: opacity 0.5s ease;
+                    z-index: 1;
+                }
+
+                .dynamic-amenity-card:hover .dynamic-island-overlay {
+                    opacity: 1;
+                }
+
+                .dynamic-island-header, .dynamic-island-title {
+                    position: relative;
+                    z-index: 2;
+                    transition: all 0.3s ease;
+                }
+
+                .dynamic-amenity-card:hover .dynamic-island-title {
                     color: #FFFFFF !important;
                 }
                 .shortlist-btn {
@@ -360,25 +490,86 @@ export default function ProjectDetails() {
             
             {/* HERO SECTION INJECTED HERE */}
             <header className="lux-hero" style={{ marginBottom: '50px' }}>
-                {project.images?.length > 0 ? project.images.map((img, i) => (
-                    <img 
-                        key={i} 
-                        src={typeof img === 'string' ? img : (img?.url || '')} 
-                        className="lux-hero-bg" 
-                        alt={project.name} 
-                        style={{ 
-                            opacity: i === activeImage ? 1 : 0, 
-                            transition: 'opacity 1.5s ease-in-out', 
-                            zIndex: 0,
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                        }}
-                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1920&q=80'; }}
-                    />
+                {slides.length > 0 ? slides.map((slide, i) => (
+                    slide.type === 'video' ? (
+                        <div 
+                            key={i}
+                            style={{ 
+                                opacity: i === activeImage ? 1 : 0, 
+                                transition: 'opacity 1.5s ease-in-out', 
+                                zIndex: 0,
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                background: '#000',
+                                overflow: 'hidden'
+                            }}
+                        >
+                            {/* Blurred Background */}
+                            {isYouTube(slide.url) ? (
+                                <iframe 
+                                    src={`https://www.youtube.com/embed/${getYouTubeId(slide.url)}?autoplay=1&mute=1&loop=1&playlist=${getYouTubeId(slide.url)}&controls=0&showinfo=0&modestbranding=1&rel=0`} 
+                                    style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, border: 'none', transform: 'scale(1.5)', filter: 'blur(30px) brightness(0.6)' }}
+                                    allow="autoplay; encrypted-media"
+                                />
+                            ) : (
+                                <video 
+                                    src={slide.url} 
+                                    autoPlay muted playsInline loop
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.2)', filter: 'blur(30px) brightness(0.6)' }} 
+                                />
+                            )}
+
+                            {/* Main Video/Frame */}
+                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                                {isYouTube(slide.url) ? (
+                                    <iframe 
+                                        src={`https://www.youtube.com/embed/${getYouTubeId(slide.url)}?autoplay=1&mute=1&loop=1&playlist=${getYouTubeId(slide.url)}&controls=0&showinfo=0&modestbranding=1&rel=0`} 
+                                        style={{ width: '100%', height: '100%', border: 'none' }}
+                                        allow="autoplay; encrypted-media"
+                                    />
+                                ) : (
+                                    <video 
+                                        key={`video-${i}-${i === activeImage}`}
+                                        src={slide.url} 
+                                        autoPlay muted playsInline 
+                                        onEnded={() => setActiveImage((prev) => (prev + 1) % slides.length)}
+                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div 
+                            key={i}
+                            style={{ 
+                                opacity: i === activeImage ? 1 : 0, 
+                                transition: 'opacity 1.5s ease-in-out', 
+                                zIndex: 0,
+                                position: 'absolute',
+                                top: 0, left: 0, width: '100%', height: '100%',
+                                background: '#000', overflow: 'hidden'
+                            }}
+                        >
+                            {/* Blurred Image Background */}
+                            <img 
+                                src={slide.url} 
+                                alt="blur-bg"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.2)', filter: 'blur(30px) brightness(0.7)' }}
+                            />
+                            {/* Main Image */}
+                            <div style={{ position: 'absolute', inset: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                                <img 
+                                    src={slide.url} 
+                                    alt={project.name} 
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
+                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1920&q=80'; }}
+                                />
+                            </div>
+                        </div>
+                    )
                 )) : (
                     <img src={mainImage} className="lux-hero-bg" alt={project.name} style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                 )}
@@ -399,7 +590,7 @@ export default function ProjectDetails() {
                         </div>
                         <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
                             {project.brochure_url && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
                                     <button 
                                         onClick={() => setIsBrochureModalOpen(true)}
                                         className="brochure-btn-premium"
@@ -464,6 +655,29 @@ export default function ProjectDetails() {
                     </div>
                 </div>
                 
+                {/* Dots Navigation */}
+                {slides.length > 1 && (
+                    <div style={{ position: 'absolute', bottom: '70px', left: 0, right: 0, zIndex: 3, display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                        {slides.map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => setActiveImage(i)}
+                                aria-label={`Go to slide ${i + 1}`}
+                                style={{
+                                    width: activeImage === i ? '24px' : '8px',
+                                    height: '8px',
+                                    borderRadius: '4px',
+                                    background: activeImage === i ? THEME.gold : 'rgba(255, 255, 255, 0.5)',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    padding: 0
+                                }}
+                            />
+                        ))}
+                    </div>
+                )}
+
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(245, 245, 239, 0.95)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${THEME.border}`, zIndex: 10, display: 'flex', justifyContent: 'center', gap: '40px', padding: '15px 0' }}>
                     {(project.property_type === 'Plots' ? ['Overview', 'Floor Plan', 'Phases', 'Amenities', 'Location'] : ['Overview', 'Floor Plan', 'Towers', 'Amenities', 'Location']).map(sec => (
                         <button 
@@ -490,27 +704,50 @@ export default function ProjectDetails() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: project.property_type === 'Plots' ? '1.8fr 1fr' : '1.5fr 1fr', gap: '50px', alignItems: 'start', marginBottom: '80px' }}>
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '60px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '60px', minWidth: 0 }}>
                         {project.property_type === 'Plots' ? (
                             <>
                                 <section id="floor-plan">
                                     <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.2rem', color: THEME.text, marginBottom: '30px', fontWeight: '600' }}>TYPES OF PLOTS</h2>
                                     
-                                    <div style={{ display: 'flex', gap: '12px', marginBottom: '30px', overflowX: 'auto', paddingBottom: '10px' }}>
-                                        {project.plot_config?.map((plot, idx) => (
-                                            <button 
-                                                key={idx}
-                                                onClick={() => setActivePlotIndex(idx)}
-                                                style={{
-                                                    padding: '10px 25px', background: activePlotIndex === idx ? `${THEME.gold}15` : 'transparent',
-                                                    color: activePlotIndex === idx ? THEME.gold : THEME.muted,
-                                                    border: `1px solid ${activePlotIndex === idx ? THEME.gold : THEME.border}`,
-                                                    borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s'
-                                                }}
-                                            >
-                                                {plot.size_sqft} Sq.ft
-                                            </button>
-                                        ))}
+                                    <div className="plot-tabs-slider-container" style={{ position: 'relative', marginBottom: '30px', maxWidth: '100%' }}>
+                                        <div 
+                                            className="plot-tabs-slider" 
+                                            style={{ 
+                                                display: 'flex', 
+                                                gap: '12px', 
+                                                overflowX: 'auto', 
+                                                paddingBottom: '12px', 
+                                                scrollbarWidth: 'none', 
+                                                msOverflowStyle: 'none',
+                                                WebkitOverflowScrolling: 'touch',
+                                                width: '100%',
+                                                paddingRight: '60px'
+                                            }}
+                                        >
+                                            {project.plot_config?.map((plot, idx) => (
+                                                <button 
+                                                    key={idx}
+                                                    onClick={() => setActivePlotIndex(idx)}
+                                                    style={{
+                                                        padding: '10px 25px', 
+                                                        background: activePlotIndex === idx ? THEME.gold : '#F1F1F1',
+                                                        color: activePlotIndex === idx ? '#FFFFFF' : '#666',
+                                                        border: 'none',
+                                                        borderRadius: '30px', 
+                                                        fontWeight: '600', 
+                                                        cursor: 'pointer', 
+                                                        whiteSpace: 'nowrap', 
+                                                        transition: 'all 0.3s ease',
+                                                        flexShrink: 0,
+                                                        fontSize: '0.95rem'
+                                                    }}
+                                                >
+                                                    {plot.size_sqft} Sq.ft
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <div style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: '40px', background: 'linear-gradient(to left, #FFFFFF, transparent)', pointerEvents: 'none', opacity: 0.8 }}></div>
                                     </div>
 
                                     {project.plot_config?.[activePlotIndex] && (
@@ -543,21 +780,44 @@ export default function ProjectDetails() {
                                 {project.villa_config && project.villa_config.length > 0 && (
                                     <section id="villas">
                                         <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.2rem', color: THEME.text, marginBottom: '30px', fontWeight: '600' }}>TYPES OF VILLA</h2>
-                                        <div style={{ display: 'flex', gap: '12px', marginBottom: '30px', overflowX: 'auto', paddingBottom: '10px' }}>
-                                            {project.villa_config.map((villa, idx) => (
-                                                <button 
-                                                    key={idx}
-                                                    onClick={() => setActiveVillaIndex(idx)}
-                                                    style={{
-                                                        padding: '10px 25px', background: activeVillaIndex === idx ? `${THEME.gold}15` : 'transparent',
-                                                        color: activeVillaIndex === idx ? THEME.gold : THEME.muted,
-                                                        border: `1px solid ${activeVillaIndex === idx ? THEME.gold : THEME.border}`,
-                                                        borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s'
-                                                    }}
-                                                >
-                                                    {villa.bhk_type}
-                                                </button>
-                                            ))}
+                                        <div className="villa-tabs-slider-container" style={{ position: 'relative', marginBottom: '30px', maxWidth: '100%' }}>
+                                            <div 
+                                                className="villa-tabs-slider" 
+                                                style={{ 
+                                                    display: 'flex', 
+                                                    gap: '12px', 
+                                                    overflowX: 'auto', 
+                                                    paddingBottom: '12px', 
+                                                    scrollbarWidth: 'none', 
+                                                    msOverflowStyle: 'none',
+                                                    WebkitOverflowScrolling: 'touch',
+                                                    width: '100%',
+                                                    paddingRight: '60px'
+                                                }}
+                                            >
+                                                {project.villa_config.map((villa, idx) => (
+                                                    <button 
+                                                        key={idx}
+                                                        onClick={() => setActiveVillaIndex(idx)}
+                                                        style={{
+                                                            padding: '10px 25px', 
+                                                            background: activeVillaIndex === idx ? THEME.gold : '#F1F1F1',
+                                                            color: activeVillaIndex === idx ? '#FFFFFF' : '#666',
+                                                            border: 'none',
+                                                            borderRadius: '30px', 
+                                                            fontWeight: '600', 
+                                                            cursor: 'pointer', 
+                                                            whiteSpace: 'nowrap', 
+                                                            transition: 'all 0.3s ease',
+                                                            flexShrink: 0,
+                                                            fontSize: '0.95rem'
+                                                        }}
+                                                    >
+                                                        {villa.bhk_type}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <div style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: '40px', background: 'linear-gradient(to left, #FFFFFF, transparent)', pointerEvents: 'none', opacity: 0.8 }}></div>
                                         </div>
                                         {project.villa_config[activeVillaIndex] && (
                                             <div style={{ background: THEME.card, padding: '40px', borderRadius: '24px', border: `1px solid ${THEME.border}`, display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '40px', alignItems: 'center' }}>
@@ -599,24 +859,59 @@ export default function ProjectDetails() {
                         ) : (
                             <section id="floor-plan">
                                 <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.5rem', color: THEME.text, marginBottom: '25px', fontWeight: '500', letterSpacing: '1px' }}>Floor Plan</h2>
-                                <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', overflowX: 'auto', paddingBottom: '10px', borderBottom: `1px solid ${THEME.border}` }}>
-                                    {allConfigs.map((config, idx) => (
-                                        <button key={idx} onClick={() => setActiveConfigIndex(idx)} style={{ padding: '12px 30px', background: activeConfigIndex === idx ? (config.isPenthouse ? `linear-gradient(90deg, ${THEME.gold}30, transparent)` : `${THEME.gold}15`) : 'transparent', color: activeConfigIndex === idx ? THEME.gold : THEME.muted, border: `1px solid ${activeConfigIndex === idx ? THEME.gold : 'transparent'}`, borderBottom: activeConfigIndex === idx ? `2px solid ${THEME.gold}` : 'none', borderRadius: '8px 8px 0 0', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
-                                            {config.bedrooms} BHK {config.isPenthouse && 'Penthouse'}
-                                        </button>
-                                    ))}
+                                <div className="bhk-tabs-slider-container" style={{ position: 'relative', marginBottom: '30px', maxWidth: '100%' }}>
+                                    <div 
+                                        className="bhk-tabs-slider" 
+                                        style={{ 
+                                            display: 'flex', 
+                                            gap: '12px', 
+                                            overflowX: 'auto', 
+                                            paddingBottom: '12px', 
+                                            scrollbarWidth: 'none', 
+                                            msOverflowStyle: 'none',
+                                            WebkitOverflowScrolling: 'touch',
+                                            width: '100%',
+                                            paddingRight: '40px'
+                                        }}
+                                    >
+                                        {allConfigs.map((config, idx) => (
+                                            <button 
+                                                key={idx} 
+                                                onClick={() => setActiveConfigIndex(idx)} 
+                                                style={{ 
+                                                    padding: '10px 24px', 
+                                                    background: activeConfigIndex === idx ? (config.isPenthouse ? `linear-gradient(135deg, ${THEME.gold}, #B8860B)` : THEME.gold) : '#F1F1F1', 
+                                                    color: activeConfigIndex === idx ? '#FFFFFF' : '#666', 
+                                                    border: 'none',
+                                                    borderRadius: '30px', 
+                                                    fontSize: '0.95rem', 
+                                                    fontWeight: '600', 
+                                                    cursor: 'pointer', 
+                                                    whiteSpace: 'nowrap', 
+                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    boxShadow: activeConfigIndex === idx ? '0 8px 20px rgba(184, 134, 11, 0.2)' : 'none',
+                                                    flexShrink: 0,
+                                                    scrollSnapAlign: 'start'
+                                                }}
+                                            >
+                                                {config.bedrooms} BHK {config.isDuplex ? 'Duplex Penthouse' : (config.isPenthouse ? 'Penthouse' : 'Flat')}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: '40px', background: 'linear-gradient(to left, #FFFFFF, transparent)', pointerEvents: 'none', opacity: 0.8 }}></div>
                                 </div>
                                 {activeConfig && (
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '40px', background: THEME.card, padding: '30px', borderRadius: '24px', border: `1px solid ${THEME.border}`, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
                                         <div>
                                             <div style={{ marginBottom: '30px' }}>
-                                                <h3 style={{ fontSize: '1.8rem', margin: '0 0 5px 0', color: activeConfig.isPenthouse ? THEME.gold : THEME.cardText }}>{activeConfig.bedrooms} BHK {activeConfig.isPenthouse ? 'Luxury Penthouse' : 'Premium Flat'}</h3>
+                                                <h3 style={{ fontSize: '1.8rem', margin: '0 0 5px 0', color: activeConfig.isPenthouse ? THEME.gold : THEME.cardText }}>
+                                                    {activeConfig.bedrooms} BHK {activeConfig.isDuplex ? 'Luxury Duplex Penthouse' : (activeConfig.isPenthouse ? 'Luxury Penthouse' : 'Premium Flat')}
+                                                </h3>
                                                 <p style={{ color: THEME.cardMuted, fontSize: '1.1rem', margin: 0 }}>{activeConfig.area} Sq.ft • {activeConfig.isPenthouse ? `Floor ${activeConfig.floor_number}` : 'Carpet Area'}</p>
                                                 <div style={{ color: activeConfig.isPenthouse ? THEME.cardText : THEME.gold, fontSize: '1.6rem', fontWeight: 'bold', marginTop: '10px' }}>{activeConfig.price}</div>
                                             </div>
-                                            {!activeConfig.isPenthouse && (
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                                    {[
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                {[
                                                         { label: 'General Toilet', key: 'general_toilet' },
                                                         { label: 'Personal Toilet', key: 'personal_toilet' },
                                                         { label: 'Master Bedroom', key: 'master_bedroom' },
@@ -632,7 +927,8 @@ export default function ProjectDetails() {
                                                         { label: 'Pooja Room', key: 'pooja_room' },
                                                         { label: 'Personal Foyer', key: 'foyer' },
                                                         { label: 'Drawing/Living', key: 'drawing_living_dining' },
-                                                        { label: 'Car Parking', key: 'car_parking' },
+                                                                                                                 { label: 'Car Parking', key: 'car_parking' },
+                                                         { label: 'Basement Floors', key: 'basement_floors' },
                                                         { label: 'Floor', key: 'floor_number' }
                                                     ].filter(item => {
                                                         const val = activeConfig[item.key];
@@ -644,11 +940,10 @@ export default function ProjectDetails() {
                                                         </div>
                                                     ))}
                                                 </div>
-                                            )}
-                                        </div>
+                                            </div>
                                         <div style={{ background: THEME.card, borderRadius: '12px', border: `1px solid ${THEME.border}`, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                                             <div style={{ padding: '12px 20px', background: THEME.dark, borderBottom: `1px solid ${THEME.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '0.9rem', color: THEME.gold, fontWeight: 'bold' }}>{activeConfig.isPenthouse ? 'PENTHOUSE' : `${activeConfig.bedrooms} BHK`} LAYOUT MAP</span>
+                                                <span style={{ fontSize: '0.9rem', color: THEME.gold, fontWeight: 'bold' }}>{activeConfig.isDuplex ? 'DUPLEX ' : ''}{activeConfig.isPenthouse ? 'PENTHOUSE' : `${activeConfig.bedrooms} BHK`} LAYOUT MAP</span>
                                                 {activeConfig.map_url && <button onClick={() => window.open(activeConfig.map_url, '_blank')} style={{ background: 'none', border: 'none', color: THEME.gold, cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '500' }}><Maximize2 size={14} /> Fullscreen</button>}
                                             </div>
                                             <div style={{ flex: 1, padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{activeConfig.map_url ? <img src={activeConfig.map_url} alt="Layout" style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain' }} /> : <div style={{ color: THEME.cardMuted }}>No Layout Map Uploaded</div>}</div>
@@ -657,39 +952,7 @@ export default function ProjectDetails() {
                                 )}
                             </section>
                         )}
-                        {project.towers && project.towers.length > 0 && (
-                            <section id="towers" style={{ marginTop: '40px' }}>
-                                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.2rem', color: THEME.text, marginBottom: '30px', fontWeight: '600' }}>TOWER DETAILS</h2>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '25px' }}>
-                                    {project.towers.map((tower, idx) => (
-                                        <div key={idx} style={{ background: THEME.card, padding: '30px', borderRadius: '20px', border: `1px solid ${THEME.border}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: `1px solid ${THEME.border}50`, paddingBottom: '12px' }}>
-                                                <h4 style={{ margin: 0, color: THEME.gold, fontSize: '1.2rem', fontWeight: '800' }}>Tower {tower.type || (idx + 1)}</h4>
-                                                <span style={{ background: `${THEME.gold}15`, color: THEME.gold, padding: '6px 15px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>{tower.bhk} BHK</span>
-                                            </div>
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                                <div style={{ background: '#FAFAFA', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
-                                                    <div style={{ color: THEME.muted, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>FLOORS</div>
-                                                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: THEME.text }}>{tower.story}</div>
-                                                </div>
-                                                <div style={{ background: '#FAFAFA', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
-                                                    <div style={{ color: THEME.muted, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>UNITS/FLOOR</div>
-                                                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: THEME.text }}>{tower.units_per_floor}</div>
-                                                </div>
-                                                <div style={{ background: '#FAFAFA', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
-                                                    <div style={{ color: THEME.muted, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>LIFTS/FLOOR</div>
-                                                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: THEME.text }}>{tower.lift_per_floor}</div>
-                                                </div>
-                                                <div style={{ background: '#FAFAFA', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
-                                                    <div style={{ color: THEME.muted, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>TOTAL UNITS</div>
-                                                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: THEME.text }}>{tower.total_units}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
+
 
                         <section id="amenities" ref={amenitiesRef}>
                             <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', color: THEME.text, marginBottom: '25px', fontWeight: '500', letterSpacing: '1px' }}>AMENITIES</h2>
@@ -698,12 +961,33 @@ export default function ProjectDetails() {
                                     {(showAllAmenities ? project.amenities : project.amenities?.slice(0, 8))?.map((am, i) => {
                                         const amenityData = ALL_AMENITIES.find(a => a.name === am);
                                         const IconComponent = amenityData ? amenityData.icon : CheckCircle2;
+                                        const amenityImages = {
+                                            'Swimming Pool': 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=500&q=80',
+                                            'Gymnasium': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=500&q=80',
+                                            'Club House': 'https://images.unsplash.com/photo-1520699918507-3c3e01c766a1?auto=format&fit=crop&w=500&q=80',
+                                            'Garden': 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=500&q=80',
+                                            'Children Play Area': 'https://images.unsplash.com/photo-1536431311719-398b6704d4cc?auto=format&fit=crop&w=500&q=80',
+                                            'Security': 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=500&q=80',
+                                            'Indoor Games': 'https://images.unsplash.com/photo-1611095777215-80bc8bd69707?auto=format&fit=crop&w=500&q=80',
+                                            'Yoga': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=500&q=80'
+                                        };
+                                        const bgImg = amenityImages[am] || 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=500&q=80';
+                                        
                                         return (
-                                            <div key={i} className="amenity-card" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                                <div className="amenity-icon-box" style={{ minWidth: '50px', width: '50px', height: '50px', borderRadius: '14px', border: `1px solid ${THEME.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA' }}>
-                                                    <IconComponent size={24} color={THEME.gold} strokeWidth={1.5} />
+                                            <div key={i} className="dynamic-amenity-wrapper">
+                                                <div className="dynamic-amenity-card">
+                                                    <img src={bgImg} className="dynamic-island-bg" alt="" />
+                                                    <div className="dynamic-island-overlay" />
+                                                    <div className="dynamic-island-header">
+                                                        <div className="dynamic-island-icon">
+                                                            <IconComponent size={20} color={THEME.gold} strokeWidth={1.5} />
+                                                        </div>
+                                                        <div className="dynamic-island-title">{am}</div>
+                                                    </div>
+                                                    <div className="dynamic-island-content">
+                                                        Experience premium <strong>{am.toLowerCase()}</strong> facilities designed to provide you with luxury and utmost comfort.
+                                                    </div>
                                                 </div>
-                                                <div style={{ fontSize: '1rem', fontWeight: '600', lineHeight: '1.2', color: THEME.text }}>{am}</div>
                                             </div>
                                         );
                                     })}
@@ -731,7 +1015,7 @@ export default function ProjectDetails() {
                         )}
                     </div>
 
-                    <div style={{ position: 'sticky', top: '100px', display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                    <div style={{ position: 'sticky', top: '100px', display: 'flex', flexDirection: 'column', gap: '25px', minWidth: 0 }}>
                         <div id="overview" style={{ background: THEME.card, padding: '30px', borderRadius: '24px', border: `1px solid ${THEME.border}`, color: THEME.text, boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
                             <h3 style={{ marginTop: 0, marginBottom: '25px', fontSize: '1.2rem', color: THEME.gold, borderBottom: `1px solid ${THEME.border}`, paddingBottom: '15px' }}>OVERVIEW</h3>
                             <div style={{ display: 'grid', gap: '20px' }}>
@@ -749,6 +1033,60 @@ export default function ProjectDetails() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Price Range</span><span style={{ fontWeight: 'bold', color: THEME.gold }}>₹{project.min_price} - ₹{project.max_price}</span></div>
                             </div>
                         </div>
+
+                        {project.towers && project.towers.length > 0 && (
+                            <div id="towers" style={{ background: THEME.card, padding: '30px', borderRadius: '24px', border: `1px solid ${THEME.border}`, color: THEME.text, boxShadow: '0 10px 30px rgba(0,0,0,0.04)', overflow: 'hidden', maxWidth: '100%', boxSizing: 'border-box' }}>
+                                <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '1.2rem', color: THEME.gold, borderBottom: `1px solid ${THEME.border}`, paddingBottom: '15px' }}>TOWER DETAILS</h3>
+                                
+                                <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '10px', maxWidth: '100%', scrollbarWidth: 'thin' }}>
+                                    {project.towers.map((tower, idx) => (
+                                        <button 
+                                            key={idx}
+                                            onClick={() => setActiveTowerIndex(idx)}
+                                            style={{
+                                                flexShrink: 0,
+                                                padding: '8px 16px', background: activeTowerIndex === idx ? `${THEME.gold}15` : 'transparent',
+                                                color: activeTowerIndex === idx ? THEME.gold : THEME.muted,
+                                                border: `1px solid ${activeTowerIndex === idx ? THEME.gold : THEME.border}`,
+                                                borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s', fontSize: '0.9rem'
+                                            }}
+                                        >
+                                            {(tower.type ? tower.type.replace(/tower/i, '').trim() : (idx + 1))}
+                                        </button>
+                                    ))}
+                                </div>
+                                
+                                {project.towers[activeTowerIndex] && (() => {
+                                    const activeTower = project.towers[activeTowerIndex];
+                                    return (
+                                        <div style={{ background: '#FAFAFA', padding: '20px', borderRadius: '16px', border: `1px solid ${THEME.border}` }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                                <h4 style={{ margin: 0, color: THEME.cardText, fontSize: '1.1rem', fontWeight: 'bold' }}>Tower {(activeTower.type ? activeTower.type.replace(/tower/i, '').trim() : (activeTowerIndex + 1))}</h4>
+                                                {activeTower.bhk && <span style={{ background: `${THEME.gold}15`, color: THEME.gold, padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold' }}>{activeTower.bhk} BHK</span>}
+                                            </div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                <div style={{ background: '#FFFFFF', padding: '12px', borderRadius: '8px', border: `1px solid ${THEME.border}` }}>
+                                                    <div style={{ color: THEME.muted, fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '4px' }}>FLOORS</div>
+                                                    <div style={{ fontWeight: 'bold', fontSize: '1rem', color: THEME.text }}>{activeTower.story || 'N/A'}</div>
+                                                </div>
+                                                <div style={{ background: '#FFFFFF', padding: '12px', borderRadius: '8px', border: `1px solid ${THEME.border}` }}>
+                                                    <div style={{ color: THEME.muted, fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '4px' }}>UNITS/FLOOR</div>
+                                                    <div style={{ fontWeight: 'bold', fontSize: '1rem', color: THEME.text }}>{activeTower.units_per_floor || 'N/A'}</div>
+                                                </div>
+                                                <div style={{ background: '#FFFFFF', padding: '12px', borderRadius: '8px', border: `1px solid ${THEME.border}` }}>
+                                                    <div style={{ color: THEME.muted, fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '4px' }}>LIFTS/FLOOR</div>
+                                                    <div style={{ fontWeight: 'bold', fontSize: '1rem', color: THEME.text }}>{activeTower.lift_per_floor || 'N/A'}</div>
+                                                </div>
+                                                <div style={{ background: '#FFFFFF', padding: '12px', borderRadius: '8px', border: `1px solid ${THEME.border}` }}>
+                                                    <div style={{ color: THEME.muted, fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '4px' }}>TOTAL UNITS</div>
+                                                    <div style={{ fontWeight: 'bold', fontSize: '1rem', color: THEME.text }}>{activeTower.total_units || 'N/A'}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        )}
 
                         {project.property_type === 'Plots' && project.phases?.length > 0 && (
                             <div id="phases" style={{ background: THEME.card, padding: '30px', borderRadius: '24px', border: `1px solid ${THEME.border}`, color: THEME.text, boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>

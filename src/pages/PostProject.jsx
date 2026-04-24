@@ -150,18 +150,24 @@ const PostProject = () => {
                     ...t
                 }));
 
-                setFormData({
+                setFormData(prev => ({
+                    ...prev,
                     ...data,
+                    sourceName: data.source_name || prev.sourceName || '',
+                    sourceNumber: data.source_number || prev.sourceNumber || '',
+                    sourceEmail: data.source_email || prev.sourceEmail || '',
+                    sourceEnrollCode: data.source_enroll_code || prev.sourceEnrollCode || '',
                     amenities: Array.isArray(data.amenities) ? data.amenities : [],
                     landmarks: sanitizeLandmarks(data.landmarks),
                     towers: sanitizeTowers(data.towers),
                     images: Array.isArray(data.images) ? data.images.map(url => (typeof url === 'string' ? { url, file: null, category: 'Main' } : url)) : [],
                     configurations: sanitizeConfig(data.configurations),
                     penthouse_configurations: sanitizeConfig(data.penthouse_configurations),
+                    duplex_penthouse_configurations: sanitizeConfig(data.duplex_penthouse_configurations),
                     brochure_file: null,
                     brochure_url: data.brochure_url || '',
                     private_terrace_size: data.private_terrace_size || ''
-                });
+                }));
             }
         } catch (err) {
             console.error(err);
@@ -199,14 +205,16 @@ const PostProject = () => {
             bedrooms: 3, halls: 1, kitchens: 1, kitchen_type: 'Modular',
             balcony: 1, foyer: 1, drawing_living_dining: 1, master_bedroom: 0, children_room: 0, study_room: 0,
             store_room: 0, washyard: 1, servant_room: 0,
-            general_toilet: 1, personal_toilet: 2, dressing_room: 0, vestibule: 0, sky_patio_balcony: 0, pooja_room: 0, car_parking: 1,
+            general_toilet: 1, personal_toilet: 2, dressing_room: 0, vestibule: 0, sky_patio_balcony: 0, pooja_room: 0, car_parking: 1, basement_floors: 0,
             floor_number: '', area: '', price: '', map_url: '', map_file: null 
         }],
         penthouse_configurations: [],
+        duplex_penthouse_configurations: [],
         towers: [{ type: '', bhk: '3', lift_per_floor: '', units_per_floor: '', story: '1', total_units: '' }],
         images: [], // { file, url, category }
         brochure_file: null,
         video_url: '',
+        video_file: null,
         tour_360_url: '',
         google_map_link: '',
 
@@ -229,7 +237,7 @@ const PostProject = () => {
                 bedrooms: 3, halls: 1, kitchens: 1, kitchen_type: 'Normal',
                 balcony: 1, foyer: 0, drawing_living_dining: 1, master_bedroom: 0, children_room: 0, study_room: 0,
                 store_room: 0, washyard: 1, servant_room: 0,
-                general_toilet: 1, personal_toilet: 2, dressing_room: 0, vestibule: 0, sky_patio_balcony: 0, pooja_room: 0, car_parking: 1,
+                general_toilet: 1, personal_toilet: 2, dressing_room: 0, vestibule: 0, sky_patio_balcony: 0, pooja_room: 0, car_parking: 1, basement_floors: 0,
                 floor_number: '', area: '', price: '', map_url: '', map_file: null 
             }]
         }));
@@ -263,7 +271,7 @@ const PostProject = () => {
                 bedrooms: 4, halls: 1, kitchens: 1, kitchen_type: 'Modular',
                 balcony: 2, foyer: 1, drawing_living_dining: 1, master_bedroom: 1, children_room: 1, study_room: 1,
                 store_room: 1, washyard: 1, servant_room: 1,
-                general_toilet: 1, personal_toilet: 4, dressing_room: 1, vestibule: 1, sky_patio_balcony: 1, pooja_room: 1, car_parking: 2,
+                general_toilet: 1, personal_toilet: 4, dressing_room: 1, vestibule: 1, sky_patio_balcony: 1, pooja_room: 1, car_parking: 2, basement_floors: 0,
                 floor_number: '', area: '', price: '', map_url: '', map_file: null 
             }]
         }));
@@ -273,6 +281,26 @@ const PostProject = () => {
         setFormData(prev => ({
             ...prev,
             penthouse_configurations: prev.penthouse_configurations.filter((_, i) => i !== index)
+        }));
+    };
+
+    const addDuplexPenthouseConfig = () => {
+        setFormData(prev => ({
+            ...prev,
+            duplex_penthouse_configurations: [...prev.duplex_penthouse_configurations, { 
+                bedrooms: 5, halls: 2, kitchens: 1, kitchen_type: 'Modular',
+                balcony: 3, foyer: 1, drawing_living_dining: 2, master_bedroom: 2, children_room: 1, study_room: 1,
+                store_room: 1, washyard: 1, servant_room: 1,
+                general_toilet: 2, personal_toilet: 5, dressing_room: 2, vestibule: 1, sky_patio_balcony: 1, pooja_room: 1, car_parking: 3, basement_floors: 0,
+                floor_number: '', area: '', price: '', map_url: '', map_file: null 
+            }]
+        }));
+    };
+
+    const removeDuplexPenthouseConfig = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            duplex_penthouse_configurations: prev.duplex_penthouse_configurations.filter((_, i) => i !== index)
         }));
     };
 
@@ -377,6 +405,19 @@ const PostProject = () => {
                 }
             }
 
+            const finalDuplexConfigs = JSON.parse(JSON.stringify(formData.duplex_penthouse_configurations));
+            for (let i = 0; i < finalDuplexConfigs.length; i++) {
+                if (formData.duplex_penthouse_configurations[i].map_file) {
+                    const fileName = `duplex_map_${Date.now()}_${i}.jpg`;
+                    const { data, error } = await supabase.storage.from('property-images').upload(`maps/${user.id}/${fileName}`, formData.duplex_penthouse_configurations[i].map_file);
+                    if (!error) {
+                        const { data: { publicUrl } } = supabase.storage.from('property-images').getPublicUrl(data.path);
+                        finalDuplexConfigs[i].map_url = publicUrl;
+                    }
+                    delete finalDuplexConfigs[i].map_file;
+                }
+            }
+
             // 3. Upload Brochure if exists
             let brochureUrl = formData.brochure_url || '';
             if (formData.brochure_file) {
@@ -385,6 +426,17 @@ const PostProject = () => {
                 if (error) throw error;
                 const { data: { publicUrl } } = supabase.storage.from('property-images').getPublicUrl(data.path);
                 brochureUrl = publicUrl;
+            }
+
+            // 3.5 Upload Video if exists
+            let finalVideoUrl = formData.video_url || '';
+            if (formData.video_file) {
+                const fileName = `video_${Date.now()}_${formData.video_file.name}`;
+                const { data, error } = await supabase.storage.from('property-images').upload(`videos/${user.id}/${fileName}`, formData.video_file);
+                if (!error) {
+                    const { data: { publicUrl } } = supabase.storage.from('property-images').getPublicUrl(data.path);
+                    finalVideoUrl = publicUrl;
+                }
             }
 
             // 4. Insert or Update into DB
@@ -409,10 +461,11 @@ const PostProject = () => {
                 landmarks: formData.landmarks,
                 configurations: finalConfigs,
                 penthouse_configurations: finalPentConfigs,
+                duplex_penthouse_configurations: finalDuplexConfigs,
                 towers: formData.towers,
                 images: imageUrls,
                 brochure_url: brochureUrl,
-                video_url: formData.video_url,
+                video_url: finalVideoUrl,
                 tour_360_url: formData.tour_360_url,
                 google_map_link: formData.google_map_link,
                 address: formData.address,
@@ -805,7 +858,8 @@ const PostProject = () => {
                                                     { label: 'Vestibule', key: 'vestibule' },
                                                     { label: 'Balcony', key: 'sky_patio_balcony' },
                                                     { label: 'Pooja Room', key: 'pooja_room' },
-                                                    { label: 'Car Parking', key: 'car_parking' }
+                                                                                                         { label: 'Car Parking', key: 'car_parking' },
+                                                     { label: 'Basement Floors', key: 'basement_floors' }
                                                 ].map(detail => (
                                                     <div key={detail.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#00000020', padding: '8px 12px', borderRadius: '8px' }}>
                                                         <span style={{ fontSize: '0.7rem', color: THEME.muted }}>{detail.label}</span>
@@ -834,48 +888,51 @@ const PostProject = () => {
                                         </div>
                                     </>
                                 )}
-                                <div style={{ borderTop: `1px solid ${THEME.border}50`, marginTop: '15px', paddingTop: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div style={{ borderTop: `1px solid ${THEME.border}50`, marginTop: '15px', paddingTop: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+                                    <div>
+                                        <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>FLOOR NUMBER</label>
                                         <input 
-                                            placeholder="Floor Number (Optional)" 
+                                            placeholder="Optional" 
                                             value={config.floor_number}
                                             onChange={(e) => {
-                                                const val = e.target.value.replace(/[^0-9]/g, '');
                                                 const newConfig = [...formData.configurations];
-                                                newConfig[idx].floor_number = val;
+                                                newConfig[idx].floor_number = e.target.value;
                                                 updateForm('configurations', newConfig);
                                             }}
-                                            style={{ padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text, fontSize: '0.8rem' }}
+                                            style={{ width: '100%', padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text, fontSize: '0.8rem' }}
                                         />
-                                        <div style={{ position: 'relative' }}>
-                                            <input 
-                                                type="file" 
-                                                accept="image/*"
-                                                id={`map-upload-${idx}`}
-                                                onChange={(e) => {
-                                                    const file = e.target.files?.[0];
-                                                    if (file) {
-                                                        const newConfig = [...formData.configurations];
-                                                        newConfig[idx].map_file = file;
-                                                        newConfig[idx].map_url = URL.createObjectURL(file);
-                                                        updateForm('configurations', newConfig);
-                                                    }
-                                                }}
-                                                style={{ display: 'none' }}
-                                            />
-                                            <label 
-                                                htmlFor={`map-upload-${idx}`}
-                                                style={{ 
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                                    padding: '10px', background: config.map_url ? `${THEME.gold}20` : THEME.inputBg,
-                                                    border: `1px dashed ${config.map_url ? THEME.gold : THEME.border}`,
-                                                    borderRadius: '8px', color: config.map_url ? THEME.gold : THEME.muted,
-                                                    fontSize: '0.8rem', cursor: 'pointer', height: '100%'
-                                                }}
-                                            >
-                                                {config.map_url ? 'Map Added ✓' : 'Upload Unit Map'}
-                                            </label>
-                                        </div>
                                     </div>
+                                    <div style={{ position: 'relative' }}>
+                                        <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>LAYOUT MAP</label>
+                                        <input 
+                                            type="file" 
+                                            accept="image/*"
+                                            id={`map-upload-${idx}`}
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const newConfig = [...formData.configurations];
+                                                    newConfig[idx].map_file = file;
+                                                    newConfig[idx].map_url = URL.createObjectURL(file);
+                                                    updateForm('configurations', newConfig);
+                                                }
+                                            }}
+                                            style={{ display: 'none' }}
+                                        />
+                                        <label 
+                                            htmlFor={`map-upload-${idx}`}
+                                            style={{ 
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                                padding: '10px', background: config.map_url ? `${THEME.gold}20` : THEME.inputBg,
+                                                border: `1px dashed ${config.map_url ? THEME.gold : THEME.border}`,
+                                                borderRadius: '8px', color: config.map_url ? THEME.gold : THEME.muted,
+                                                fontSize: '0.8rem', cursor: 'pointer', height: '40px'
+                                            }}
+                                        >
+                                            {config.map_url ? 'Added ✓' : 'Upload'}
+                                        </label>
+                                    </div>
+                                </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 40px', gap: '15px', marginTop: '15px' }}>
                                         <input placeholder="Area (Sq.ft)" value={config.area} onChange={(e) => {
                                             const newConfig = [...formData.configurations];
@@ -945,7 +1002,8 @@ const PostProject = () => {
                                                     { label: 'Vestibule', key: 'vestibule' },
                                                     { label: 'Sky Patio/Balcony', key: 'sky_patio_balcony' },
                                                     { label: 'Pooja Room', key: 'pooja_room' },
-                                                    { label: 'Car Parking', key: 'car_parking' }
+                                                    { label: 'Car Parking', key: 'car_parking' },
+                                                    { label: 'Basement Floors', key: 'basement_floors' }
                                                 ].map(detail => (
                                                     <div key={detail.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#00000020', padding: '8px 12px', borderRadius: '8px' }}>
                                                         <span style={{ fontSize: '0.7rem', color: THEME.muted }}>{detail.label}</span>
@@ -971,20 +1029,22 @@ const PostProject = () => {
                                                     </div>
                                                 ))}
                                             </div>
-                                            {/* Floor Number Input */}
-                                            <div style={{ marginTop: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                                <input 
-                                                    placeholder="Floor Number (e.g. 14)" 
-                                                    value={config.floor_number}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value.replace(/[^0-9]/g, '');
-                                                        const newPent = [...formData.penthouse_configurations];
-                                                        newPent[idx].floor_number = val;
-                                                        updateForm('penthouse_configurations', newPent);
-                                                    }}
-                                                    style={{ padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text, fontSize: '0.8rem' }}
-                                                />
+                                            <div style={{ marginTop: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+                                                <div>
+                                                    <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>FLOOR NUMBER</label>
+                                                    <input 
+                                                        placeholder="e.g. 14" 
+                                                        value={config.floor_number}
+                                                        onChange={(e) => {
+                                                            const newPent = [...formData.penthouse_configurations];
+                                                            newPent[idx].floor_number = e.target.value;
+                                                            updateForm('penthouse_configurations', newPent);
+                                                        }}
+                                                        style={{ width: '100%', padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text, fontSize: '0.8rem' }}
+                                                    />
+                                                </div>
                                                 <div style={{ position: 'relative' }}>
+                                                    <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>LAYOUT MAP</label>
                                                     <input 
                                                         type="file" 
                                                         accept="image/*"
@@ -1007,10 +1067,10 @@ const PostProject = () => {
                                                             padding: '10px', background: config.map_url ? `${THEME.gold}20` : THEME.inputBg,
                                                             border: `1px dashed ${config.map_url ? THEME.gold : THEME.border}`,
                                                             borderRadius: '8px', color: config.map_url ? THEME.gold : THEME.muted,
-                                                            fontSize: '0.8rem', cursor: 'pointer', height: '100%'
+                                                            fontSize: '0.8rem', cursor: 'pointer', height: '40px'
                                                         }}
                                                     >
-                                                        {config.map_url ? 'Map Added ✓' : 'Upload Unit Map'}
+                                                        {config.map_url ? 'Added ✓' : 'Upload'}
                                                     </label>
                                                 </div>
                                             </div>
@@ -1032,6 +1092,113 @@ const PostProject = () => {
                                     </div>
                                 ))}
                                 <button onClick={addPenthouseConfig} style={{ background: 'none', border: `1px dashed ${THEME.gold}`, color: THEME.gold, padding: '10px', borderRadius: '8px', width: '100%', cursor: 'pointer' }}>+ Add Penthouse Details</button>
+                            </div>
+                        )}
+
+                        {formData.property_type === 'Flat' && (
+                            <div style={{ marginBottom: '40px' }}>
+                                <label style={{ display: 'block', color: THEME.gold, fontSize: '1rem', marginBottom: '20px', fontWeight: 'bold' }}>DUPLEX PENTHOUSE CONFIGURATIONS</label>
+                                {formData.duplex_penthouse_configurations.map((config, idx) => (
+                                    <div key={idx} style={{ background: `${THEME.gold}05`, padding: '20px', borderRadius: '12px', border: `1px solid ${THEME.border}`, marginBottom: '15px' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px', marginBottom: '15px' }}>
+                                            {[
+                                                { label: 'Bedrooms', key: 'bedrooms' },
+                                                { label: 'Halls', key: 'halls' },
+                                                { label: 'Kitchens', key: 'kitchens' },
+                                                { label: 'Balcony', key: 'balcony' },
+                                                { label: 'Foyer', key: 'foyer' },
+                                                { label: 'Drawing/Living', key: 'drawing_living_dining' },
+                                                { label: 'Master BR', key: 'master_bedroom' },
+                                                { label: 'Children BR', key: 'children_room' },
+                                                { label: 'Study Room', key: 'study_room' },
+                                                { label: 'Store Room', key: 'store_room' },
+                                                { label: 'Washyard', key: 'washyard' },
+                                                { label: 'Servant Rm', key: 'servant_room' },
+                                                { label: 'General Toilet', key: 'general_toilet' },
+                                                { label: 'Pers. Toilet', key: 'personal_toilet' },
+                                                { label: 'Dressing Rm', key: 'dressing_room' },
+                                                { label: 'Vestibule', key: 'vestibule' },
+                                                { label: 'Sky Patio', key: 'sky_patio_balcony' },
+                                                { label: 'Pooja Room', key: 'pooja_room' },
+                                                { label: 'Car Parking', key: 'car_parking' },
+                                                { label: 'Basement Floors', key: 'basement_floors' }
+                                            ].map(item => (
+                                                <div key={item.key}>
+                                                    <label style={{ fontSize: '0.65rem', color: THEME.muted, display: 'block', marginBottom: '4px' }}>{item.label}</label>
+                                                    <input 
+                                                        type="number" 
+                                                        value={config[item.key]} 
+                                                        onChange={(e) => {
+                                                            const newDuplex = [...formData.duplex_penthouse_configurations];
+                                                            newDuplex[idx][item.key] = e.target.value;
+                                                            updateForm('duplex_penthouse_configurations', newDuplex);
+                                                        }}
+                                                        style={{ width: '100%', padding: '6px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '6px', color: THEME.text, fontSize: '0.85rem' }}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div style={{ borderTop: `1px solid ${THEME.border}50`, marginTop: '15px', paddingTop: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+                                            <div>
+                                                <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>FLOOR NUMBER</label>
+                                                <input 
+                                                    placeholder="Top" 
+                                                    value={config.floor_number} 
+                                                    onChange={(e) => {
+                                                        const newDuplex = [...formData.duplex_penthouse_configurations];
+                                                        newDuplex[idx].floor_number = e.target.value;
+                                                        updateForm('duplex_penthouse_configurations', newDuplex);
+                                                    }}
+                                                    style={{ width: '100%', padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text, fontSize: '0.8rem' }}
+                                                />
+                                            </div>
+                                            <div style={{ position: 'relative' }}>
+                                                <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>LAYOUT MAP</label>
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*"
+                                                    id={`duplex-map-upload-${idx}`}
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            const newDuplex = [...formData.duplex_penthouse_configurations];
+                                                            newDuplex[idx].map_file = file;
+                                                            newDuplex[idx].map_url = URL.createObjectURL(file);
+                                                            updateForm('duplex_penthouse_configurations', newDuplex);
+                                                        }
+                                                    }}
+                                                    style={{ display: 'none' }}
+                                                />
+                                                <label 
+                                                    htmlFor={`duplex-map-upload-${idx}`}
+                                                    style={{ 
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                                        padding: '10px', background: config.map_url ? `${THEME.gold}20` : THEME.inputBg,
+                                                        border: `1px dashed ${config.map_url ? THEME.gold : THEME.border}`,
+                                                        borderRadius: '8px', color: config.map_url ? THEME.gold : THEME.muted,
+                                                        fontSize: '0.8rem', cursor: 'pointer', height: '40px'
+                                                    }}
+                                                >
+                                                    {config.map_url ? 'Added ✓' : 'Upload'}
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 40px', gap: '15px' }}>
+                                            <input placeholder="Area (Sq.ft)" value={config.area} onChange={(e) => {
+                                                const newDuplex = [...formData.duplex_penthouse_configurations];
+                                                newDuplex[idx].area = e.target.value;
+                                                updateForm('duplex_penthouse_configurations', newDuplex);
+                                            }} style={{ padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text }} />
+                                            <input placeholder="Price (e.g. 5 Cr)" value={config.price} onChange={(e) => {
+                                                const newDuplex = [...formData.duplex_penthouse_configurations];
+                                                newDuplex[idx].price = e.target.value;
+                                                updateForm('duplex_penthouse_configurations', newDuplex);
+                                            }} style={{ padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text }} />
+                                            <button onClick={() => removeDuplexPenthouseConfig(idx)} style={{ background: 'none', border: 'none', color: THEME.red, cursor: 'pointer' }}><Trash2 size={24} /></button>
+                                        </div>
+                                    </div>
+                                ))}
+                                <button onClick={addDuplexPenthouseConfig} style={{ background: 'none', border: `1px dashed ${THEME.gold}`, color: THEME.gold, padding: '10px', borderRadius: '8px', width: '100%', cursor: 'pointer' }}>+ Add Duplex Penthouse Details</button>
                             </div>
                         )}
 
@@ -1241,16 +1408,43 @@ const PostProject = () => {
                             <label style={{ display: 'block', color: THEME.muted, fontSize: '0.85rem', marginBottom: '15px' }}>PROJECT IMAGES (Elevation, Plans, Status)</label>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '15px' }}>
                                 {formData.images.map((img, i) => (
-                                    <div key={i} style={{ position: 'relative', height: '100px', borderRadius: '8px', border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>
+                                    <div key={i} style={{ position: 'relative', height: '100px', borderRadius: '8px', border: i === 0 ? `2px solid ${THEME.gold}` : `1px solid ${THEME.border}`, overflow: 'hidden' }}>
                                         <img 
                                             src={typeof img === 'string' ? img : (img?.url || '')} 
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                                             onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80'; }}
                                         />
-                                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.8)', padding: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.8)', padding: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 1 }}>
                                             <span style={{ fontSize: '0.6rem', color: THEME.gold }}>{img.category || 'Photo'}</span>
                                             <button onClick={() => setFormData(prev => ({ ...prev, images: prev.images.filter((_, idx) => idx !== i) }))} style={{ background: 'none', border: 'none', color: THEME.red, padding: 0, cursor: 'pointer' }}><X size={12} /></button>
                                         </div>
+                                        {i !== 0 && (
+                                            <button 
+                                                onClick={() => {
+                                                    setFormData(prev => {
+                                                        const newImages = [...prev.images];
+                                                        const [moved] = newImages.splice(i, 1);
+                                                        newImages.unshift(moved);
+                                                        return { ...prev, images: newImages };
+                                                    });
+                                                }}
+                                                style={{
+                                                    position: 'absolute', top: '4px', left: '4px', background: 'rgba(0,0,0,0.6)', color: '#fff',
+                                                    border: 'none', borderRadius: '4px', padding: '4px 6px', fontSize: '10px',
+                                                    cursor: 'pointer', zIndex: 2
+                                                }}
+                                            >
+                                                Set Thumbnail
+                                            </button>
+                                        )}
+                                        {i === 0 && (
+                                            <div style={{
+                                                position: 'absolute', top: '4px', left: '4px', background: THEME.gold, color: '#000',
+                                                borderRadius: '4px', padding: '4px 6px', fontSize: '10px', fontWeight: 'bold', zIndex: 2
+                                            }}>
+                                                Thumbnail
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                                 <label style={{ border: `2px dashed ${THEME.border}`, height: '100px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: THEME.muted }}>
@@ -1263,6 +1457,85 @@ const PostProject = () => {
                                     <span style={{ fontSize: '0.7rem' }}>Add Floor Plans</span>
                                     <input type="file" multiple hidden onChange={(e) => handleImageUpload(e, 'Floor Plan')} />
                                 </label>
+                            </div>
+                        </div>
+
+                        {/* Video Upload Section */}
+                        <div style={{ marginBottom: '30px' }}>
+                            <label style={{ display: 'block', color: THEME.muted, fontSize: '0.85rem', marginBottom: '15px' }}>PROJECT VIDEO (Showcase walkthrough or Teaser)</label>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px', alignItems: 'start' }}>
+                                {formData.video_file || formData.video_url ? (
+                                    <div style={{ position: 'relative', height: '140px', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${THEME.gold}`, background: '#000' }}>
+                                        {formData.video_file ? (
+                                            <video src={URL.createObjectURL(formData.video_file)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        ) : formData.video_url.includes('youtube.com') || formData.video_url.includes('youtu.be') ? (
+                                            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#FF000020' }}>
+                                                <Video color="#FF0000" size={30} />
+                                                <span style={{ fontSize: '0.7rem', color: '#fff', marginTop: '8px' }}>YouTube Link Added</span>
+                                            </div>
+                                        ) : (
+                                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${THEME.gold}10` }}>
+                                                <Video color={THEME.gold} size={30} />
+                                            </div>
+                                        )}
+                                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.85)', padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 3 }}>
+                                            <span style={{ fontSize: '0.7rem', color: THEME.gold, fontWeight: 'bold' }}>Video Asset</span>
+                                            <button 
+                                                onClick={() => {
+                                                    updateForm('video_file', null);
+                                                    updateForm('video_url', '');
+                                                }} 
+                                                style={{ background: 'none', border: 'none', color: THEME.red, cursor: 'pointer', padding: '4px' }}
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <label style={{ border: `2px dashed ${THEME.gold}60`, height: '140px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: THEME.gold, background: `${THEME.gold}05`, transition: 'all 0.3s ease' }}>
+                                        <div style={{ padding: '12px', background: `${THEME.gold}15`, borderRadius: '50%', marginBottom: '10px' }}>
+                                            <Video size={24} />
+                                        </div>
+                                        <span style={{ fontSize: '0.85rem', fontWeight: '500' }}>Upload Project Video</span>
+                                        <span style={{ fontSize: '0.65rem', color: THEME.muted, marginTop: '4px' }}>MP4, WebM (Max 50MB)</span>
+                                        <input type="file" accept="video/*" hidden onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                if (file.size > 50 * 1024 * 1024) {
+                                                    alert("Video size exceeds 50MB limit");
+                                                    return;
+                                                }
+                                                updateForm('video_file', file);
+                                            }
+                                        }} />
+                                    </label>
+                                )}
+                                <div style={{ flex: 1 }}>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', color: THEME.muted, marginBottom: '8px', fontWeight: 'bold' }}>OR PASTE VIDEO LINK</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <input 
+                                            placeholder="YouTube or Drive link..." 
+                                            value={formData.video_url} 
+                                            onChange={(e) => updateForm('video_url', e.target.value)} 
+                                            style={{ 
+                                                width: '100%', 
+                                                padding: '12px 15px', 
+                                                background: THEME.inputBg, 
+                                                border: `1px solid ${THEME.border}`, 
+                                                borderRadius: '10px', 
+                                                color: THEME.text,
+                                                fontSize: '0.9rem',
+                                                outline: 'none',
+                                                transition: 'border-color 0.2s'
+                                            }} 
+                                            onFocus={(e) => e.target.style.borderColor = THEME.gold}
+                                            onBlur={(e) => e.target.style.borderColor = THEME.border}
+                                        />
+                                    </div>
+                                    <p style={{ fontSize: '0.65rem', color: THEME.muted, marginTop: '8px' }}>
+                                        * YouTube videos will automatically be embedded in the gallery.
+                                    </p>
+                                </div>
                             </div>
                         </div>
 

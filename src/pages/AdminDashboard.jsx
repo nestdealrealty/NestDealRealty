@@ -889,7 +889,7 @@ const ProjectModal = ({ project, isEditing, setIsEditing, editForm, setEditForm,
                         </>
                     ) : (
                         <>
-                            <Link to={`/post-project?editId=${project.id}`} style={{ flex: 1, padding: '15px', background: `${THEME.gold}20`, color: THEME.gold, border: `1px solid ${THEME.gold}`, borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'none', textAlign: 'center' }}>EDIT ALL (FULL FORM)</Link>
+                            <Link to={`/${project.property_type === 'Plots' ? 'post-plot-project' : 'post-project'}?editId=${project.id}`} style={{ flex: 1, padding: '15px', background: `${THEME.gold}20`, color: THEME.gold, border: `1px solid ${THEME.gold}`, borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'none', textAlign: 'center' }}>EDIT ALL (FULL FORM)</Link>
                             <button onClick={() => { setIsEditing(true); setEditForm({...project}); }} style={{ flex: 1, padding: '15px', background: '#333', color: THEME.gold, border: `1px solid ${THEME.gold}`, borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>QUICK EDIT</button>
                             <button onClick={() => { onUpdateStatus('projects', project.id, 'approved'); onClose(); }} style={{ flex: 1, padding: '15px', background: '#00C853', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>APPROVE</button>
                             <button onClick={() => { onUpdateStatus('projects', project.id, 'rejected'); onClose(); }} style={{ flex: 1, padding: '15px', background: '#FF5252', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>REJECT</button>
