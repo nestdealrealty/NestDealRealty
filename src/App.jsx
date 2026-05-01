@@ -14,6 +14,7 @@ import SignUp from './pages/SignUp';
 import SavedProperties from './pages/SavedProperties';
 import ExplorePage from './pages/ExplorePage';
 import UserProperties from './pages/UserProperties';
+import SellerPortal from './pages/SellerPortal';
 import './index.css';
 
 // Nest Deal Realty - v1.1.0.3
@@ -40,6 +41,7 @@ function Layout() {
           <Route path="/saved-properties" element={<SavedProperties />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/my-properties" element={<UserProperties />} />
+          <Route path="/seller-portal" element={<SellerPortal />} />
         </Routes>
       </main>
       <Footer />

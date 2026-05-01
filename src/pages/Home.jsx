@@ -1,9 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter, Tag, Key, Briefcase, Star, ShieldCheck } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter, Tag, Key, Briefcase, Star, ShieldCheck, X, Check, MapPin, Bed } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import ValuationModal from '../components/ValuationModal';
+import FeaturedProjects from '../components/FeaturedProjects';
 import logo from '../assets/logo.jpg';
 import './Home.css';
+
+const ALL_AMENITY_NAMES = [
+    "Garden Play Area", "Lush Green Garden", "Box Cricket", "Gazebo", "Terrace Garden",
+    "Gym / Aerobic Studio", "Banquet Hall", "Security Cabin", "CCTV Camera", "Allotted Car Parking",
+    "High-Speed Elevator", "Fire Safety", "Power Backup for Common Area", "Toddler Play Area",
+    "Jogging Track", "Indoor Games", "OutDoor Games", "Multipurpose Court", "Yoga Space",
+    "Entrance Foyer", "Swimming Pool", "Club House", "Children Play Area", "Senior Citizen Area",
+    "Gated Community", "CCTV", "Security Guard", "Intercom Facility", "Private Pool",
+    "Private Terrace", "Party Lawn", "Two-Wheeler Parking", "Kids Play Room", "Virtual Golf"
+];
+
+const PRICE_OPTIONS = [
+    '₹25L', '₹50L', '₹75L', '₹1Cr', '₹1.5Cr', '₹2Cr', '₹3Cr', '₹5Cr', '₹7Cr', '₹10Cr+'
+];
+
+const BHK_OPTIONS = [
+    '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK',
+    '3 BHK Penthouse', '4 BHK Penthouse', '5 BHK Penthouse', '6 BHK Penthouse', '7 BHK Penthouse',
+    '3 BHK Duplex Penthouse', '4 BHK Duplex Penthouse', '5 BHK Duplex Penthouse', '6 BHK Duplex Penthouse', '7 BHK Duplex Penthouse', '8 BHK Duplex Penthouse', '9 BHK Duplex Penthouse'
+];
 
 const defaultSlides = [
     {
@@ -36,6 +57,7 @@ const navStructure = [
 import { supabase } from '../supabase';
 
 const Home = () => {
+    const navigate = useNavigate();
     const [currentSlide, setCurrentSlide] = useState(0);
     const [activeLocation, setActiveLocation] = useState('Ahmedabad');
     const [isValuationOpen, setIsValuationOpen] = useState(false);
@@ -44,10 +66,13 @@ const Home = () => {
     const [homeSlides, setHomeSlides] = useState(defaultSlides);
 
     // Search States
-    const [activeSearchDropdown, setActiveSearchDropdown] = useState(null); // 'city', 'bhk', 'budget', 'filter-modal'
-    const [budgetOpen, setBudgetOpen] = useState(null); // 'min', 'max' inside the budget dropdown
-
+    const [activeSearchDropdown, setActiveSearchDropdown] = useState(null);
+    const [budgetOpen, setBudgetOpen] = useState(null);
+    const [searchText, setSearchText] = useState('');
     const [selectedBHK, setSelectedBHK] = useState([]);
+    const [selectedConstruction, setSelectedConstruction] = useState([]);
+    const [selectedAmenities, setSelectedAmenities] = useState([]);
+    const [amenitySearch, setAmenitySearch] = useState('');
     const [showFinancialOptions, setShowFinancialOptions] = useState(false);
 
     // New Layout State
@@ -57,6 +82,24 @@ const Home = () => {
     const [activeGnrOwnerTab, setActiveGnrOwnerTab] = useState('flats');
     const slideshowRef = useRef(null);
     const [selectedBudget, setSelectedBudget] = useState({ min: '', max: '' });
+
+    const handleSearch = () => {
+        const params = new URLSearchParams();
+        if (activeLocation) params.set('city', activeLocation);
+        if (searchText) params.set('search', searchText);
+        if (selectedBHK.length > 0) params.set('bhk', selectedBHK.join(','));
+        if (selectedBudget.min) params.set('minBudget', selectedBudget.min);
+        if (selectedBudget.max) params.set('maxBudget', selectedBudget.max);
+        if (selectedAmenities.length > 0) params.set('amenities', selectedAmenities.join('|'));
+        if (selectedConstruction.length > 0) params.set('construction', selectedConstruction.join(','));
+        navigate(`/explore?${params.toString()}`);
+    };
+
+    const toggleAmenity = (name) => {
+        setSelectedAmenities(prev =>
+            prev.includes(name) ? prev.filter(a => a !== name) : [...prev, name]
+        );
+    };
 
     // Fetch real properties and slides from Supabase
     useEffect(() => {
@@ -72,7 +115,9 @@ const Home = () => {
             if (propsData && !propsError) {
                 setRealProperties(propsData.map(p => ({
                     id: p.id,
-                    image: (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80',
+                    image: (p.images && p.images.length > 0)
+                        ? (typeof p.images[0] === 'string' ? p.images[0] : (p.images[0]?.url || p.images[0]))
+                        : 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80',
                     listingTitle: p.project_name || `Property in ${p.locality}`,
                     builder: p.contact_name || 'Individual Seller',
                     config: p.bhk || p.property_type,
@@ -94,7 +139,9 @@ const Home = () => {
             if (projectsData && !projError) {
                 setRealProjects(projectsData.map(p => ({
                     id: p.id,
-                    image: p.images?.[0]?.url || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
+                    image: (p.images && p.images.length > 0)
+                        ? (typeof p.images[0] === 'string' ? p.images[0] : (p.images[0]?.url || p.images[0]))
+                        : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
                     listingTitle: p.name,
                     builder: p.developer,
                     location: p.locality,
@@ -182,42 +229,6 @@ const Home = () => {
                 {/* Split Hero */}
                 <div className="split-hero-container">
 
-                    {/* Left Sidebar */}
-                    <div className="hero-left-sidebar">
-                        <div className="sidebar-widgets-top">
-                            <div className="widget-card valuation-widget">
-                                <h3>Get the best price for your property</h3>
-                                <p className="rating-text">Rated Excellent with over 44,000 reviews</p>
-                                <div className="trust-badges">
-                                    <div className="trust-item"><Star size={16} fill="#00b67a" stroke="none" /> <span>Trustpilot</span></div>
-                                </div>
-                                <button className="book-valuation-btn" onClick={() => setIsValuationOpen(true)}>Book a free valuation</button>
-                                <p className="online-val-link">Or start with an <a href="#">online valuation</a></p>
-                            </div>
-
-                            <div className="widget-card emi-widget shadow-glow">
-                                <div
-                                    className="emi-side-btn"
-                                    onClick={() => setShowFinancialOptions(!showFinancialOptions)}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <div className="icon-box"><Calculator size={20} /></div>
-                                    <div className="btn-text">
-                                        <strong>FINANCIAL PLANNING CALCULATOR</strong>
-                                    </div>
-                                    <ChevronRight size={16} className={`transition-transform ${showFinancialOptions ? 'rotate-90' : ''}`} />
-                                </div>
-
-                                {showFinancialOptions && (
-                                    <div className="financial-options-list">
-                                        <Link to="/emi-calculator" className="fin-option">EMI Calculator</Link>
-                                        <Link to="/emi-calculator?mode=eligibility" className="fin-option">Eligibility Calculator</Link>
-                                        <Link to="/emi-calculator?mode=affordability" className="fin-option">Affordability Calculator</Link>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
 
                     {/* Right Visuals */}
                     <div className="hero-right-visual">
@@ -277,8 +288,14 @@ const Home = () => {
 
                             {/* Text Search */}
                             <div className="search-field-group wide">
-                                <label>Search By</label>
-                                <input type="text" placeholder="Area / project / builder" />
+                                <label>Search By Area</label>
+                                <input
+                                    type="text"
+                                    placeholder="Area / project / builder"
+                                    value={searchText}
+                                    onChange={(e) => setSearchText(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                />
                             </div>
 
                             <div className="search-divider-v"></div>
@@ -292,8 +309,8 @@ const Home = () => {
                                 </div>
                                 {activeSearchDropdown === 'bhk' && (
                                     <div className="dropdown-menu-search bhk-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        <div className="bhk-options-grid">
-                                            {['1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK'].map(bhk => (
+                                        <div className="bhk-options-grid" style={{ maxHeight: '250px', overflowY: 'auto' }}>
+                                            {BHK_OPTIONS.map(bhk => (
                                                 <div
                                                     key={bhk}
                                                     className={`bhk-option-btn ${selectedBHK.includes(bhk) ? 'active' : ''}`}
@@ -303,6 +320,7 @@ const Home = () => {
                                                             : [...selectedBHK, bhk];
                                                         setSelectedBHK(newSel);
                                                     }}
+                                                    style={{ fontSize: '0.75rem', padding: '8px 4px' }}
                                                 >
                                                     {bhk}
                                                 </div>
@@ -331,7 +349,7 @@ const Home = () => {
                                                 <ChevronDown size={14} />
                                                 {budgetOpen === 'min' && (
                                                     <div className="price-dropdown-list">
-                                                        {priceOptions.map(price => (
+                                                        {PRICE_OPTIONS.map(price => (
                                                             <div key={price} className="price-option" onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 setSelectedBudget({ ...selectedBudget, min: price });
@@ -348,7 +366,7 @@ const Home = () => {
                                                 <ChevronDown size={14} />
                                                 {budgetOpen === 'max' && (
                                                     <div className="price-dropdown-list">
-                                                        {priceOptions.map(price => (
+                                                        {PRICE_OPTIONS.map(price => (
                                                             <div key={price} className="price-option" onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 setSelectedBudget({ ...selectedBudget, max: price });
@@ -365,13 +383,96 @@ const Home = () => {
 
                             <div className="search-divider-v"></div>
 
+                            {/* Amenities */}
+                            <div className="search-field-group" onClick={() => toggleSearchDropdown('amenities')}>
+                                <label>Amenities</label>
+                                <div className="field-control">
+                                    <span style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {selectedAmenities.length > 0 ? `${selectedAmenities.length} selected` : 'Any'}
+                                    </span>
+                                    <ChevronDown size={14} className={activeSearchDropdown === 'amenities' ? 'rotate-180' : ''} />
+                                </div>
+                                {activeSearchDropdown === 'amenities' && (
+                                    <div className="dropdown-menu-search amenities-dropdown" onClick={(e) => e.stopPropagation()} style={{ width: '280px', maxHeight: '320px', overflowY: 'auto' }}>
+                                        <div style={{ padding: '8px 12px', borderBottom: '1px solid #eee' }}>
+                                            <input
+                                                type="text"
+                                                placeholder="Search amenity..."
+                                                value={amenitySearch}
+                                                onChange={(e) => setAmenitySearch(e.target.value)}
+                                                onClick={(e) => e.stopPropagation()}
+                                                style={{ width: '100%', border: '1px solid #ddd', borderRadius: '6px', padding: '6px 10px', fontSize: '0.85rem', outline: 'none' }}
+                                            />
+                                        </div>
+                                        {ALL_AMENITY_NAMES
+                                            .filter(a => a.toLowerCase().includes(amenitySearch.toLowerCase()))
+                                            .map(name => (
+                                                <div
+                                                    key={name}
+                                                    className={`dd-item`}
+                                                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '0.875rem', background: selectedAmenities.includes(name) ? '#E3BC5A15' : 'transparent' }}
+                                                    onClick={() => toggleAmenity(name)}
+                                                >
+                                                    <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `2px solid ${selectedAmenities.includes(name) ? '#E3BC5A' : '#ccc'}`, background: selectedAmenities.includes(name) ? '#E3BC5A' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                        {selectedAmenities.includes(name) && <Check size={10} color="white" strokeWidth={3} />}
+                                                    </div>
+                                                    {name}
+                                                </div>
+                                            ))
+                                        }
+                                        {selectedAmenities.length > 0 && (
+                                            <div style={{ padding: '8px 12px', borderTop: '1px solid #eee', textAlign: 'center' }}>
+                                                <button onClick={() => setSelectedAmenities([])} style={{ background: 'none', border: 'none', color: '#E3BC5A', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '600' }}>Clear All ({selectedAmenities.length})</button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="search-divider-v"></div>
+
+                            {/* Construction */}
+                            <div className="search-field-group" onClick={() => toggleSearchDropdown('construction')}>
+                                <label>Construction</label>
+                                <div className="field-control">
+                                    <span style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {selectedConstruction.length > 0 ? `${selectedConstruction.length} selected` : 'Any Status'}
+                                    </span>
+                                    <ChevronDown size={14} className={activeSearchDropdown === 'construction' ? 'rotate-180' : ''} />
+                                </div>
+                                {activeSearchDropdown === 'construction' && (
+                                    <div className="dropdown-menu-search bhk-dropdown" onClick={(e) => e.stopPropagation()}>
+                                        <div className="bhk-options-grid">
+                                            {['READY TO MOVE', 'UNDER CONSTRUCTION'].map(status => (
+                                                <div
+                                                    key={status}
+                                                    className={`bhk-option-btn ${selectedConstruction.includes(status) ? 'active' : ''}`}
+                                                    onClick={() => {
+                                                        const newSel = selectedConstruction.includes(status)
+                                                            ? selectedConstruction.filter(s => s !== status)
+                                                            : [...selectedConstruction, status];
+                                                        setSelectedConstruction(newSel);
+                                                    }}
+                                                    style={{ fontSize: '0.75rem' }}
+                                                >
+                                                    {status}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="bhk-footer" onClick={() => setSelectedConstruction([])}>Clear All</div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="search-divider-v"></div>
+
                             {/* Actions */}
                             <div className="search-actions-group">
                                 <button className="filter-text-btn" onClick={() => toggleSearchDropdown('filter-modal')}>
                                     <Filter size={16} />
                                     <span>Filter</span>
                                 </button>
-                                <button className="search-submit-btn">Search</button>
+                                <button className="search-submit-btn" onClick={handleSearch}>Search</button>
                             </div>
                         </div>
                     </div>
@@ -415,10 +516,21 @@ const Home = () => {
 
                                     {/* BHK */}
                                     <div className="filter-section-modal">
-                                        <h3>BHK <span className="clear-btn">Clear All</span></h3>
-                                        <div className="chip-group">
-                                            {['1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK'].map(bhk => (
-                                                <button key={bhk} className="chip-btn"><span>+</span> {bhk}</button>
+                                        <h3>BHK <span className="clear-btn" onClick={() => setSelectedBHK([])}>Clear All</span></h3>
+                                        <div className="chip-group" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                            {BHK_OPTIONS.map(bhk => (
+                                                <button 
+                                                    key={bhk} 
+                                                    className={`chip-btn ${selectedBHK.includes(bhk) ? 'active' : ''}`}
+                                                    onClick={() => {
+                                                        const newSel = selectedBHK.includes(bhk)
+                                                            ? selectedBHK.filter(b => b !== bhk)
+                                                            : [...selectedBHK, bhk];
+                                                        setSelectedBHK(newSel);
+                                                    }}
+                                                >
+                                                    {selectedBHK.includes(bhk) ? <Check size={14} /> : <span>+</span>} {bhk}
+                                                </button>
                                             ))}
                                         </div>
                                     </div>
@@ -454,13 +566,14 @@ const Home = () => {
             </div>
 
             {/* NEW PROPERTY LISTING SECTION */}
+            <FeaturedProjects />
 
             {/* Explore Ahmedabad Section */}
             <div className="explore-ahmedabad-section">
                 <div className="explore-header-container" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Link to="/explore?city=Ahmedabad" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <h2 style={{ margin: 0, color: '#E3BC5A' }}>Explore Ahmedabad</h2>
-                        <ChevronRight size={28} color="#E3BC5A" />
+                    <Link to="/explore?city=Ahmedabad" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <h2 style={{ margin: 0, color: '#E3BC5A', fontFamily: '"Playfair Display", serif', fontSize: '3rem', fontWeight: 600, letterSpacing: '1px' }}>Explore Ahmedabad</h2>
+                        <ChevronRight size={38} color="#E3BC5A" />
                     </Link>
                 </div>
 
@@ -483,14 +596,38 @@ const Home = () => {
 
                         <div className="prop-grid-2x2">
                             {getProjectsForTab(activeAhdProjectTab, 'Ahmedabad').slice(0, 4).map((item) => (
-                                <Link to={`/project/${item.id}`} key={item.id} className="new-prop-card">
-                                    <div className="new-prop-img-box">
+                                <Link to={`/project/${item.id}`} key={item.id} className="premium-prop-card">
+                                    <div className="premium-img-section">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                        <div className="premium-gradient-overlay"></div>
+                                        <div className="premium-badges">
+                                            {item.builder && item.builder !== 'Individual Seller' && (
+                                                <div className="premium-developer-badge">
+                                                    <span>{item.builder.substring(0, 2).toUpperCase()}</span>
+                                                </div>
+                                            )}
+                                            {item.config && (
+                                                <div className="premium-bhk-badge">
+                                                    <Bed size={12} />
+                                                    <span>{item.config}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="premium-img-text">
+                                            <h4 className="premium-title">{item.listingTitle}</h4>
+                                            <p className="premium-location">
+                                                <MapPin size={12} /> {item.location || item.city}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="new-prop-details">
-                                        <h4 className="new-prop-title">{item.listingTitle}</h4>
-                                        <p className="new-prop-loc">{item.location}</p>
-                                        <p className="new-prop-price">{item.price}</p>
+                                    <div className="premium-details-section">
+                                        <div className="premium-price-box">
+                                            <span className="premium-price-label">Price Range</span>
+                                            <div className="premium-price-value">{item.price}</div>
+                                        </div>
+                                        <div className="premium-action-btn">
+                                            View Details <ArrowRight size={14} />
+                                        </div>
                                     </div>
                                 </Link>
                             ))}
@@ -517,14 +654,38 @@ const Home = () => {
 
                         <div className="prop-grid-2x2">
                             {getPropertiesForTab(activeAhdOwnerTab, 'Ahmedabad').slice(0, 4).map((item) => (
-                                <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
-                                    <div className="new-prop-img-box">
+                                <Link to={`/property/${item.id}`} key={item.id} className="premium-prop-card">
+                                    <div className="premium-img-section">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                        <div className="premium-gradient-overlay"></div>
+                                        <div className="premium-badges">
+                                            {item.builder && item.builder !== 'Individual Seller' && (
+                                                <div className="premium-developer-badge">
+                                                    <span>{item.builder.substring(0, 2).toUpperCase()}</span>
+                                                </div>
+                                            )}
+                                            {item.config && (
+                                                <div className="premium-bhk-badge">
+                                                    <Bed size={12} />
+                                                    <span>{item.config}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="premium-img-text">
+                                            <h4 className="premium-title">{item.listingTitle}</h4>
+                                            <p className="premium-location">
+                                                <MapPin size={12} /> {item.location || item.city}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="new-prop-details">
-                                        <h4 className="new-prop-title">{item.listingTitle}</h4>
-                                        <p className="new-prop-loc">{item.location}</p>
-                                        <p className="new-prop-price">{item.price}</p>
+                                    <div className="premium-details-section">
+                                        <div className="premium-price-box">
+                                            <span className="premium-price-label">Price Range</span>
+                                            <div className="premium-price-value">{item.price}</div>
+                                        </div>
+                                        <div className="premium-action-btn">
+                                            View Details <ArrowRight size={14} />
+                                        </div>
                                     </div>
                                 </Link>
                             ))}
@@ -538,9 +699,9 @@ const Home = () => {
             {/* Explore Gandhinagar Section */}
             <div className="explore-gandhinagar-section" style={{ marginTop: '60px' }}>
                 <div className="explore-header-container" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Link to="/explore?city=Gandhinagar" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <h2 style={{ margin: 0, color: '#E3BC5A' }}>Explore Gandhinagar</h2>
-                        <ChevronRight size={28} color="#E3BC5A" />
+                    <Link to="/explore?city=Gandhinagar" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <h2 style={{ margin: 0, color: '#E3BC5A', fontFamily: '"Playfair Display", serif', fontSize: '3rem', fontWeight: 600, letterSpacing: '1px' }}>Explore Gandhinagar</h2>
+                        <ChevronRight size={38} color="#E3BC5A" />
                     </Link>
                 </div>
 
@@ -563,14 +724,38 @@ const Home = () => {
 
                         <div className="prop-grid-2x2">
                             {getProjectsForTab(activeGnrProjectTab, 'Gandhinagar').slice(0, 4).map((item) => (
-                                <Link to={`/project/${item.id}`} key={item.id} className="new-prop-card">
-                                    <div className="new-prop-img-box">
+                                <Link to={`/project/${item.id}`} key={item.id} className="premium-prop-card">
+                                    <div className="premium-img-section">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                        <div className="premium-gradient-overlay"></div>
+                                        <div className="premium-badges">
+                                            {item.builder && item.builder !== 'Individual Seller' && (
+                                                <div className="premium-developer-badge">
+                                                    <span>{item.builder.substring(0, 2).toUpperCase()}</span>
+                                                </div>
+                                            )}
+                                            {item.config && (
+                                                <div className="premium-bhk-badge">
+                                                    <Bed size={12} />
+                                                    <span>{item.config}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="premium-img-text">
+                                            <h4 className="premium-title">{item.listingTitle}</h4>
+                                            <p className="premium-location">
+                                                <MapPin size={12} /> {item.location || item.city}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="new-prop-details">
-                                        <h4 className="new-prop-title">{item.listingTitle}</h4>
-                                        <p className="new-prop-loc">{item.location}</p>
-                                        <p className="new-prop-price">{item.price}</p>
+                                    <div className="premium-details-section">
+                                        <div className="premium-price-box">
+                                            <span className="premium-price-label">Price Range</span>
+                                            <div className="premium-price-value">{item.price}</div>
+                                        </div>
+                                        <div className="premium-action-btn">
+                                            View Details <ArrowRight size={14} />
+                                        </div>
                                     </div>
                                 </Link>
                             ))}
@@ -597,14 +782,38 @@ const Home = () => {
 
                         <div className="prop-grid-2x2">
                             {getPropertiesForTab(activeGnrOwnerTab, 'Gandhinagar').slice(0, 4).map((item) => (
-                                <Link to={`/property/${item.id}`} key={item.id} className="new-prop-card">
-                                    <div className="new-prop-img-box">
+                                <Link to={`/property/${item.id}`} key={item.id} className="premium-prop-card">
+                                    <div className="premium-img-section">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                        <div className="premium-gradient-overlay"></div>
+                                        <div className="premium-badges">
+                                            {item.builder && item.builder !== 'Individual Seller' && (
+                                                <div className="premium-developer-badge">
+                                                    <span>{item.builder.substring(0, 2).toUpperCase()}</span>
+                                                </div>
+                                            )}
+                                            {item.config && (
+                                                <div className="premium-bhk-badge">
+                                                    <Bed size={12} />
+                                                    <span>{item.config}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="premium-img-text">
+                                            <h4 className="premium-title">{item.listingTitle}</h4>
+                                            <p className="premium-location">
+                                                <MapPin size={12} /> {item.location || item.city}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="new-prop-details">
-                                        <h4 className="new-prop-title">{item.listingTitle}</h4>
-                                        <p className="new-prop-loc">{item.location}</p>
-                                        <p className="new-prop-price">{item.price}</p>
+                                    <div className="premium-details-section">
+                                        <div className="premium-price-box">
+                                            <span className="premium-price-label">Price Range</span>
+                                            <div className="premium-price-value">{item.price}</div>
+                                        </div>
+                                        <div className="premium-action-btn">
+                                            View Details <ArrowRight size={14} />
+                                        </div>
                                     </div>
                                 </Link>
                             ))}

@@ -339,6 +339,7 @@ const PostProperty = () => {
         sourceName: '',
         sourceNumber: '',
         sourceEmail: '',
+        sourceProfession: '',
         sourceEnrollCode: '',
 
         // Media
@@ -367,6 +368,7 @@ const PostProperty = () => {
 
     const validateSource = () => {
         const newErrors = {};
+        if (!formData.sourceProfession) newErrors.sourceProfession = "Profession is required";
         if (!formData.sourceName) newErrors.sourceName = "Name is required";
         if (!formData.sourceNumber) newErrors.sourceNumber = "Number is required";
         if (!formData.sourceEmail) newErrors.sourceEmail = "Email is required";
@@ -496,6 +498,7 @@ const PostProperty = () => {
                 source_name: formData.sourceName,
                 source_number: formData.sourceNumber,
                 source_email: formData.sourceEmail,
+                source_profession: formData.sourceProfession,
                 source_enroll_code: formData.sourceEnrollCode,
 
                 // PG Fields
@@ -653,6 +656,13 @@ const PostProperty = () => {
         <div className="animate-slide-up">
             <SectionHeader title="Source Details" sub="Please provide the details of the person posting this property." />
             
+            <ChipGroup
+                id="sourceProfession" label="YOUR PROFESSION"
+                options={[{ label: 'BROKER', value: 'BROKER' }, { label: 'OWNER', value: 'OWNER' }]}
+                value={formData.sourceProfession} onChange="sourceProfession" error={errors.sourceProfession}
+                updateForm={updateForm} toggleSelection={toggleSelection}
+            />
+
             <TextInput 
                 id="sourceName" 
                 label="USER NAME" 
@@ -698,6 +708,7 @@ const PostProperty = () => {
                     type="button"
                     onClick={() => {
                         const newErrors = {};
+                        if (!formData.sourceProfession) newErrors.sourceProfession = "Profession is required";
                         if (!formData.sourceName) newErrors.sourceName = "Name is required";
                         if (!formData.sourceNumber) newErrors.sourceNumber = "Number is required";
                         if (!formData.sourceEmail) newErrors.sourceEmail = "Email is required";

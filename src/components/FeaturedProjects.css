@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+.featured-projects-section {
+    width: 100%;
+    padding: 60px 0;
+    background: #0C1512;
+    overflow: hidden;
+    position: relative;
+}
+
+.featured-container {
+    display: flex;
+    width: 120%; /* Slightly wider to accommodate skew overflow */
+    margin-left: -10%;
+    height: 450px;
+    gap: 0;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.featured-card {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    transform: skewX(-15deg);
+    margin-right: -1px; /* Seamless flow */
+    cursor: pointer;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 1px solid rgba(227, 188, 90, 0.1);
+}
+
+.featured-card:first-child {
+    border-left: none;
+}
+
+.featured-card-inner {
+    position: absolute;
+    top: 0;
+    left: -50%;
+    width: 200%;
+    height: 100%;
+    transform: skewX(15deg); /* Un-skew content */
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.featured-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    scale: 1.05;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Gradient Overlay */
+.featured-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 40%, transparent 100%);
+    transition: background 0.5s ease;
+}
+
+.featured-content {
+    position: absolute;
+    bottom: 40px;
+    left: 28%; /* Centering due to un-skewing offset */
+    width: 50%;
+    color: white;
+    z-index: 2;
+}
+
+.featured-project-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    line-height: 1.2;
+    transition: all 0.5s ease;
+}
+
+.featured-accent {
+    width: 40px;
+    height: 2px;
+    background: #E3BC5A;
+    transition: width 0.5s ease;
+}
+
+/* Details - Hidden by default */
+.featured-details {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.85);
+}
+
+.detail-item svg {
+    color: #E3BC5A;
+}
+
+/* Hover States */
+.featured-card:hover {
+    flex: 2.5; /* Expand width */
+    z-index: 10;
+    box-shadow: 0 0 30px rgba(227, 188, 90, 0.2);
+    border-left: 2px solid #E3BC5A;
+    border-right: 2px solid #E3BC5A;
+}
+
+.featured-card:hover .featured-image {
+    transform: scale(1.15);
+}
+
+.featured-card:hover .featured-overlay {
+    background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.2) 100%);
+}
+
+.featured-card:hover .featured-details {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.featured-card:hover .featured-accent {
+    width: 80px;
+}
+
+/* Focus on center card (optional start state) */
+.featured-card.center-focus {
+    /* Initially wider if needed */
+}
+
+/* Glow animation */
+@keyframes goldGlow {
+    0% { box-shadow: 0 0 10px rgba(227, 188, 90, 0.2); }
+    50% { box-shadow: 0 0 25px rgba(227, 188, 90, 0.4); }
+    100% { box-shadow: 0 0 10px rgba(227, 188, 90, 0.2); }
+}
+
+.featured-card:hover {
+    animation: goldGlow 2s infinite ease-in-out;
+}
+
+/* Divider Below */
+.explore-divider {
+    text-align: center;
+    margin-top: 40px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .featured-container {
+        flex-wrap: wrap;
+        width: 100%;
+        margin-left: 0;
+        height: auto;
+    }
+    .featured-card {
+        transform: none;
+        flex: none;
+        width: 50%;
+        height: 350px;
+    }
+    .featured-card-inner {
+        transform: none;
+        left: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .featured-card {
+        width: 100%;
+    }
+}

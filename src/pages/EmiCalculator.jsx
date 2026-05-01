@@ -419,18 +419,39 @@ const InputGroup = ({ label, val, setVal, min, max, step, suffix, color }) => {
     const isCurrency = !suffix;
     const accent = color || '#E3BC5A';
 
-    const handleChange = (e) => {
-        const raw = e.target.value.replace(/,/g, '');
-        if (raw === '') {
-            setVal(0);
-            return;
+    // Use local state for text input to allow typing decimals without "snapping"
+    const [inputValue, setInputValue] = useState(isCurrency ? val.toLocaleString('en-IN') : val.toString());
+
+    // Sync local state when external value changes (e.g. via slider)
+    useEffect(() => {
+        const formatted = isCurrency ? val.toLocaleString('en-IN') : val.toString();
+        // Only update if the numeric values differ to avoid cursor jumping
+        if (parseFloat(inputValue.replace(/,/g, '')) !== val) {
+            setInputValue(formatted);
         }
-        if (!isNaN(raw)) {
-            setVal(Number(raw));
+    }, [val, isCurrency]);
+
+    const handleTextChange = (e) => {
+        const raw = e.target.value;
+        setInputValue(raw); // Update the textbox immediately (allows things like "8.")
+
+        const numericString = raw.replace(/,/g, '');
+        if (numericString === '' || numericString === '.') {
+            setVal(0);
+        } else {
+            const num = parseFloat(numericString);
+            if (!isNaN(num)) {
+                setVal(num);
+            }
         }
     };
 
-    const displayValue = isCurrency ? val.toLocaleString('en-IN') : val;
+    const handleSliderChange = (e) => {
+        const num = Number(e.target.value);
+        setVal(num);
+        setInputValue(isCurrency ? num.toLocaleString('en-IN') : num.toString());
+    };
+
     const displayMin = isCurrency ? min.toLocaleString('en-IN') : min;
 
     return (
@@ -438,7 +459,7 @@ const InputGroup = ({ label, val, setVal, min, max, step, suffix, color }) => {
             <label style={{ color: accent, fontWeight: '700', fontSize: '0.9rem', marginBottom: '8px', display: 'block' }}>{label}</label>
             <input
                 type="range" min={min} max={max} step={step}
-                value={val} onChange={(e) => setVal(Number(e.target.value))}
+                value={val} onChange={handleSliderChange}
                 style={{ width: '100%', accentColor: accent }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
@@ -455,8 +476,8 @@ const InputGroup = ({ label, val, setVal, min, max, step, suffix, color }) => {
                     {isCurrency && <span style={{ color: '#8E9CA3', marginRight: '5px' }}>₹</span>}
                     <input
                         type="text"
-                        value={displayValue}
-                        onChange={handleChange}
+                        value={inputValue}
+                        onChange={handleTextChange}
                         style={{
                             background: 'transparent',
                             border: 'none',

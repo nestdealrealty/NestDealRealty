@@ -1,0 +1,255 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+.seller-portal-container {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 50%, #fffde7 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 40px 20px;
+    position: relative;
+    overflow: hidden;
+    color: #1d1d1f;
+}
+
+/* Background floating blurs for Mac OS feel */
+.bg-blur-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: 0;
+    opacity: 0.6;
+}
+
+.circle-1 {
+    width: 500px;
+    height: 500px;
+    background: rgba(165, 214, 167, 0.4);
+    top: -100px;
+    left: -100px;
+}
+
+.circle-2 {
+    width: 600px;
+    height: 600px;
+    background: rgba(255, 245, 157, 0.3);
+    bottom: -150px;
+    right: -100px;
+}
+
+.seller-card {
+    width: 100%;
+    max-width: 680px;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.05),
+        0 1px 3px rgba(0, 0, 0, 0.02),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    z-index: 10;
+    overflow: hidden;
+    animation: floatIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes floatIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.seller-card-header {
+    background: rgba(255, 255, 255, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+}
+
+.seller-card-header.center {
+    justify-content: center;
+}
+
+.seller-card-header h3 {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #86868b;
+}
+
+.seller-card-body {
+    padding: 40px;
+}
+
+.seller-header-texts {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.seller-header-texts h2 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1d1d1f;
+    letter-spacing: -0.5px;
+}
+
+.seller-header-texts p {
+    margin: 0;
+    font-size: 1rem;
+    color: #86868b;
+    font-weight: 400;
+}
+
+.seller-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #515154;
+    margin-left: 4px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.6);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #1d1d1f;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+    -webkit-appearance: none;
+}
+
+.form-group input::placeholder {
+    color: #a1a1a6;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #34c759;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.02);
+    transform: translateY(-1px);
+}
+
+.seller-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.seller-btn {
+    padding: 14px 28px;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-family: inherit;
+}
+
+.seller-btn.secondary {
+    background: transparent;
+    color: #515154;
+}
+
+.seller-btn.secondary:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: #1d1d1f;
+}
+
+.seller-btn.primary {
+    background: linear-gradient(180deg, #4cd964 0%, #34c759 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.seller-btn.primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(52, 199, 89, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    filter: brightness(1.05);
+}
+
+.seller-btn.primary:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+}
+
+.seller-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Success Body */
+.success-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 60px 40px;
+}
+
+.success-body h2 {
+    margin: 0 0 12px 0;
+    font-size: 2.2rem;
+    color: #1d1d1f;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.success-body p {
+    color: #86868b;
+    font-size: 1.1rem;
+    margin: 0 0 32px 0;
+}
+
+@media (max-width: 640px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .seller-card-body {
+        padding: 30px 20px;
+    }
+    
+    .seller-header-texts h2 {
+        font-size: 1.75rem;
+    }
+}

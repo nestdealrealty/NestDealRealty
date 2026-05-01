@@ -1,52 +1,38 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, Search, Heart, User, Menu, X, ArrowRight, Home, MoreVertical, LogOut } from 'lucide-react';
+import { ChevronDown, Search, Heart, User, Menu, X, ArrowRight, Home, MoreVertical, LogOut, ChevronRight, Building } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ValuationModal from './ValuationModal';
 import './Header.css';
 import logo from '../assets/logo.jpg';
+
+const ALL_LOCALITIES = [
+    'Thaltej', 'Bodakdev', 'Prahlad Nagar', 'Sindhu Bhavan Road', 'Ambli', 'Satellite', 'Science City Road', 'Vastrapur', 'Judges Bungalow Road',
+    'Nikol', 'Vastral', 'Naroda', 'Maninagar', 'Makarba', 'Sanand', 'Bakrol', 'Ognaj', 'Vadsar', 'Ranip', 'Shahibaug', 'Sabarmati',
+    'Chandlodiya', 'Narol', 'Vatva', 'Danilimda', 'Asarwa', 'Bapunagar', 'Odhav', 'Piplaj', 'Bopal', 'South Bopal', 'Gota', 'Chandkheda',
+    'Motera', 'Shilaj', 'Shela', 'Ghuma', 'New Ranip', 'Jagatpur', 'Vaishnodevi Circle', 'Tragad', 'Zundal', 'Vasna', 'Paldi', 'Ambawadi',
+    'Navrangpura', 'Memnagar', 'Sola'
+].sort();
 
 const navItems = [
     {
         title: 'Sell',
         sections: [
             {
-                title: 'Our Services',
-                links: ['Book a free valuation', 'Online valuation', 'Sold house prices', 'Sell by Auction', 'Read our customer reviews']
-            },
-            {
-                title: 'Guides to selling',
-                links: ['First time seller', 'Selling in England & Wales', 'Top tips for selling', 'Prepare for home photos', 'Selling glossary']
+                title: 'OUR SERVICES',
+                links: ['Know Your Property Value', 'Developer', 'Broker', 'Owner']
             }
-        ],
-        cta: { text: 'Book a valuation', sub: 'Ready to sell?' }
+        ]
     },
     {
         title: 'Buy',
-        sections: [
-            {
-                title: 'Search Property',
-                links: ['New projects', 'Ready to move', 'Budget homes', 'Luxury homes']
-            },
-            {
-                title: 'Resources',
-                links: ['Buying guide', 'Home loans', 'Legal help', 'Property tax']
-            }
-        ],
-        cta: { text: 'Search properties', sub: 'Looking for a home?' }
+        sections: [],
+        isCascadingBuy: true
     },
     {
         title: 'Rent',
-        sections: [
-            {
-                title: 'RENT YOUR PROPERTY',
-                links: ['Flat', 'Bungalows', 'Commercial', 'Plot']
-            },
-            {
-                title: 'FIND RENTAL PROPERTY',
-                links: ['Flat', 'Bungalows', 'Commercial', 'Plot']
-            }
-        ],
+        sections: [],
+        isCascadingRent: true,
         cta: { text: 'Explore rentals', sub: 'Finding a place?' }
     },
     {
@@ -54,7 +40,7 @@ const navItems = [
         sections: [
             {
                 title: 'Support',
-                links: ['FAQs', 'Contact support', 'Guides', 'Legal help']
+                links: ['FAQs', 'Contact support', 'Guides', 'Legal help', 'FINANCIAL CALCULATOR']
             }
         ],
         cta: { text: 'Visit help center', sub: 'Need assistance?' }
@@ -67,6 +53,24 @@ const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isValuationOpen, setIsValuationOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+    // Cascading menu state
+    const [hoveredRentOption, setHoveredRentOption] = useState(null);
+    const [hoveredPropertyType, setHoveredPropertyType] = useState(null);
+    const [hoveredCity, setHoveredCity] = useState(null);
+    const [hoveredArea, setHoveredArea] = useState(null);
+    const [hoveredBHK, setHoveredBHK] = useState(null);
+    const [localitySearch, setLocalitySearch] = useState('');
+
+    const resetCascading = () => {
+        setHoveredRentOption(null);
+        setHoveredPropertyType(null);
+        setHoveredCity(null);
+        setHoveredArea(null);
+        setHoveredBHK(null);
+        setLocalitySearch('');
+    };
+
     const location = useLocation();
 
     return (
@@ -84,54 +88,242 @@ const Header = () => {
                                 key={item.title}
                                 className="nav-item"
                                 onMouseEnter={() => setActiveMenu(item.title)}
-                                onMouseLeave={() => setActiveMenu(null)}
+                                onMouseLeave={() => {
+                                    setActiveMenu(null);
+                                    resetCascading();
+                                }}
                             >
-                                <a href="#" className="nav-link">
+                                <a href="#" className="nav-link" onClick={(e) => e.preventDefault()}>
                                     {item.title} <ChevronDown size={14} />
                                 </a>
 
-                                <div className={`mega-menu ${activeMenu === item.title ? 'active' : ''}`}>
-                                    <div className="container mega-menu-content">
-                                        <div className="mega-menu-grid">
-                                            {item.sections.map((section) => (
-                                                <div key={section.title} className="mega-menu-section">
-                                                    <h4>{section.title}</h4>
+                                <div className={`mega-menu ${activeMenu === item.title ? 'active' : ''} ${item.isCascadingBuy || item.isCascadingRent ? 'cascading-mega-menu' : ''} ${item.title === 'Rent' ? 'rent-mega-menu' : ''}`}>
+                                    <div className="container mega-menu-content" style={(item.isCascadingBuy || item.isCascadingRent) ? { display: 'block', padding: 0 } : {}}>
+                                        {item.isCascadingBuy ? (
+                                            <div className="cascading-menu-container">
+                                                <div className="cascading-column">
+                                                    <h4>Property type</h4>
                                                     <ul>
-                                                        {section.links.map((link) => (
-                                                            <li key={link}>
-                                                                <a
-                                                                    href="#"
-                                                                    onClick={(e) => {
-                                                                        if (link === 'Book a free valuation') {
-                                                                            e.preventDefault();
-                                                                            setIsValuationOpen(true);
-                                                                            setActiveMenu(null);
-                                                                        }
-                                                                    }}
-                                                                >
-                                                                    {link}
-                                                                </a>
+                                                        {['Flats', 'Houses', 'Plots', 'Villas', 'Commercial properties'].map(type => (
+                                                            <li key={type} onMouseEnter={() => { setHoveredPropertyType(type); setHoveredCity(null); setHoveredArea(null); setHoveredBHK(null); }} className={hoveredPropertyType === type ? 'active' : ''}>
+                                                                {type} <ChevronRight size={14} />
                                                             </li>
                                                         ))}
                                                     </ul>
                                                 </div>
-                                            ))}
-                                        </div>
-                                        {item.cta && (
-                                            <div className="mega-menu-cta">
-                                                <p>{item.cta.sub}</p>
-                                                <button
-                                                    className="btn btn-primary"
-                                                    onClick={() => {
-                                                        if (item.cta.text === 'Book a valuation') {
-                                                            setIsValuationOpen(true);
-                                                            setActiveMenu(null);
-                                                        }
-                                                    }}
-                                                >
-                                                    {item.cta.text} <ArrowRight size={16} />
-                                                </button>
+
+                                                {hoveredPropertyType && (
+                                                    <div className="cascading-column">
+                                                        <h4>City</h4>
+                                                        <ul>
+                                                            {['AHMEDABAD', 'GANDHINAGAR'].map(city => (
+                                                                <li key={city} onMouseEnter={() => { setHoveredCity(city); setHoveredArea(null); setHoveredBHK(null); }} className={hoveredCity === city ? 'active' : ''}>
+                                                                    {city} <ChevronRight size={14} />
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+
+                                                {hoveredCity && (
+                                                    <div className="cascading-column">
+                                                        <h4>Locality</h4>
+                                                        <div className="locality-search-box">
+                                                            <input 
+                                                                type="text" 
+                                                                placeholder="Search area..." 
+                                                                value={localitySearch}
+                                                                onChange={(e) => setLocalitySearch(e.target.value)}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            />
+                                                        </div>
+                                                        <ul className="scrollable-list">
+                                                            {ALL_LOCALITIES.filter(loc => loc.toLowerCase().includes(localitySearch.toLowerCase())).map(loc => (
+                                                                <li key={loc} onMouseEnter={() => { setHoveredArea(loc); setHoveredBHK(null); }} className={hoveredArea === loc ? 'active' : ''}>
+                                                                    {loc} <ChevronRight size={14} />
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+
+                                                {hoveredArea && (
+                                                    <div className="cascading-column">
+                                                        <h4>Configuration</h4>
+                                                        <ul>
+                                                            {['1BHK', '2BHK', '3BHK', '4BHK', '5BHK', '6BHK', '7BHK'].map(bhk => (
+                                                                <li key={bhk} onMouseEnter={() => setHoveredBHK(bhk)} className={hoveredBHK === bhk ? 'active' : ''}>
+                                                                    {bhk} <ChevronRight size={14} />
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+
+                                                {hoveredBHK && (
+                                                    <div className="cascading-column">
+                                                        <h4>Variants</h4>
+                                                        <ul>
+                                                            <li><Link to={`/explore?purpose=buy&type=${hoveredPropertyType}&city=${hoveredCity}&loc=${hoveredArea}&bhk=${hoveredBHK}`}>{hoveredBHK}</Link></li>
+                                                            <li><Link to={`/explore?purpose=buy&type=${hoveredPropertyType}&city=${hoveredCity}&loc=${hoveredArea}&bhk=${hoveredBHK}&variant=Penthouse`}>{hoveredBHK} Penthouse</Link></li>
+                                                            <li><Link to={`/explore?purpose=buy&type=${hoveredPropertyType}&city=${hoveredCity}&loc=${hoveredArea}&bhk=${hoveredBHK}&variant=Duplex`}>{hoveredBHK} Duplex Penthouse</Link></li>
+                                                        </ul>
+                                                    </div>
+                                                )}
                                             </div>
+                                        ) : item.isCascadingRent ? (
+                                            <div className="cascading-menu-container">
+                                                <div className="cascading-column">
+                                                    <h4>Rent Option</h4>
+                                                    <ul>
+                                                        {['Rent Your Property', 'Get Property on Rent'].map(opt => (
+                                                            <li key={opt} onMouseEnter={() => { setHoveredRentOption(opt); setHoveredPropertyType(null); setHoveredCity(null); setHoveredArea(null); setHoveredBHK(null); }} className={hoveredRentOption === opt ? 'active' : ''}>
+                                                                {opt} <ChevronRight size={14} />
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+
+                                                {hoveredRentOption === 'Rent Your Property' && (
+                                                    <div className="cascading-column">
+                                                        <h4>Who are you?</h4>
+                                                        <ul>
+                                                            <li><Link to="/seller-portal?type=Developer">Developer</Link></li>
+                                                            <li><Link to="/seller-portal?type=Owner">Owner</Link></li>
+                                                            <li><Link to="/seller-portal?type=Broker">Broker</Link></li>
+                                                        </ul>
+                                                    </div>
+                                                )}
+
+                                                {hoveredRentOption === 'Get Property on Rent' && (
+                                                    <>
+                                                        <div className="cascading-column">
+                                                            <h4>Property type</h4>
+                                                            <ul>
+                                                                {['Flats', 'Houses', 'Commercial properties'].map(type => (
+                                                                    <li key={type} onMouseEnter={() => { setHoveredPropertyType(type); setHoveredCity(null); setHoveredArea(null); setHoveredBHK(null); }} className={hoveredPropertyType === type ? 'active' : ''}>
+                                                                        {type} <ChevronRight size={14} />
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                        {hoveredPropertyType && (
+                                                            <div className="cascading-column">
+                                                                <h4>City</h4>
+                                                                <ul>
+                                                                    {['AHMEDABAD', 'GANDHINAGAR'].map(city => (
+                                                                        <li key={city} onMouseEnter={() => { setHoveredCity(city); setHoveredArea(null); setHoveredBHK(null); }} className={hoveredCity === city ? 'active' : ''}>
+                                                                            {city} <ChevronRight size={14} />
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                        {hoveredCity && (
+                                                            <div className="cascading-column">
+                                                                <h4>Locality</h4>
+                                                                <div className="locality-search-box">
+                                                                    <input 
+                                                                        type="text" 
+                                                                        placeholder="Search area..." 
+                                                                        value={localitySearch}
+                                                                        onChange={(e) => setLocalitySearch(e.target.value)}
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                    />
+                                                                </div>
+                                                                <ul className="scrollable-list">
+                                                                    {ALL_LOCALITIES.filter(loc => loc.toLowerCase().includes(localitySearch.toLowerCase())).map(loc => (
+                                                                        <li key={loc} onMouseEnter={() => { setHoveredArea(loc); setHoveredBHK(null); }} className={hoveredArea === loc ? 'active' : ''}>
+                                                                            {loc} <ChevronRight size={14} />
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                        {hoveredArea && (
+                                                            <div className="cascading-column">
+                                                                <h4>Configuration</h4>
+                                                                <ul>
+                                                                    {['1BHK', '2BHK', '3BHK', '4BHK', '5BHK', '6BHK', '7BHK'].map(bhk => (
+                                                                        <li key={bhk} onMouseEnter={() => setHoveredBHK(bhk)} className={hoveredBHK === bhk ? 'active' : ''}>
+                                                                            {bhk} <ChevronRight size={14} />
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                        {hoveredBHK && (
+                                                            <div className="cascading-column">
+                                                                <h4>Variants</h4>
+                                                                <ul>
+                                                                    <li><Link to={`/explore?purpose=rent&type=${hoveredPropertyType}&city=${hoveredCity}&loc=${hoveredArea}&bhk=${hoveredBHK}`} onClick={() => setActiveMenu(null)}>{hoveredBHK}</Link></li>
+                                                                    <li><Link to={`/explore?purpose=rent&type=${hoveredPropertyType}&city=${hoveredCity}&loc=${hoveredArea}&bhk=${hoveredBHK}&variant=Penthouse`} onClick={() => setActiveMenu(null)}>{hoveredBHK} Penthouse</Link></li>
+                                                                    <li><Link to={`/explore?purpose=rent&type=${hoveredPropertyType}&city=${hoveredCity}&loc=${hoveredArea}&bhk=${hoveredBHK}&variant=Duplex`} onClick={() => setActiveMenu(null)}>{hoveredBHK} Duplex Penthouse</Link></li>
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div className="mega-menu-grid">
+                                                    {item.sections.map((section) => (
+                                                        <div key={section.title} className="mega-menu-section">
+                                                            <h4>{section.title}</h4>
+                                                            <ul>
+                                                                {section.links.map((link) => {
+                                                                    let toPath = "#";
+                                                                    if (link === 'Developer' || link === 'Broker' || link === 'Owner') {
+                                                                        toPath = `/seller-portal?type=${link}`;
+                                                                    } else if (link === 'My Dashboard') {
+                                                                        toPath = "/admin";
+                                                                    } else if (link === 'FINANCIAL CALCULATOR') {
+                                                                        toPath = "/emi-calculator";
+                                                                    }
+                                                                    
+                                                                    return (
+                                                                        <li key={link}>
+                                                                            {link === 'Know Your Property Value' ? (
+                                                                                <a
+                                                                                    href="#"
+                                                                                    onClick={(e) => {
+                                                                                        e.preventDefault();
+                                                                                        setIsValuationOpen(true);
+                                                                                        setActiveMenu(null);
+                                                                                    }}
+                                                                                >
+                                                                                    {link}
+                                                                                </a>
+                                                                            ) : (
+                                                                                <Link to={toPath} onClick={() => setActiveMenu(null)}>
+                                                                                    {link}
+                                                                                </Link>
+                                                                            )}
+                                                                        </li>
+                                                                    );
+                                                                })}
+                                                            </ul>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                {item.cta && (
+                                                    <div className="mega-menu-cta">
+                                                        <p>{item.cta.sub}</p>
+                                                        <button
+                                                            className="btn btn-primary"
+                                                            onClick={() => {
+                                                                if (item.cta.text === 'Book a valuation') {
+                                                                    setIsValuationOpen(true);
+                                                                    setActiveMenu(null);
+                                                                }
+                                                            }}
+                                                        >
+                                                            {item.cta.text} <ArrowRight size={16} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </div>
@@ -196,7 +388,7 @@ const Header = () => {
 
                                 {user?.email === 'minecraftxbox1389@gmail.com' && (
                                     <Link to="/admin" className="user-menu-item" onClick={() => setIsUserMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', color: '#E3BC5A', fontWeight: 'bold', textDecoration: 'none', borderRadius: '4px' }}>
-                                        <User size={18} /> Admin Dashboard
+                                        <Building size={18} /> My Dashboard
                                     </Link>
                                 )}
                             </div>

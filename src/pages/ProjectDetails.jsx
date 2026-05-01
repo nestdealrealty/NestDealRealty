@@ -7,7 +7,7 @@ import {
     ArrowUpToLine, Flame, Zap, Baby, Footprints, Gamepad2, Trophy, BadgeCheck, DoorClosed, Waves, Wine, ChefHat, 
     Bike, Lamp, GraduationCap, Flag, Bath, Mic2, Lock, WashingMachine, Repeat, UserCheck, 
     Droplets, Volleyball, Activity, Scissors, Gift, Calendar, Leaf, Tent, Users, Music, Sofa, Tv, Droplet, 
-    Joystick, Coffee, Library, Store, DoorOpen, Accessibility, Home, PhoneForwarded, Trash2, Building2, Globe, BedDouble, Video
+    Joystick, Coffee, Library, Store, DoorOpen, Accessibility, Home, PhoneForwarded, Trash2, Building2, Globe, BedDouble, Video, BookOpen, Toilet, Fence
 } from 'lucide-react';
 import './ProjectDetails.css';
 import Logo from '../assets/logo.jpg';
@@ -106,16 +106,86 @@ const ALL_AMENITIES = [
     { name: "Private Terrace", icon: Mountain }
 ];
 
+const getAmenityImage = (name) => {
+    // Convert to lowercase for more robust matching
+    const key = (name || '').trim().toLowerCase();
+
+    // Map common amenity types to highly reliable Unsplash image IDs
+    // These IDs have been verified to exist and represent luxury real estate well.
+    const imageMap = {
+        pool: '1576013551627-0cc20b96c2a7',
+        swim: '1573849187310-74aa0c9d691e',
+        gym: '1534438327276-14e5300c3a48',
+        fitness: '1534438327276-14e5300c3a48',
+        club: '1520699918507-3c3e01c766a1',
+        garden: '1585320806297-9794b3e4eeae',
+        park: '1585320806297-9794b3e4eeae',
+        play: '1536431311719-398b6704d4cc',
+        game: '1611095777215-80bc8bd69707',
+        sport: '1588691516766-c2780650d32c',
+        cricket: '1540747913346-19e32dc3e97e',
+        court: '1588691516766-c2780650d32c',
+        yoga: '1544367567-0f2fcb009e0b',
+        library: '1568667256549-094345857637',
+        cafe: '1554118811-1e0d58224f24',
+        coffee: '1554118811-1e0d58224f24',
+        theatre: '1489599849927-2ee91cede3ba',
+        cinema: '1489599849927-2ee91cede3ba',
+        banquet: '1519167758481-83f550bb49b3',
+        hall: '1519167758481-83f550bb49b3',
+        party: '1530103862676-de8892bc952f',
+        security: '1557597774-9d273605dfa9',
+        cctv: '1557597774-9d273605dfa9',
+        gazebo: '1600607688969-a5bfcd64bd40', // Replaced with reliable outdoor architecture
+        parking: '1506521781263-d8422e82f27a', // Parking lot
+        car: '1506521781263-d8422e82f27a',
+        gate: '1600585154340-be6161a56a0c', // Luxury gate/entrance
+        community: '1600585154340-be6161a56a0c',
+        salon: '1560066984-138dadb4c035', // Spa/salon
+        spa: '1560066984-138dadb4c035',
+        lounge: '1582582494705-f8ce0b0c24f0',
+        sitting: '1582582494705-f8ce0b0c24f0'
+    };
+
+    // Very reliable fallback images (luxury homes/interiors/landscapes)
+    const fallbacks = [
+        '1600596542815-ffad4c1539a9',
+        '1512917774080-9991f1c4c750',
+        '1545324418-cc1a3fa10c00', // Our main hero image
+        '1600585154340-be6161a56a0c',
+        '1600607688969-a5bfcd64bd40'
+    ];
+
+    // Try to find a keyword match
+    let matchedId = null;
+    for (const [keyword, imgId] of Object.entries(imageMap)) {
+        if (key.includes(keyword)) {
+            matchedId = imgId;
+            break;
+        }
+    }
+
+    // If no match, deterministically pick a fallback based on the string length so it doesn't change on re-renders
+    if (!matchedId) {
+        matchedId = fallbacks[(key.length || 0) % fallbacks.length];
+    }
+
+    return `https://images.unsplash.com/photo-${matchedId}?auto=format&fit=crop&w=800&q=80`;
+};
+
 export default function ProjectDetails() {
     const { id } = useParams();
     const [project, setProject] = useState(null);
     const [similarProjects, setSimilarProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeConfigIndex, setActiveConfigIndex] = useState(0);
+    const [activeVariantIndex, setActiveVariantIndex] = useState(0);
     const [activePlotIndex, setActivePlotIndex] = useState(0);
     const [activeVillaIndex, setActiveVillaIndex] = useState(0);
     const [activeImage, setActiveImage] = useState(0);
     const [activeTowerIndex, setActiveTowerIndex] = useState(0);
+    const [activeLevelMap, setActiveLevelMap] = useState('L1');
+    const [activePhaseIndex, setActivePhaseIndex] = useState(0);
     const [isBrochureModalOpen, setIsBrochureModalOpen] = useState(false);
     const [brochureForm, setBrochureForm] = useState({ name: '', phone: '', otp: '' });
     const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', email: '', agreed: true });
@@ -278,11 +348,11 @@ export default function ProjectDetails() {
         
         if (isActuallyVideo) return; 
 
-        const interval = setInterval(() => {
+        const timer = setTimeout(() => {
             setActiveImage((prev) => (prev + 1) % slides.length);
         }, 5000); 
 
-        return () => clearInterval(interval);
+        return () => clearTimeout(timer);
     }, [slides.length, activeImage]);
 
     if (loading) return <div style={{ padding: '100px', textAlign: 'center', color: THEME.gold, fontFamily: 'Outfit, sans-serif' }}>Loading Premium Project...</div>;
@@ -293,7 +363,21 @@ export default function ProjectDetails() {
         ...(project.penthouse_configurations || []).map(p => ({ ...p, isPenthouse: true, isDuplex: false })),
         ...(project.duplex_penthouse_configurations || []).map(d => ({ ...d, isPenthouse: true, isDuplex: true }))
     ];
-    const activeConfig = allConfigs[activeConfigIndex];
+
+    const groupedConfigs = [];
+    allConfigs.forEach(config => {
+        const typeStr = config.isDuplex ? 'Duplex Penthouse' : (config.isPenthouse ? 'Penthouse' : 'Flat');
+        const title = `${config.bedrooms} BHK ${typeStr}`;
+        let group = groupedConfigs.find(g => g.title === title);
+        if (!group) {
+            group = { title, isDuplex: config.isDuplex, isPenthouse: config.isPenthouse, bedrooms: config.bedrooms, configs: [] };
+            groupedConfigs.push(group);
+        }
+        group.configs.push(config);
+    });
+
+    const activeGroup = groupedConfigs[activeConfigIndex] || groupedConfigs[0];
+    const activeConfig = activeGroup ? (activeGroup.configs[activeVariantIndex] || activeGroup.configs[0]) : null;
 
     const handleShare = () => {
         if (navigator.share) {
@@ -497,7 +581,7 @@ export default function ProjectDetails() {
                             style={{ 
                                 opacity: i === activeImage ? 1 : 0, 
                                 transition: 'opacity 1.5s ease-in-out', 
-                                zIndex: 0,
+                                zIndex: i === activeImage ? 1 : 0,
                                 position: 'absolute',
                                 top: 0,
                                 left: 0,
@@ -547,7 +631,7 @@ export default function ProjectDetails() {
                             style={{ 
                                 opacity: i === activeImage ? 1 : 0, 
                                 transition: 'opacity 1.5s ease-in-out', 
-                                zIndex: 0,
+                                zIndex: i === activeImage ? 1 : 0,
                                 position: 'absolute',
                                 top: 0, left: 0, width: '100%', height: '100%',
                                 background: '#000', overflow: 'hidden'
@@ -874,13 +958,16 @@ export default function ProjectDetails() {
                                             paddingRight: '40px'
                                         }}
                                     >
-                                        {allConfigs.map((config, idx) => (
+                                        {groupedConfigs.map((group, idx) => (
                                             <button 
                                                 key={idx} 
-                                                onClick={() => setActiveConfigIndex(idx)} 
+                                                onClick={() => {
+                                                    setActiveConfigIndex(idx);
+                                                    setActiveVariantIndex(0); // Reset variant when switching groups
+                                                }} 
                                                 style={{ 
                                                     padding: '10px 24px', 
-                                                    background: activeConfigIndex === idx ? (config.isPenthouse ? `linear-gradient(135deg, ${THEME.gold}, #B8860B)` : THEME.gold) : '#F1F1F1', 
+                                                    background: activeConfigIndex === idx ? (group.isPenthouse ? `linear-gradient(135deg, ${THEME.gold}, #B8860B)` : THEME.gold) : '#F1F1F1', 
                                                     color: activeConfigIndex === idx ? '#FFFFFF' : '#666', 
                                                     border: 'none',
                                                     borderRadius: '30px', 
@@ -894,59 +981,161 @@ export default function ProjectDetails() {
                                                     scrollSnapAlign: 'start'
                                                 }}
                                             >
-                                                {config.bedrooms} BHK {config.isDuplex ? 'Duplex Penthouse' : (config.isPenthouse ? 'Penthouse' : 'Flat')}
+                                                {group.title}
                                             </button>
                                         ))}
                                     </div>
                                     <div style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: '40px', background: 'linear-gradient(to left, #FFFFFF, transparent)', pointerEvents: 'none', opacity: 0.8 }}></div>
                                 </div>
+
+                                {activeGroup && activeGroup.configs.length > 1 && (
+                                    <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                                        <span style={{ color: THEME.muted, fontSize: '0.9rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', marginRight: '10px' }}>SELECT VARIANT:</span>
+                                        {activeGroup.configs.map((_, variantIdx) => {
+                                            const variantLabel = String.fromCharCode(65 + variantIdx); // A, B, C, etc.
+                                            return (
+                                                <button
+                                                    key={variantIdx}
+                                                    onClick={() => setActiveVariantIndex(variantIdx)}
+                                                    style={{
+                                                        padding: '6px 16px',
+                                                        background: activeVariantIndex === variantIdx ? THEME.gold : '#FFF',
+                                                        color: activeVariantIndex === variantIdx ? '#FFF' : THEME.text,
+                                                        border: `1px solid ${activeVariantIndex === variantIdx ? THEME.gold : THEME.border}`,
+                                                        borderRadius: '8px',
+                                                        fontSize: '0.9rem',
+                                                        fontWeight: 'bold',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s ease',
+                                                        boxShadow: activeVariantIndex === variantIdx ? '0 4px 10px rgba(184, 134, 11, 0.15)' : 'none'
+                                                    }}
+                                                >
+                                                    Type {variantLabel}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
                                 {activeConfig && (
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '40px', background: THEME.card, padding: '30px', borderRadius: '24px', border: `1px solid ${THEME.border}`, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
                                         <div>
                                             <div style={{ marginBottom: '30px' }}>
-                                                <h3 style={{ fontSize: '1.8rem', margin: '0 0 5px 0', color: activeConfig.isPenthouse ? THEME.gold : THEME.cardText }}>
-                                                    {activeConfig.bedrooms} BHK {activeConfig.isDuplex ? 'Luxury Duplex Penthouse' : (activeConfig.isPenthouse ? 'Luxury Penthouse' : 'Premium Flat')}
-                                                </h3>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+                                                    <h3 style={{ fontSize: '1.8rem', margin: 0, color: activeConfig.isPenthouse ? THEME.gold : THEME.cardText }}>
+                                                        {activeConfig.bedrooms} BHK {activeConfig.isDuplex ? 'Luxury Duplex Penthouse' : (activeConfig.isPenthouse ? 'Luxury Penthouse' : 'Premium Flat')}
+                                                    </h3>
+                                                    {activeGroup.configs.length > 1 && (
+                                                        <span style={{ background: `${THEME.gold}20`, color: THEME.gold, padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                            Type {String.fromCharCode(65 + activeVariantIndex)}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <p style={{ color: THEME.cardMuted, fontSize: '1.1rem', margin: 0 }}>{activeConfig.area} Sq.ft • {activeConfig.isPenthouse ? `Floor ${activeConfig.floor_number}` : 'Carpet Area'}</p>
                                                 <div style={{ color: activeConfig.isPenthouse ? THEME.cardText : THEME.gold, fontSize: '1.6rem', fontWeight: 'bold', marginTop: '10px' }}>{activeConfig.price}</div>
+                                                {activeConfig.price_range && (
+                                                    <div style={{ color: THEME.muted, fontSize: '1rem', fontWeight: '500', marginTop: '4px' }}>Range: {activeConfig.price_range}</div>
+                                                )}
                                             </div>
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                                 {[
-                                                        { label: 'General Toilet', key: 'general_toilet' },
-                                                        { label: 'Personal Toilet', key: 'personal_toilet' },
-                                                        { label: 'Master Bedroom', key: 'master_bedroom' },
-                                                        { label: 'Children\'s Room', key: 'children_room' },
-                                                        { label: 'Study Room', key: 'study_room' },
-                                                        { label: 'Store Room', key: 'store_room' },
-                                                        { label: 'Washyard', key: 'washyard' },
-                                                        { label: 'Servant Room', key: 'servant_room' },
-                                                        { label: 'Dressing Room', key: 'dressing_room' },
-                                                        { label: 'Vestibule', key: 'vestibule' },
-                                                        { label: 'Balcony', key: 'balcony' },
-                                                        { label: 'Balcony', key: 'sky_patio_balcony' },
-                                                        { label: 'Pooja Room', key: 'pooja_room' },
-                                                        { label: 'Personal Foyer', key: 'foyer' },
-                                                        { label: 'Drawing/Living', key: 'drawing_living_dining' },
-                                                                                                                 { label: 'Car Parking', key: 'car_parking' },
-                                                         { label: 'Basement Floors', key: 'basement_floors' },
-                                                        { label: 'Floor', key: 'floor_number' }
+                                                        { label: 'General Toilet', key: 'general_toilet', icon: Toilet },
+                                                        { label: 'Personal Toilet', key: 'personal_toilet', icon: Toilet },
+                                                        { label: 'Master Bedroom', key: 'master_bedroom', icon: BedDouble },
+                                                        { label: 'Children\'s Room', key: 'children_room', icon: BedDouble },
+                                                        { label: 'Study Room', key: 'study_room', icon: BookOpen },
+                                                        { label: 'Store Room', key: 'store_room', icon: Store },
+                                                        { label: 'Washyard', key: 'washyard', icon: WashingMachine },
+                                                        { label: 'Servant Room', key: 'servant_room', icon: User },
+                                                        { label: 'Dressing Room', key: 'dressing_room', icon: Scissors },
+                                                        { label: 'Vestibule', key: 'vestibule', icon: DoorOpen },
+                                                        { label: 'Balcony', key: 'balcony', icon: Fence },
+                                                        { label: 'Balcony', key: 'sky_patio_balcony', icon: Fence },
+                                                        { label: 'Pooja Room', key: 'pooja_room', icon: Flame },
+                                                        { label: 'Personal Foyer', key: 'foyer', icon: Home },
+                                                        { label: 'Drawing/Living', key: 'drawing_living_dining', icon: Sofa },
+                                                         { label: 'Car Parking', key: 'car_parking', icon: Car },
+                                                         { label: 'Basement Floors', key: 'basement_floors', icon: ArrowUpToLine },
+                                                         { label: 'Floor', key: 'floor_number', icon: ArrowUpToLine },
+                                                         { label: 'Private Terrace', key: 'private_terrace', icon: Mountain },
+                                                         { label: 'Terrace Size', key: 'terrace_size', icon: Mountain }
                                                     ].filter(item => {
                                                         const val = activeConfig[item.key];
+                                                        if (item.key === 'private_terrace') return val === true || val === 'true';
                                                         return val && val !== '0' && val !== 0;
-                                                    }).map((item, i) => (
-                                                        <div key={i} style={{ background: '#FFFFFF', padding: '15px', borderRadius: '12px', border: `1px solid ${THEME.border}`, boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
-                                                            <div style={{ color: THEME.muted, fontSize: '0.75rem', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{item.label}</div>
-                                                            <div style={{ fontWeight: '600', fontSize: '1rem', color: THEME.text }}>{activeConfig[item.key]}</div>
+                                                    }).map((item, i) => {
+                                                        const IconComponent = item.icon;
+                                                        const val = activeConfig[item.key];
+                                                        return (
+                                                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '15px', background: '#FFFFFF', padding: '12px 15px', borderRadius: '12px', border: `1px solid ${THEME.border}`, boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
+                                                            <div style={{ background: '#F5F5EF', padding: '10px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <IconComponent size={20} color={THEME.gold} strokeWidth={1.5} />
+                                                            </div>
+                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                <div style={{ color: THEME.cardText, fontSize: '0.8rem', fontWeight: '500', lineHeight: '1.2' }}>{item.label}</div>
+                                                                <div style={{ fontWeight: '600', fontSize: '1.1rem', color: THEME.text, marginTop: '2px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                                                                    {item.key === 'private_terrace' ? 'Yes' : (item.key === 'terrace_size' ? `${val} Sq.ft` : val)}
+                                                                    {item.key !== 'private_terrace' && item.key !== 'terrace_size' && item.key !== 'floor_number' && item.key !== 'basement_floors' && <span style={{ fontSize: '0.65rem', color: THEME.muted, fontWeight: '400' }}>Nos.</span>}
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    ))}
+                                                    )})}
                                                 </div>
                                             </div>
-                                        <div style={{ background: THEME.card, borderRadius: '12px', border: `1px solid ${THEME.border}`, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                                            <div style={{ padding: '12px 20px', background: THEME.dark, borderBottom: `1px solid ${THEME.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '0.9rem', color: THEME.gold, fontWeight: 'bold' }}>{activeConfig.isDuplex ? 'DUPLEX ' : ''}{activeConfig.isPenthouse ? 'PENTHOUSE' : `${activeConfig.bedrooms} BHK`} LAYOUT MAP</span>
-                                                {activeConfig.map_url && <button onClick={() => window.open(activeConfig.map_url, '_blank')} style={{ background: 'none', border: 'none', color: THEME.gold, cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '500' }}><Maximize2 size={14} /> Fullscreen</button>}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                            {activeConfig.isDuplex && (
+                                                <div style={{ display: 'flex', gap: '10px' }}>
+                                                    {['L1', 'L2'].map(lvl => (
+                                                        <button
+                                                            key={lvl}
+                                                            onClick={() => setActiveLevelMap(lvl)}
+                                                            style={{
+                                                                padding: '8px 20px',
+                                                                background: activeLevelMap === lvl ? THEME.gold : THEME.dark,
+                                                                color: activeLevelMap === lvl ? '#FFF' : THEME.muted,
+                                                                border: `1px solid ${activeLevelMap === lvl ? THEME.gold : THEME.border}`,
+                                                                borderRadius: '8px',
+                                                                fontSize: '0.85rem',
+                                                                fontWeight: 'bold',
+                                                                cursor: 'pointer',
+                                                                transition: 'all 0.2s ease'
+                                                            }}
+                                                        >
+                                                            Level {lvl === 'L1' ? '1' : '2'}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <div style={{ background: THEME.card, borderRadius: '12px', border: `1px solid ${THEME.border}`, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                                                <div style={{ padding: '12px 20px', background: THEME.dark, borderBottom: `1px solid ${THEME.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <span style={{ fontSize: '0.9rem', color: THEME.gold, fontWeight: 'bold' }}>
+                                                        {activeConfig.isDuplex ? (activeLevelMap === 'L1' ? 'LEVEL-1' : 'LEVEL-2') : 'LAYOUT MAP'}
+                                                    </span>
+                                                    {((activeConfig.isDuplex ? (activeLevelMap === 'L1' ? activeConfig.map_url_l1 : activeConfig.map_url_l2) : activeConfig.map_url)) && (
+                                                        <button 
+                                                            onClick={() => window.open(
+                                                                activeConfig.isDuplex ? (activeLevelMap === 'L1' ? activeConfig.map_url_l1 : activeConfig.map_url_l2) : activeConfig.map_url, 
+                                                                '_blank'
+                                                            )} 
+                                                            style={{ background: 'none', border: 'none', color: THEME.gold, cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '500' }}
+                                                        >
+                                                            <Maximize2 size={14} /> Fullscreen
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <div style={{ flex: 1, padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+                                                    {activeConfig.isDuplex ? (
+                                                        activeLevelMap === 'L1' ? (
+                                                            activeConfig.map_url_l1 ? <img src={activeConfig.map_url_l1} alt="Level 1" style={{ maxWidth: '100%', maxHeight: '450px', objectFit: 'contain' }} /> : <div style={{ color: THEME.cardMuted }}>No Level 1 Map</div>
+                                                        ) : (
+                                                            activeConfig.map_url_l2 ? <img src={activeConfig.map_url_l2} alt="Level 2" style={{ maxWidth: '100%', maxHeight: '450px', objectFit: 'contain' }} /> : <div style={{ color: THEME.cardMuted }}>No Level 2 Map</div>
+                                                        )
+                                                    ) : (
+                                                        activeConfig.map_url ? <img src={activeConfig.map_url} alt="Layout" style={{ maxWidth: '100%', maxHeight: '450px', objectFit: 'contain' }} /> : <div style={{ color: THEME.cardMuted }}>No Layout Map</div>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div style={{ flex: 1, padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{activeConfig.map_url ? <img src={activeConfig.map_url} alt="Layout" style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain' }} /> : <div style={{ color: THEME.cardMuted }}>No Layout Map Uploaded</div>}</div>
                                         </div>
                                     </div>
                                 )}
@@ -961,17 +1150,7 @@ export default function ProjectDetails() {
                                     {(showAllAmenities ? project.amenities : project.amenities?.slice(0, 8))?.map((am, i) => {
                                         const amenityData = ALL_AMENITIES.find(a => a.name === am);
                                         const IconComponent = amenityData ? amenityData.icon : CheckCircle2;
-                                        const amenityImages = {
-                                            'Swimming Pool': 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=500&q=80',
-                                            'Gymnasium': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=500&q=80',
-                                            'Club House': 'https://images.unsplash.com/photo-1520699918507-3c3e01c766a1?auto=format&fit=crop&w=500&q=80',
-                                            'Garden': 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=500&q=80',
-                                            'Children Play Area': 'https://images.unsplash.com/photo-1536431311719-398b6704d4cc?auto=format&fit=crop&w=500&q=80',
-                                            'Security': 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=500&q=80',
-                                            'Indoor Games': 'https://images.unsplash.com/photo-1611095777215-80bc8bd69707?auto=format&fit=crop&w=500&q=80',
-                                            'Yoga': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=500&q=80'
-                                        };
-                                        const bgImg = amenityImages[am] || 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=500&q=80';
+                                        const bgImg = getAmenityImage(am);
                                         
                                         return (
                                             <div key={i} className="dynamic-amenity-wrapper">
@@ -1091,23 +1270,51 @@ export default function ProjectDetails() {
                         {project.property_type === 'Plots' && project.phases?.length > 0 && (
                             <div id="phases" style={{ background: THEME.card, padding: '30px', borderRadius: '24px', border: `1px solid ${THEME.border}`, color: THEME.text, boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
                                 <h3 style={{ marginTop: 0, marginBottom: '25px', fontSize: '1.2rem', color: THEME.gold, borderBottom: `1px solid ${THEME.border}`, paddingBottom: '15px' }}>TOTAL PHASES</h3>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                                
+                                <div style={{ display: 'flex', gap: '10px', marginBottom: '25px', overflowX: 'auto', paddingBottom: '10px', scrollbarWidth: 'thin' }}>
                                     {project.phases.map((phase, pIdx) => (
-                                        <div key={pIdx} style={{ borderBottom: pIdx < project.phases.length - 1 ? `1px dashed ${THEME.border}` : 'none', paddingBottom: '20px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                                                <span style={{ fontWeight: '800', color: THEME.text, textTransform: 'uppercase' }}>{phase.name}</span>
-                                                <span style={{ color: THEME.gold, fontWeight: 'bold' }}>{phase.total_units} UNITS</span>
+                                        <button 
+                                            key={pIdx}
+                                            onClick={() => setActivePhaseIndex(pIdx)}
+                                            style={{
+                                                flexShrink: 0,
+                                                padding: '8px 20px', 
+                                                background: activePhaseIndex === pIdx ? `${THEME.gold}15` : 'transparent',
+                                                color: activePhaseIndex === pIdx ? THEME.gold : THEME.muted,
+                                                border: `1px solid ${activePhaseIndex === pIdx ? THEME.gold : THEME.border}`,
+                                                borderRadius: '8px', 
+                                                fontWeight: 'bold', 
+                                                cursor: 'pointer', 
+                                                whiteSpace: 'nowrap', 
+                                                transition: 'all 0.2s', 
+                                                fontSize: '0.9rem'
+                                            }}
+                                        >
+                                            {phase.name}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                                    {project.phases[activePhaseIndex] && (
+                                        <div className="animate-fade-in" style={{ paddingBottom: '10px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', alignItems: 'center' }}>
+                                                <span style={{ fontWeight: '800', color: THEME.text, textTransform: 'uppercase', fontSize: '1.1rem' }}>{project.phases[activePhaseIndex].name}</span>
+                                                <span style={{ background: `${THEME.gold}15`, color: THEME.gold, padding: '4px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold' }}>{project.phases[activePhaseIndex].total_units} UNITS</span>
                                             </div>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '10px' }}>
-                                                {phase.plot_distributions?.map((dist, dIdx) => (
-                                                    <div key={dIdx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                                                        <span style={{ color: THEME.muted }}>• {dist.count} Plots</span>
-                                                        <span style={{ fontWeight: '600' }}>{dist.size} Sq.ft</span>
+                                            <div style={{ display: 'grid', gap: '12px' }}>
+                                                {project.phases[activePhaseIndex].plot_distributions?.map((dist, dIdx) => (
+                                                    <div key={dIdx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FAFAFA', padding: '12px 15px', borderRadius: '10px', border: `1px solid ${THEME.border}` }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: THEME.gold }} />
+                                                            <span style={{ color: THEME.text, fontWeight: '500' }}>{dist.count} Plots</span>
+                                                        </div>
+                                                        <span style={{ fontWeight: '700', color: THEME.gold }}>{dist.size} Sq.ft</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
                             </div>
                         )}

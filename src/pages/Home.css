@@ -384,14 +384,15 @@
 
 .hero-tag {
     background: var(--accent);
-    color: black;
-    padding: 5px 10px;
+    color: #000000; /* Force black text for readability */
+    padding: 6px 14px;
     border-radius: 4px;
-    font-weight: 700;
-    font-size: 0.8rem;
+    font-weight: 800;
+    font-size: 0.85rem;
     text-transform: uppercase;
     display: inline-block;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* --- Bottom Filter Bar --- */
@@ -1453,10 +1454,10 @@
     text-align: center;
     color: #E3BC5A;
     /* Gold */
-    font-size: 1.8rem;
-    font-weight: bold;
+    font-size: 2rem;
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
     margin-bottom: 25px;
-    text-transform: uppercase;
     letter-spacing: 1px;
 }
 
@@ -1499,69 +1500,184 @@
     margin-bottom: 30px;
 }
 
-.new-prop-card {
-    background: linear-gradient(145deg, #1A1F1D 0%, #0D100F 100%);
-    border: 1px solid rgba(227, 188, 90, 0.15);
-    /* Subtle gold border */
-    border-radius: 14px;
+/* PREMIUM CARD STYLES */
+.premium-prop-card {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-radius: 18px;
     overflow: hidden;
     text-decoration: none;
     color: inherit;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    height: 100%;
 }
 
-.new-prop-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(227, 188, 90, 0.2);
-    border-color: rgba(227, 188, 90, 0.5);
-    /* Highlight gold border on hover */
+.premium-prop-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
 }
 
-.new-prop-img-box {
+.premium-img-section {
+    position: relative;
+    height: 220px;
     width: 100%;
-    height: 180px;
     overflow: hidden;
 }
 
-.new-prop-img-box img {
+.premium-img-section img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.5s ease;
 }
 
-.new-prop-card:hover .new-prop-img-box img {
+.premium-prop-card:hover .premium-img-section img {
     transform: scale(1.05);
-    /* Subtle zoom */
 }
 
-.new-prop-details {
-    padding: 15px;
+.premium-gradient-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60%;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%);
+    pointer-events: none;
 }
 
-.new-prop-title {
-    font-size: 1.1rem;
+.premium-badges {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.premium-developer-badge {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.premium-bhk-badge {
+    background: rgba(255, 255, 255, 0.95);
+    color: #222;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
     font-weight: 600;
-    color: #fff;
-    margin: 0 0 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, background 0.3s ease;
+    pointer-events: auto;
+    margin-left: auto; /* Pushes to right if developer badge is missing */
+}
+
+.premium-bhk-badge:hover {
+    transform: translateY(-2px);
+    background: #ffffff;
+}
+
+.premium-img-text {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    right: 15px;
+    z-index: 2;
+}
+
+.premium-title {
+    color: white;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    margin: 0 0 4px 0;
+    font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
-.new-prop-loc {
-    font-size: 0.9rem;
-    color: #aaa;
-    margin-bottom: 8px;
+.premium-location {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.85rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-.new-prop-price {
-    font-size: 1rem;
-    font-weight: bold;
-    color: #E3BC5A;
+.premium-details-section {
+    padding: 18px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fdfcf9; /* Very light warm beige */
+    border-top: 1px solid #eee;
+    flex: 1;
+}
+
+.premium-price-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.premium-price-label {
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.premium-price-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #222;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rupee-icon {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.premium-action-btn {
+    background: #f4ede4; /* Soft beige */
+    color: #222;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+}
+
+.premium-prop-card:hover .premium-action-btn {
+    background: #E3BC5A;
+    color: #000;
 }
 
 .new-see-all-btn {
@@ -1641,21 +1757,7 @@ img {
     background-color: #ffffff;
 }
 
-/* Force legible golden/bright text titles on the dark cards */
-.new-prop-title {
-    color: #E3BC5A !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    /* added subtle shadow for pop */
-}
-
-.new-prop-loc {
-    color: #DDDDDD !important;
-    /* Brighter grey/white for visibility */
-}
-
-.new-prop-price {
-    color: #E3BC5A !important;
-}
+/* Removed old dark-card overrides as we now use premium light cards */
 
 .new-see-all-btn {
     border-color: #E3BC5A !important;

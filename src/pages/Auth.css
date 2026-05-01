@@ -78,15 +78,16 @@
 
 .auth-btn {
     background: var(--accent);
-    color: #000;
-    font-weight: 700;
+    color: #111; /* Sharp dark text */
+    font-weight: 800;
     padding: 14px;
     border: none;
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: 1.05rem;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.3s ease;
     margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(227, 188, 90, 0.2);
 }
 
 .auth-btn:hover {

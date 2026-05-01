@@ -222,6 +222,7 @@ const PostProject = () => {
         sourceName: '',
         sourceNumber: '',
         sourceEmail: '',
+        sourceProfession: '',
         sourceEnrollCode: ''
     });
 
@@ -272,7 +273,8 @@ const PostProject = () => {
                 balcony: 2, foyer: 1, drawing_living_dining: 1, master_bedroom: 1, children_room: 1, study_room: 1,
                 store_room: 1, washyard: 1, servant_room: 1,
                 general_toilet: 1, personal_toilet: 4, dressing_room: 1, vestibule: 1, sky_patio_balcony: 1, pooja_room: 1, car_parking: 2, basement_floors: 0,
-                floor_number: '', area: '', price: '', map_url: '', map_file: null 
+                private_terrace: false, terrace_size: '',
+                floor_number: '', area: '', price: '', price_range: '', map_url: '', map_file: null 
             }]
         }));
     };
@@ -292,7 +294,10 @@ const PostProject = () => {
                 balcony: 3, foyer: 1, drawing_living_dining: 2, master_bedroom: 2, children_room: 1, study_room: 1,
                 store_room: 1, washyard: 1, servant_room: 1,
                 general_toilet: 2, personal_toilet: 5, dressing_room: 2, vestibule: 1, sky_patio_balcony: 1, pooja_room: 1, car_parking: 3, basement_floors: 0,
-                floor_number: '', area: '', price: '', map_url: '', map_file: null 
+                private_terrace: false, terrace_size: '',
+                floor_number: '', area: '', price: '', price_range: '', 
+                map_url_l1: '', map_file_l1: null,
+                map_url_l2: '', map_file_l2: null
             }]
         }));
     };
@@ -483,6 +488,7 @@ const PostProject = () => {
                 source_name: formData.sourceName,
                 source_number: formData.sourceNumber,
                 source_email: formData.sourceEmail,
+                source_profession: formData.sourceProfession,
                 source_enroll_code: formData.sourceEnrollCode
             };
 
@@ -588,6 +594,14 @@ const PostProject = () => {
                         </div>
                         
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                            <div style={{ marginBottom: '5px' }}>
+                                <label style={{ display: 'block', color: THEME.muted, fontSize: '0.85rem', marginBottom: '8px' }}>Your Profession</label>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <button onClick={() => updateForm('sourceProfession', 'DEVELOPER')} style={{ flex: 1, padding: '12px', background: formData.sourceProfession === 'DEVELOPER' ? `${THEME.gold}20` : 'transparent', border: `1px solid ${formData.sourceProfession === 'DEVELOPER' ? THEME.gold : THEME.border}`, color: formData.sourceProfession === 'DEVELOPER' ? THEME.gold : THEME.text, borderRadius: '8px', cursor: 'pointer' }}>DEVELOPER</button>
+                                    <button onClick={() => updateForm('sourceProfession', 'BROKER')} style={{ flex: 1, padding: '12px', background: formData.sourceProfession === 'BROKER' ? `${THEME.gold}20` : 'transparent', border: `1px solid ${formData.sourceProfession === 'BROKER' ? THEME.gold : THEME.border}`, color: formData.sourceProfession === 'BROKER' ? THEME.gold : THEME.text, borderRadius: '8px', cursor: 'pointer' }}>BROKER</button>
+                                </div>
+                                {errors.sourceProfession && <span style={{ color: THEME.red, fontSize: '0.75rem' }}>{errors.sourceProfession}</span>}
+                            </div>
                             {renderInput("User Name", "sourceName", "Enter Full Name", "text")}
                             {renderInput("User Number", "sourceNumber", "Enter Phone Number", "tel")}
                             {renderInput("User Email", "sourceEmail", "Enter Email Address", "email")}
@@ -602,8 +616,12 @@ const PostProject = () => {
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '30px' }}>
                             <button 
                                 onClick={() => {
-                                    if (!formData.sourceName || !formData.sourceNumber || !formData.sourceEmail) {
-                                        alert("Please fill all required source details");
+                                    if (!formData.sourceProfession || !formData.sourceName || !formData.sourceNumber || !formData.sourceEmail) {
+                                        setErrors(prev => ({ 
+                                            ...prev, 
+                                            sourceProfession: !formData.sourceProfession ? "Required" : null 
+                                        }));
+                                        alert("Please fill all required source details, including your profession.");
                                         return;
                                     }
                                     setStep(1);
@@ -706,6 +724,7 @@ const PostProject = () => {
                                             {renderConfigInput("Plot Area", idx, "plot_area", "Sq.ft")}
                                             {renderConfigInput("Display Area", idx, "area", "Generic size for card")}
                                             {renderConfigInput("Display Price", idx, "price", "e.g. 2.5 Cr")}
+                                            {renderConfigInput("Price Range", idx, "price_range", "e.g. 2.5 Cr - 3 Cr")}
                                             {renderConfigInput("Total Floors", idx, "total_floors", "e.g., G+2")}
                                             
                                             <div style={{ marginBottom: '10px' }}>
@@ -1029,6 +1048,44 @@ const PostProject = () => {
                                                     </div>
                                                 ))}
                                             </div>
+
+                                            <div style={{ marginTop: '15px' }}>
+                                                <button 
+                                                    onClick={() => {
+                                                        const newPent = [...formData.penthouse_configurations];
+                                                        newPent[idx].private_terrace = !newPent[idx].private_terrace;
+                                                        updateForm('penthouse_configurations', newPent);
+                                                    }}
+                                                    style={{ 
+                                                        width: '100%', padding: '10px', 
+                                                        background: config.private_terrace ? `${THEME.gold}20` : THEME.inputBg,
+                                                        border: `1px solid ${config.private_terrace ? THEME.gold : THEME.border}`,
+                                                        borderRadius: '8px', color: config.private_terrace ? THEME.gold : THEME.muted,
+                                                        fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px'
+                                                    }}
+                                                >
+                                                    <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1px solid ${config.private_terrace ? THEME.gold : THEME.border}`, background: config.private_terrace ? THEME.gold : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        {config.private_terrace && <Check size={12} color="#000" />}
+                                                    </div>
+                                                    Private Terrace
+                                                </button>
+
+                                                {config.private_terrace && (
+                                                    <div style={{ marginTop: '10px' }}>
+                                                        <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>PRIVATE TERRACE SIZE (REQUIRED) SQFT</label>
+                                                        <input 
+                                                            placeholder="e.g. 500" 
+                                                            value={config.terrace_size}
+                                                            onChange={(e) => {
+                                                                const newPent = [...formData.penthouse_configurations];
+                                                                newPent[idx].terrace_size = e.target.value;
+                                                                updateForm('penthouse_configurations', newPent);
+                                                            }}
+                                                            style={{ width: '100%', padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text, fontSize: '0.8rem' }}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
                                             <div style={{ marginTop: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
                                                 <div>
                                                     <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>FLOOR NUMBER</label>
@@ -1076,7 +1133,7 @@ const PostProject = () => {
                                             </div>
                                         </div>
 
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 40px', gap: '15px' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 40px', gap: '15px' }}>
                                             <input placeholder="Area (Sq.ft)" value={config.area} onChange={(e) => {
                                                 const newPent = [...formData.penthouse_configurations];
                                                 newPent[idx].area = e.target.value;
@@ -1085,6 +1142,11 @@ const PostProject = () => {
                                             <input placeholder="Price (e.g. 1.5 Cr)" value={config.price} onChange={(e) => {
                                                 const newPent = [...formData.penthouse_configurations];
                                                 newPent[idx].price = e.target.value;
+                                                updateForm('penthouse_configurations', newPent);
+                                            }} style={{ padding: '12px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text }} />
+                                            <input placeholder="Price Range" value={config.price_range} onChange={(e) => {
+                                                const newPent = [...formData.penthouse_configurations];
+                                                newPent[idx].price_range = e.target.value;
                                                 updateForm('penthouse_configurations', newPent);
                                             }} style={{ padding: '12px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text }} />
                                             <button onClick={() => removePenthouseConfig(idx)} style={{ background: 'none', border: 'none', color: THEME.red, cursor: 'pointer' }}><Trash2 size={24} /></button>
@@ -1138,6 +1200,44 @@ const PostProject = () => {
                                                 </div>
                                             ))}
                                         </div>
+
+                                        <div style={{ marginBottom: '15px' }}>
+                                            <button 
+                                                onClick={() => {
+                                                    const newDuplex = [...formData.duplex_penthouse_configurations];
+                                                    newDuplex[idx].private_terrace = !newDuplex[idx].private_terrace;
+                                                    updateForm('duplex_penthouse_configurations', newDuplex);
+                                                }}
+                                                style={{ 
+                                                    width: '100%', padding: '10px', 
+                                                    background: config.private_terrace ? `${THEME.gold}20` : THEME.inputBg,
+                                                    border: `1px solid ${config.private_terrace ? THEME.gold : THEME.border}`,
+                                                    borderRadius: '8px', color: config.private_terrace ? THEME.gold : THEME.muted,
+                                                    fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px'
+                                                }}
+                                            >
+                                                <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1px solid ${config.private_terrace ? THEME.gold : THEME.border}`, background: config.private_terrace ? THEME.gold : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    {config.private_terrace && <Check size={12} color="#000" />}
+                                                </div>
+                                                Private Terrace
+                                            </button>
+
+                                            {config.private_terrace && (
+                                                <div style={{ marginTop: '10px' }}>
+                                                    <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>PRIVATE TERRACE SIZE (REQUIRED) SQFT</label>
+                                                    <input 
+                                                        placeholder="e.g. 800" 
+                                                        value={config.terrace_size}
+                                                        onChange={(e) => {
+                                                            const newDuplex = [...formData.duplex_penthouse_configurations];
+                                                            newDuplex[idx].terrace_size = e.target.value;
+                                                            updateForm('duplex_penthouse_configurations', newDuplex);
+                                                        }}
+                                                        style={{ width: '100%', padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text, fontSize: '0.8rem' }}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
                                         <div style={{ borderTop: `1px solid ${THEME.border}50`, marginTop: '15px', paddingTop: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
                                             <div>
                                                 <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>FLOOR NUMBER</label>
@@ -1153,37 +1253,67 @@ const PostProject = () => {
                                                 />
                                             </div>
                                             <div style={{ position: 'relative' }}>
-                                                <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>LAYOUT MAP</label>
+                                                <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>LAYOUT MAP (LEVEL-1)</label>
                                                 <input 
                                                     type="file" 
                                                     accept="image/*"
-                                                    id={`duplex-map-upload-${idx}`}
+                                                    id={`duplex-map-upload-l1-${idx}`}
                                                     onChange={(e) => {
                                                         const file = e.target.files?.[0];
                                                         if (file) {
                                                             const newDuplex = [...formData.duplex_penthouse_configurations];
-                                                            newDuplex[idx].map_file = file;
-                                                            newDuplex[idx].map_url = URL.createObjectURL(file);
+                                                            newDuplex[idx].map_file_l1 = file;
+                                                            newDuplex[idx].map_url_l1 = URL.createObjectURL(file);
                                                             updateForm('duplex_penthouse_configurations', newDuplex);
                                                         }
                                                     }}
                                                     style={{ display: 'none' }}
                                                 />
                                                 <label 
-                                                    htmlFor={`duplex-map-upload-${idx}`}
+                                                    htmlFor={`duplex-map-upload-l1-${idx}`}
                                                     style={{ 
                                                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                                        padding: '10px', background: config.map_url ? `${THEME.gold}20` : THEME.inputBg,
-                                                        border: `1px dashed ${config.map_url ? THEME.gold : THEME.border}`,
-                                                        borderRadius: '8px', color: config.map_url ? THEME.gold : THEME.muted,
+                                                        padding: '10px', background: config.map_url_l1 ? `${THEME.gold}20` : THEME.inputBg,
+                                                        border: `1px dashed ${config.map_url_l1 ? THEME.gold : THEME.border}`,
+                                                        borderRadius: '8px', color: config.map_url_l1 ? THEME.gold : THEME.muted,
                                                         fontSize: '0.8rem', cursor: 'pointer', height: '40px'
                                                     }}
                                                 >
-                                                    {config.map_url ? 'Added ✓' : 'Upload'}
+                                                    {config.map_url_l1 ? 'Level-1 Added ✓' : 'Upload Level-1'}
+                                                </label>
+                                            </div>
+                                            <div style={{ position: 'relative' }}>
+                                                <label style={{ fontSize: '0.65rem', color: THEME.gold, display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>LAYOUT MAP (LEVEL-2)</label>
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*"
+                                                    id={`duplex-map-upload-l2-${idx}`}
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            const newDuplex = [...formData.duplex_penthouse_configurations];
+                                                            newDuplex[idx].map_file_l2 = file;
+                                                            newDuplex[idx].map_url_l2 = URL.createObjectURL(file);
+                                                            updateForm('duplex_penthouse_configurations', newDuplex);
+                                                        }
+                                                    }}
+                                                    style={{ display: 'none' }}
+                                                />
+                                                <label 
+                                                    htmlFor={`duplex-map-upload-l2-${idx}`}
+                                                    style={{ 
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                                        padding: '10px', background: config.map_url_l2 ? `${THEME.gold}20` : THEME.inputBg,
+                                                        border: `1px dashed ${config.map_url_l2 ? THEME.gold : THEME.border}`,
+                                                        borderRadius: '8px', color: config.map_url_l2 ? THEME.gold : THEME.muted,
+                                                        fontSize: '0.8rem', cursor: 'pointer', height: '40px'
+                                                    }}
+                                                >
+                                                    {config.map_url_l2 ? 'Level-2 Added ✓' : 'Upload Level-2'}
                                                 </label>
                                             </div>
                                         </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 40px', gap: '15px' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 40px', gap: '15px' }}>
                                             <input placeholder="Area (Sq.ft)" value={config.area} onChange={(e) => {
                                                 const newDuplex = [...formData.duplex_penthouse_configurations];
                                                 newDuplex[idx].area = e.target.value;
@@ -1192,6 +1322,11 @@ const PostProject = () => {
                                             <input placeholder="Price (e.g. 5 Cr)" value={config.price} onChange={(e) => {
                                                 const newDuplex = [...formData.duplex_penthouse_configurations];
                                                 newDuplex[idx].price = e.target.value;
+                                                updateForm('duplex_penthouse_configurations', newDuplex);
+                                            }} style={{ padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text }} />
+                                            <input placeholder="Price Range" value={config.price_range} onChange={(e) => {
+                                                const newDuplex = [...formData.duplex_penthouse_configurations];
+                                                newDuplex[idx].price_range = e.target.value;
                                                 updateForm('duplex_penthouse_configurations', newDuplex);
                                             }} style={{ padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text }} />
                                             <button onClick={() => removeDuplexPenthouseConfig(idx)} style={{ background: 'none', border: 'none', color: THEME.red, cursor: 'pointer' }}><Trash2 size={24} /></button>

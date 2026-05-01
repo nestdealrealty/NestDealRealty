@@ -1,15 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase';
-import { 
-    Home, Activity, MessageCircle, Building2, MapPin, X, ChevronRight, Check,
-    Trees, Flower2, Target, Car, Palmtree, Mountain, Dumbbell, PartyPopper, ShieldCheck, Camera, ParkingCircle, 
-    ArrowUpToLine, Flame, Zap, Baby, Footprints, Gamepad2, Trophy, BadgeCheck, DoorClosed, Waves, Wine, ChefHat, 
-    Bike, Lamp, GraduationCap, Flag, Globe, Bath, Mic2, Lock, WashingMachine, Repeat, UserCheck, 
-    Droplets, Volleyball, Scissors, Gift, Calendar, Leaf, Tent, Users, Music, Sofa, Tv, Droplet, 
+import {
+    Home, Activity, MessageCircle, Building2, MapPin, X, ChevronRight, Check, Star,
+    Trees, Flower2, Target, Car, Palmtree, Mountain, Dumbbell, PartyPopper, ShieldCheck, Camera, ParkingCircle,
+    ArrowUpToLine, Flame, Zap, Baby, Footprints, Gamepad2, Trophy, BadgeCheck, DoorClosed, Waves, Wine, ChefHat,
+    Bike, Lamp, GraduationCap, Flag, Globe, Bath, Mic2, Lock, WashingMachine, Repeat, UserCheck,
+    Droplets, Volleyball, Scissors, Gift, Calendar, Leaf, Tent, Users, Music, Sofa, Tv, Droplet,
     Joystick, Coffee, Library, Store, DoorOpen, Accessibility, PhoneForwarded, Trash2, CheckCircle2
 } from 'lucide-react';
 import { Navigate, Link } from 'react-router-dom';
+
+// Error Boundary to display errors instead of blank white screen
+class ErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+    static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+    }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div style={{ padding: '40px', background: '#0C1512', minHeight: '100vh', color: '#E6ECE9', fontFamily: 'monospace' }}>
+                    <h2 style={{ color: '#FF5252' }}>⚠ Admin Dashboard Crashed</h2>
+                    <p style={{ color: '#aaa' }}>A JavaScript error prevented the page from rendering.</p>
+                    <pre style={{ background: '#1A1F1D', padding: '20px', borderRadius: '8px', color: '#FF8A80', overflow: 'auto', fontSize: '0.85rem', border: '1px solid #FF525240' }}>
+                        {this.state.error?.toString()}
+                        {'\n\n'}
+                        {this.state.error?.stack}
+                    </pre>
+                    <button onClick={() => this.setState({ hasError: false, error: null })} style={{ marginTop: '20px', padding: '10px 20px', background: '#E3BC5A', color: '#000', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+                        Try Again
+                    </button>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
 
 const THEME = {
     gold: '#E3BC5A',
@@ -105,7 +135,7 @@ const ALL_AMENITIES = [
 const ADMIN_EMAIL = 'minecraftxbox1389@gmail.com';
 
 const AdminDashboard = () => {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [activeTab, setActiveTab] = useState('properties'); // properties, projects, valuations, leads
     const [properties, setProperties] = useState([]);
     const [projects, setProjects] = useState([]);
@@ -113,12 +143,13 @@ const AdminDashboard = () => {
     const [leads, setLeads] = useState([]);
     const [slides, setSlides] = useState([]);
     const [profiles, setProfiles] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [selectedUserProfile, setSelectedUserProfile] = useState(null);
     const [userActivities, setUserActivities] = useState({ properties: [], projects: [] });
     const [selectedProperty, setSelectedProperty] = useState(null);
     const [selectedProject, setSelectedProject] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [featuredProjects, setFeaturedProjects] = useState([]);
 
     // Helper to open project and clear property (and vice versa)
     const openProject = (p) => { setSelectedProperty(null); setSelectedProject(p); };
@@ -146,12 +177,13 @@ const AdminDashboard = () => {
                 return data;
             };
 
-            const [propsData, projectsData, valsData, slidesData, profilesData] = await Promise.all([
+            const [propsData, projectsData, valsData, slidesData, profilesData, featuredData] = await Promise.all([
                 fetchTable('properties'),
                 fetchTable('projects'),
                 fetchTable('valuations'),
                 fetchTable('home_slides'),
-                fetchTable('profiles')
+                fetchTable('profiles'),
+                fetchTable('featured_projects')
             ]);
 
             // Leads needs a join for both properties and projects
@@ -166,6 +198,7 @@ const AdminDashboard = () => {
             setSlides(slidesData);
             setProfiles(profilesData || []);
             setLeads(leadsData || []);
+            setFeaturedProjects(featuredData || []);
 
             if (projectsData.length === 0) {
                 console.info("Notice: No projects found or 'projects' table not yet created.");
@@ -302,10 +335,11 @@ const AdminDashboard = () => {
         }
     };
 
-    if (!user || user.email !== ADMIN_EMAIL) {
-        if (loading) return <div style={{ padding: '50px', color: '#fff' }}>Loading...</div>;
-        return <Navigate to="/" />;
-    }
+    // Wait for Supabase auth session to resolve before making any decisions
+    if (authLoading) return <div style={{ padding: '50px', color: '#fff', background: '#0C1512', minHeight: '100vh', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem' }}>Checking authentication...</div>;
+    if (!user) return <Navigate to="/login" />;
+    if (user.email !== ADMIN_EMAIL) return <Navigate to="/" />;
+    if (loading) return <div style={{ padding: '50px', color: '#fff', background: '#0C1512', minHeight: '100vh', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem' }}>Loading admin panel...</div>;
 
 
 
@@ -330,6 +364,9 @@ const AdminDashboard = () => {
                 <div onClick={() => setActiveTab('slides')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'slides' ? '#E3BC5A20' : 'transparent', color: activeTab === 'slides' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <MapPin size={20} /> Slideshow
                 </div>
+                <div onClick={() => setActiveTab('featured')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'featured' ? '#E3BC5A20' : 'transparent', color: activeTab === 'featured' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Star size={20} /> Featured UI
+                </div>
                 <div onClick={() => setActiveTab('users')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'users' ? '#E3BC5A20' : 'transparent', color: activeTab === 'users' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Users size={20} /> Users
                 </div>
@@ -345,7 +382,7 @@ const AdminDashboard = () => {
                                 <div key={p.id} style={{ background: '#1A1F1D', borderRadius: '8px', padding: '15px', border: `1px solid ${p.status === 'pending' ? '#E3BC5A' : '#333'}` }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <h4 style={{ margin: '0 0 10px 0' }}>{p.project_name || p.property_type}</h4>
-                                        <span style={{ fontSize: '0.8rem', color: p.status === 'pending' ? '#E3BC5A' : p.status === 'approved' ? '#00C853' : '#666' }}>{p.status.toUpperCase()}</span>
+                                        <span style={{ fontSize: '0.8rem', color: p.status === 'pending' ? '#E3BC5A' : p.status === 'approved' ? '#00C853' : '#666' }}>{p.status ? String(p.status).toUpperCase() : 'UNKNOWN'}</span>
                                     </div>
                                     <div style={{ marginBottom: '15px', fontSize: '0.9rem', color: '#888' }}>{p.user_email}</div>
                                     <button onClick={() => openProperty(p)} style={{ width: '100%', padding: '8px', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Review Details</button>
@@ -363,7 +400,7 @@ const AdminDashboard = () => {
                                 <div key={p.id} style={{ background: '#1A1F1D', borderRadius: '8px', padding: '15px', border: `1px solid ${p.status === 'pending' ? '#E3BC5A' : '#333'}` }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <h4 style={{ margin: '0 0 10px 0' }}>{p.name}</h4>
-                                        <span style={{ fontSize: '0.8rem', color: p.status === 'pending' ? '#E3BC5A' : p.status === 'approved' ? '#00C853' : '#666' }}>{p.status.toUpperCase()}</span>
+                                        <span style={{ fontSize: '0.8rem', color: p.status === 'pending' ? '#E3BC5A' : p.status === 'approved' ? '#00C853' : '#666' }}>{p.status ? String(p.status).toUpperCase() : 'UNKNOWN'}</span>
                                     </div>
                                     <div style={{ fontSize: '0.85rem', color: '#8E9CA3' }}>{p.developer}</div>
                                     <div style={{ marginBottom: '15px', fontSize: '0.8rem', color: '#666' }}>{p.user_email}</div>
@@ -375,48 +412,68 @@ const AdminDashboard = () => {
                 )}
 
                 {selectedProperty && (
-                    <Modal 
-                        property={selectedProperty} 
-                        isEditing={isEditing} 
-                        setIsEditing={setIsEditing} 
-                        editForm={editForm} 
-                        setEditForm={setEditForm} 
+                    <Modal
+                        property={selectedProperty}
+                        isEditing={isEditing}
+                        setIsEditing={setIsEditing}
+                        editForm={editForm}
+                        setEditForm={setEditForm}
                         onSave={() => handleSaveEdit('properties')}
                         onUpdateStatus={handleUpdateStatus}
-                        onClose={handleCloseModal} 
+                        onClose={handleCloseModal}
                     />
                 )}
                 {selectedProject && (
-                    <ProjectModal 
-                        project={selectedProject} 
-                        isEditing={isEditing} 
-                        setIsEditing={setIsEditing} 
-                        editForm={editForm} 
-                        setEditForm={setEditForm} 
+                    <ProjectModal
+                        project={selectedProject}
+                        isEditing={isEditing}
+                        setIsEditing={setIsEditing}
+                        editForm={editForm}
+                        setEditForm={setEditForm}
                         onSave={() => handleSaveEdit('projects')}
                         onUpdateStatus={handleUpdateStatus}
-                        onClose={handleCloseModal} 
+                        onClose={handleCloseModal}
                     />
                 )}
 
                 {activeTab === 'valuations' && (
                     <div>
-                        <h2>Valuation Requests</h2>
+                        <h2>Valuation Requests & Seller Leads</h2>
                         <div style={{ display: 'grid', gap: '15px' }}>
-                            {valuations.map(v => (
-                                <div key={v.id} style={{ background: '#1A1F1D', padding: '20px', borderRadius: '8px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <h4 style={{ margin: 0 }}>{v.name} <span style={{ fontWeight: 'normal', color: '#888' }}>({v.city})</span></h4>
-                                        <span style={{ color: '#888' }}>{new Date(v.created_at).toLocaleDateString()}</span>
-                                    </div>
-                                    <div style={{ marginTop: '10px', color: '#aaa', fontSize: '0.9rem' }}>
-                                        <div>Email: {v.email}</div>
-                                        <div>Phone: {v.phone}</div>
-                                        <div>Address: {v.address}</div>
-                                        <div>Message: {v.message}</div>
-                                    </div>
-                                </div>
-                            ))}
+                            {valuations && valuations.map(v => {
+                                try {
+                                    const msg = v?.message ? String(v.message) : '';
+                                    const leadMatch = msg.match(/\[LEAD_TYPE:\s*seller_(.*?)\]/i);
+                                    const isSellerLead = Boolean(leadMatch && leadMatch[1]);
+                                    const sellerType = isSellerLead ? String(leadMatch[1]).toUpperCase() : 'VALUATION';
+                                    const displayMessage = isSellerLead ? msg.replace(/\[LEAD_TYPE:\s*seller_.*?\]\n?/i, '') : msg;
+
+                                    return (
+                                        <div key={v?.id || Math.random()} style={{ background: '#1A1F1D', padding: '20px', borderRadius: '8px', borderLeft: isSellerLead ? '4px solid #34c759' : '4px solid #E3BC5A' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <h4 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    {v?.name || 'Unknown'} <span style={{ fontWeight: 'normal', color: '#888' }}>({v?.city || 'N/A'})</span>
+                                                    <span style={{ fontSize: '0.7rem', background: isSellerLead ? '#34c75920' : '#E3BC5A20', color: isSellerLead ? '#34c759' : '#E3BC5A', padding: '4px 8px', borderRadius: '4px', letterSpacing: '0.5px' }}>
+                                                        {sellerType}
+                                                    </span>
+                                                </h4>
+                                                <span style={{ color: '#888' }}>{v?.created_at ? new Date(v.created_at).toLocaleDateString() : 'Unknown Date'}</span>
+                                            </div>
+                                            <div style={{ marginTop: '10px', color: '#aaa', fontSize: '0.9rem' }}>
+                                                <div>Email: {v?.email || 'N/A'}</div>
+                                                <div>Phone: {v?.phone || 'N/A'}</div>
+                                                <div>Address: {v?.address || 'N/A'}</div>
+                                                <div style={{ marginTop: '10px', padding: '10px', background: '#00000040', borderRadius: '6px', whiteSpace: 'pre-wrap' }}>
+                                                    {displayMessage}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                } catch (err) {
+                                    console.error("Error rendering valuation:", err);
+                                    return <div key={v?.id || Math.random()} style={{color: 'red'}}>Error loading item</div>;
+                                }
+                            })}
                         </div>
                     </div>
                 )}
@@ -447,9 +504,9 @@ const AdminDashboard = () => {
                                             <td style={{ padding: '15px', color: THEME.muted }}>{u.email}</td>
                                             <td style={{ padding: '15px', color: THEME.muted }}>{u.phone || 'N/A'}</td>
                                             <td style={{ padding: '15px' }}>
-                                                <input 
-                                                    type="text" 
-                                                    defaultValue={u.enroll_code} 
+                                                <input
+                                                    type="text"
+                                                    defaultValue={u.enroll_code}
                                                     onBlur={async (e) => {
                                                         const newCode = e.target.value;
                                                         if (newCode === u.enroll_code) return;
@@ -467,7 +524,7 @@ const AdminDashboard = () => {
                                                 />
                                             </td>
                                             <td style={{ padding: '15px' }}>
-                                                <button 
+                                                <button
                                                     onClick={async () => {
                                                         const { data: userProps } = await supabase.from('properties').select('*').eq('user_id', u.id);
                                                         const { data: userProjs } = await supabase.from('projects').select('*').eq('user_id', u.id);
@@ -637,6 +694,88 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 )}
+
+                {activeTab === 'featured' && (
+                    <FeaturedManagement 
+                        featuredProjects={featuredProjects} 
+                        setFeaturedProjects={setFeaturedProjects} 
+                        supabase={supabase}
+                        THEME={THEME}
+                    />
+                )}
+            </div>
+        </div>
+    );
+};
+
+const FeaturedManagement = ({ featuredProjects, setFeaturedProjects, supabase, THEME }) => {
+    const [uploading, setUploading] = useState(false);
+    const [form, setForm] = useState({ name: '', developer: '', bhk: '', price: '', image_file: null });
+
+    const handleAdd = async (e) => {
+        e.preventDefault();
+        if (featuredProjects.length >= 5) return alert("Limit of 5 projects reached.");
+        if (!form.image_file) return alert("Please select an image.");
+        setUploading(true);
+        try {
+            const fileExt = form.image_file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const { error: uploadError } = await supabase.storage.from('property-images').upload(`featured/${fileName}`, form.image_file);
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage.from('property-images').getPublicUrl(`featured/${fileName}`);
+            
+            const { data, error } = await supabase.from('featured_projects').insert([{
+                name: form.name,
+                developer: form.developer,
+                bhk: form.bhk,
+                price: form.price,
+                image_url: publicUrl
+            }]).select();
+
+            if (error) throw error;
+            setFeaturedProjects([...featuredProjects, data[0]]);
+            setForm({ name: '', developer: '', bhk: '', price: '', image_file: null });
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Delete this featured project?")) return;
+        const { error } = await supabase.from('featured_projects').delete().eq('id', id);
+        if (!error) setFeaturedProjects(featuredProjects.filter(p => p.id !== id));
+    };
+
+    return (
+        <div>
+            <h2>Featured Projects UI (Skewed Section)</h2>
+            <form onSubmit={handleAdd} style={{ background: '#1A1F1D', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                    <input type="file" required onChange={e => setForm({...form, image_file: e.target.files[0]})} style={{ gridColumn: '1/-1' }} />
+                    <input placeholder="Project Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required style={{ padding: '10px', background: '#333', border: 'none', color: '#fff' }} />
+                    <input placeholder="Developer" value={form.developer} onChange={e => setForm({...form, developer: e.target.value})} required style={{ padding: '10px', background: '#333', border: 'none', color: '#fff' }} />
+                    <input placeholder="BHK (e.g. 3 & 4 BHK)" value={form.bhk} onChange={e => setForm({...form, bhk: e.target.value})} required style={{ padding: '10px', background: '#333', border: 'none', color: '#fff' }} />
+                    <input placeholder="Price (e.g. 1.25 Cr*)" value={form.price} onChange={e => setForm({...form, price: e.target.value})} required style={{ padding: '10px', background: '#333', border: 'none', color: '#fff' }} />
+                    <button type="submit" disabled={uploading} style={{ gridColumn: '1/-1', padding: '12px', background: THEME.gold, color: '#000', border: 'none', fontWeight: 'bold' }}>
+                        {uploading ? 'UPLOADING...' : 'ADD FEATURED PROJECT'}
+                    </button>
+                </div>
+            </form>
+
+            <div style={{ display: 'grid', gap: '15px' }}>
+                {featuredProjects.map(p => (
+                    <div key={p.id} style={{ background: '#1A1F1D', padding: '15px', borderRadius: '8px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                        <img src={p.image_url} alt="" style={{ width: '120px', height: '80px', objectFit: 'cover' }} />
+                        <div style={{ flex: 1 }}>
+                            <h4 style={{ margin: 0 }}>{p.name}</h4>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: '#888' }}>{p.developer} • {p.bhk} • {p.price}</p>
+                        </div>
+                        <button onClick={() => handleDelete(p.id)} style={{ background: '#FF5252', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '4px' }}>Delete</button>
+                    </div>
+                ))}
             </div>
         </div>
     );
@@ -650,7 +789,7 @@ const Modal = ({ property, isEditing, setIsEditing, editForm, setEditForm, onSav
                 <button onClick={onClose} style={{ position: 'absolute', top: '25px', right: '25px', background: '#333', border: 'none', color: '#fff', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X size={18} /></button>
 
                 <h2 style={{ color: '#E3BC5A', marginTop: 0, fontSize: '1.8rem' }}>{property.project_name || 'Property Details'}</h2>
-                <div style={{ display: 'inline-block', padding: '6px 12px', borderRadius: '4px', marginBottom: '25px', background: property.status === 'approved' ? '#00C85320' : property.status === 'rejected' ? '#FF525220' : '#E3BC5A20', color: property.status === 'approved' ? '#00C853' : property.status === 'rejected' ? '#FF5252' : '#E3BC5A', fontWeight: 'bold' }}>Status: {property.status.toUpperCase()}</div>
+                <div style={{ display: 'inline-block', padding: '6px 12px', borderRadius: '4px', marginBottom: '25px', background: property.status === 'approved' ? '#00C85320' : property.status === 'rejected' ? '#FF525220' : '#E3BC5A20', color: property.status === 'approved' ? '#00C853' : property.status === 'rejected' ? '#FF5252' : '#E3BC5A', fontWeight: 'bold' }}>Status: {property.status ? String(property.status).toUpperCase() : 'PENDING'}</div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
                     <div style={{ gridColumn: '1/-1', display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '10px' }}>
@@ -661,6 +800,7 @@ const Modal = ({ property, isEditing, setIsEditing, editForm, setEditForm, onSav
                         <h4 style={{ margin: '0 0 15px 0', color: '#8E9CA3', letterSpacing: '1px' }}>RESELLER DETAILS</h4>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
                             <div><label style={{ display: 'block', fontSize: '0.75rem', color: '#666' }}>Post By</label>{property.contact_name || 'Owner'}</div>
+                            <div><label style={{ display: 'block', fontSize: '0.75rem', color: '#666' }}>Profession</label><span style={{ color: THEME.gold, fontWeight: 'bold' }}>{property.source_profession || 'N/A'}</span></div>
                             <div><label style={{ display: 'block', fontSize: '0.75rem', color: '#666' }}>Email</label>{property.user_email}</div>
                             <div><label style={{ display: 'block', fontSize: '0.75rem', color: '#666' }}>Phone</label>{property.contact_phone || 'N/A'}</div>
                         </div>
@@ -669,25 +809,28 @@ const Modal = ({ property, isEditing, setIsEditing, editForm, setEditForm, onSav
                     {isEditing ? (
                         <>
                             <div><label style={{ display: 'block', color: '#666' }}>Project Name</label>
-                                <input value={editForm.project_name || ''} onChange={e => setEditForm({...editForm, project_name: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
+                                <input value={editForm.project_name || ''} onChange={e => setEditForm({ ...editForm, project_name: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
                             </div>
                             <div><label style={{ display: 'block', color: '#666' }}>Property Type</label>
-                                <input value={editForm.property_type || ''} onChange={e => setEditForm({...editForm, property_type: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
+                                <input value={editForm.property_type || ''} onChange={e => setEditForm({ ...editForm, property_type: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
                             </div>
                             <div><label style={{ display: 'block', color: '#666' }}>Price (₹)</label>
-                                <input value={editForm.cost || ''} onChange={e => setEditForm({...editForm, cost: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
+                                <input value={editForm.cost || ''} onChange={e => setEditForm({ ...editForm, cost: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
                             </div>
                             <div><label style={{ display: 'block', color: '#666' }}>Locality</label>
-                                <input value={editForm.locality || ''} onChange={e => setEditForm({...editForm, locality: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
+                                <input value={editForm.locality || ''} onChange={e => setEditForm({ ...editForm, locality: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
                             </div>
                             <div><label style={{ display: 'block', color: '#666' }}>City</label>
-                                <input value={editForm.city || ''} onChange={e => setEditForm({...editForm, city: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
+                                <input value={editForm.city || ''} onChange={e => setEditForm({ ...editForm, city: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
                             </div>
                             <div><label style={{ display: 'block', color: '#666' }}>Built-up Area</label>
-                                <input value={editForm.built_up_area || ''} onChange={e => setEditForm({...editForm, built_up_area: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
+                                <input value={editForm.built_up_area || ''} onChange={e => setEditForm({ ...editForm, built_up_area: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
                             </div>
                             <div style={{ gridColumn: '1/-1' }}><label style={{ display: 'block', color: '#666' }}>Description</label>
-                                <textarea value={editForm.description || ''} onChange={e => setEditForm({...editForm, description: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%', height: '100px' }} />
+                                <textarea value={editForm.description || ''} onChange={e => setEditForm({ ...editForm, description: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%', height: '100px' }} />
+                            </div>
+                             <div><label style={{ display: 'block', color: '#666' }}>Profession</label>
+                                <input value={editForm.source_profession || ''} onChange={e => setEditForm({ ...editForm, source_profession: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', borderRadius: '4px', width: '100%' }} />
                             </div>
                         </>
                     ) : (
@@ -709,7 +852,7 @@ const Modal = ({ property, isEditing, setIsEditing, editForm, setEditForm, onSav
                         </>
                     ) : (
                         <>
-                            <button onClick={() => { setIsEditing(true); setEditForm({...property}); }} style={{ flex: 1, padding: '15px', background: '#333', color: THEME.gold, border: `1px solid ${THEME.gold}`, borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>EDIT DETAILS</button>
+                            <button onClick={() => { setIsEditing(true); setEditForm({ ...property }); }} style={{ flex: 1, padding: '15px', background: '#333', color: THEME.gold, border: `1px solid ${THEME.gold}`, borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>EDIT DETAILS</button>
                             <button onClick={() => { onUpdateStatus('properties', property.id, 'approved'); onClose(); }} style={{ flex: 1, padding: '15px', background: '#00C853', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>APPROVE</button>
                             <button onClick={() => { onUpdateStatus('properties', property.id, 'rejected'); onClose(); }} style={{ flex: 1, padding: '15px', background: '#FF5252', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>REJECT</button>
                         </>
@@ -733,57 +876,64 @@ const ProjectModal = ({ project, isEditing, setIsEditing, editForm, setEditForm,
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', width: '600px', background: '#252B29', padding: '20px', borderRadius: '12px', marginBottom: '20px' }}>
                                 <div style={{ gridColumn: '1/-1' }}>
                                     <label style={{ display: 'block', color: '#666', fontSize: '0.8rem' }}>Project Name</label>
-                                    <input value={editForm.name || ''} onChange={e => setEditForm({...editForm, name: e.target.value})} style={{ background: '#000', color: THEME.gold, border: '1px solid #444', padding: '10px', fontSize: '1.2rem', width: '100%' }} />
+                                    <input value={editForm.name || ''} onChange={e => setEditForm({ ...editForm, name: e.target.value })} style={{ background: '#000', color: THEME.gold, border: '1px solid #444', padding: '10px', fontSize: '1.2rem', width: '100%' }} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', color: '#666', fontSize: '0.8rem' }}>Developer</label>
-                                    <input value={editForm.developer || ''} onChange={e => setEditForm({...editForm, developer: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
+                                    <input value={editForm.developer || ''} onChange={e => setEditForm({ ...editForm, developer: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', color: '#666', fontSize: '0.8rem' }}>Property Type</label>
-                                    <input value={editForm.property_type || ''} onChange={e => setEditForm({...editForm, property_type: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
+                                    <input value={editForm.property_type || ''} onChange={e => setEditForm({ ...editForm, property_type: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', color: '#666', fontSize: '0.8rem' }}>Locality</label>
-                                    <input value={editForm.locality || ''} onChange={e => setEditForm({...editForm, locality: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
+                                    <input value={editForm.locality || ''} onChange={e => setEditForm({ ...editForm, locality: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', color: '#666', fontSize: '0.8rem' }}>City</label>
-                                    <input value={editForm.city || ''} onChange={e => setEditForm({...editForm, city: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
+                                    <input value={editForm.city || ''} onChange={e => setEditForm({ ...editForm, city: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', color: '#666', fontSize: '0.8rem' }}>Status</label>
-                                    <input value={editForm.construction_status || ''} onChange={e => setEditForm({...editForm, construction_status: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
+                                    <input value={editForm.construction_status || ''} onChange={e => setEditForm({ ...editForm, construction_status: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', color: '#666', fontSize: '0.8rem' }}>Total Units</label>
-                                    <input value={editForm.total_units || ''} onChange={e => setEditForm({...editForm, total_units: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
+                                    <input value={editForm.total_units || ''} onChange={e => setEditForm({ ...editForm, total_units: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', color: '#666', fontSize: '0.8rem' }}>Total Towers</label>
-                                    <input value={editForm.total_towers || ''} onChange={e => setEditForm({...editForm, total_towers: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
+                                    <input value={editForm.total_towers || ''} onChange={e => setEditForm({ ...editForm, total_towers: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', color: '#666', fontSize: '0.8rem' }}>Plot Area</label>
-                                    <input value={editForm.total_plot_area || ''} onChange={e => setEditForm({...editForm, total_plot_area: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
+                                    <input value={editForm.total_plot_area || ''} onChange={e => setEditForm({ ...editForm, total_plot_area: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', color: '#666', fontSize: '0.8rem' }}>RERA ID</label>
-                                    <input value={editForm.rera_id || ''} onChange={e => setEditForm({...editForm, rera_id: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
+                                    <input value={editForm.rera_id || ''} onChange={e => setEditForm({ ...editForm, rera_id: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
                                 </div>
                                 <div style={{ gridColumn: '1/-1' }}>
                                     <label style={{ display: 'block', color: '#666', fontSize: '0.8rem' }}>RERA Link</label>
-                                    <input value={editForm.rera_link || ''} onChange={e => setEditForm({...editForm, rera_link: e.target.value})} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
+                                    <input value={editForm.rera_link || ''} onChange={e => setEditForm({ ...editForm, rera_link: e.target.value })} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '8px', width: '100%' }} />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', color: '#666', fontSize: '0.8rem' }}>Your Profession</label>
+                                    <input value={editForm.source_profession || ''} onChange={e => setEditForm({ ...editForm, source_profession: e.target.value })} style={{ background: '#000', color: THEME.gold, border: '1px solid #444', padding: '8px', width: '100%' }} />
                                 </div>
                             </div>
                         ) : (
                             <>
                                 <h2 style={{ color: '#E3BC5A', margin: 0, fontSize: '2rem' }}>{project.name}</h2>
-                                <p style={{ color: '#8E9CA3', fontSize: '1.2rem', margin: '5px 0' }}>By {project.developer}</p>
+                                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                    <p style={{ color: '#8E9CA3', fontSize: '1.2rem', margin: '5px 0' }}>By {project.developer}</p>
+                                    <span style={{ background: `${THEME.gold}20`, color: THEME.gold, padding: '4px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>{project.source_profession}</span>
+                                </div>
                             </>
                         )}
                     </div>
-                    <div style={{ padding: '6px 12px', borderRadius: '4px', background: project.status === 'approved' ? '#00C85320' : project.status === 'rejected' ? '#FF525220' : '#E3BC5A20', color: project.status === 'approved' ? '#00C853' : project.status === 'rejected' ? '#FF5252' : '#E3BC5A', fontWeight: 'bold' }}>{project.status.toUpperCase()}</div>
+                    <div style={{ padding: '6px 12px', borderRadius: '4px', background: project.status === 'approved' ? '#00C85320' : project.status === 'rejected' ? '#FF525220' : '#E3BC5A20', color: project.status === 'approved' ? '#00C853' : project.status === 'rejected' ? '#FF5252' : '#E3BC5A', fontWeight: 'bold' }}>{project.status ? String(project.status).toUpperCase() : 'PENDING'}</div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '30px' }}>
@@ -791,7 +941,7 @@ const ProjectModal = ({ project, isEditing, setIsEditing, editForm, setEditForm,
                         {(() => {
                             let imgs = project.images;
                             if (typeof imgs === 'string') {
-                                try { imgs = JSON.parse(imgs); } catch(e) { imgs = []; }
+                                try { imgs = JSON.parse(imgs); } catch (e) { imgs = []; }
                             }
                             if (!Array.isArray(imgs)) imgs = [];
                             return imgs.map((img, i) => (
@@ -890,7 +1040,7 @@ const ProjectModal = ({ project, isEditing, setIsEditing, editForm, setEditForm,
                     ) : (
                         <>
                             <Link to={`/${project.property_type === 'Plots' ? 'post-plot-project' : 'post-project'}?editId=${project.id}`} style={{ flex: 1, padding: '15px', background: `${THEME.gold}20`, color: THEME.gold, border: `1px solid ${THEME.gold}`, borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'none', textAlign: 'center' }}>EDIT ALL (FULL FORM)</Link>
-                            <button onClick={() => { setIsEditing(true); setEditForm({...project}); }} style={{ flex: 1, padding: '15px', background: '#333', color: THEME.gold, border: `1px solid ${THEME.gold}`, borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>QUICK EDIT</button>
+                            <button onClick={() => { setIsEditing(true); setEditForm({ ...project }); }} style={{ flex: 1, padding: '15px', background: '#333', color: THEME.gold, border: `1px solid ${THEME.gold}`, borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>QUICK EDIT</button>
                             <button onClick={() => { onUpdateStatus('projects', project.id, 'approved'); onClose(); }} style={{ flex: 1, padding: '15px', background: '#00C853', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>APPROVE</button>
                             <button onClick={() => { onUpdateStatus('projects', project.id, 'rejected'); onClose(); }} style={{ flex: 1, padding: '15px', background: '#FF5252', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>REJECT</button>
                         </>
@@ -901,4 +1051,10 @@ const ProjectModal = ({ project, isEditing, setIsEditing, editForm, setEditForm,
     );
 };
 
-export default AdminDashboard;
+const AdminDashboardWithBoundary = () => (
+    <ErrorBoundary>
+        <AdminDashboard />
+    </ErrorBoundary>
+);
+
+export default AdminDashboardWithBoundary;
