@@ -10,6 +10,7 @@ import {
     Joystick, Coffee, Library, Store, DoorOpen, Accessibility, Home, PhoneForwarded, Trash2, Building2, Globe, BedDouble, Video, BookOpen, Toilet, Fence
 } from 'lucide-react';
 import './ProjectDetails.css';
+import FooterFilters from '../components/FooterFilters';
 import Logo from '../assets/logo.jpg';
 import PropertySlider from '../components/PropertySlider';
 
@@ -195,6 +196,7 @@ export default function ProjectDetails() {
     const [showAllAmenities, setShowAllAmenities] = useState(false);
     const [activeAmenity, setActiveAmenity] = useState(null);
     const [pageBgColor, setPageBgColor] = useState(THEME.dark);
+    const [isFullscreenPreview, setIsFullscreenPreview] = useState(false);
     const amenitiesRef = useRef(null);
 
     useEffect(() => {
@@ -229,27 +231,60 @@ export default function ProjectDetails() {
                 setProject(data);
                 
                 // Fetch similar projects
-                const { data: similarData, error: similarError } = await supabase
+                const { data: slotData } = await supabase
+                    .from('projects')
+                    .select('*')
+                    .neq('id', id)
+                    .ilike('homepage_slot', 'sim_proj_%')
+                    .order('homepage_slot', { ascending: true })
+                    .limit(5);
+
+                const { data: cityData } = await supabase
                     .from('projects')
                     .select('*')
                     .eq('city', data.city)
                     .neq('id', id)
+                    .is('homepage_slot', null)
                     .limit(5);
+
+                const similarData = [...(slotData || []), ...(cityData || [])].slice(0, 5);
                     
-                if (similarData && !similarError) {
-                    const formattedSimilar = similarData.map(p => ({
-                        id: p.id,
-                        name: p.name,
-                        image: p.images?.[0]?.url || p.images?.[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
-                        tag: p.construction_status || 'Under Construction',
-                        bhk: p.configurations && p.configurations.length > 0 
-                            ? `${Math.min(...p.configurations.map(c => c.bedrooms))} & ${Math.max(...p.configurations.map(c => c.bedrooms))} BHK`
-                            : 'Premium',
-                        type: p.property_type?.toUpperCase(),
-                        location: `${p.locality}, ${p.city}`,
-                        price: p.configurations?.[0]?.price || 'Price on Request',
-                        area: p.total_plot_area ? `${p.total_plot_area} Sq.ft` : 'N/A'
-                    }));
+                if (similarData && similarData.length > 0) {
+                    const formattedSimilar = similarData.map(p => {
+                        let bhkStr = 'Premium';
+                        if (p.configurations && p.configurations.length > 0) {
+                            const beds = p.configurations.map(c => parseInt(c.bedrooms)).filter(v => !isNaN(v) && v > 0);
+                            if (beds.length > 0) {
+                                const minB = Math.min(...beds);
+                                const maxB = Math.max(...beds);
+                                bhkStr = minB === maxB ? `${minB} BHK` : `${minB} - ${maxB} BHK`;
+                            }
+                        }
+
+                        let areaStr = 'N/A';
+                        if (p.total_plot_area) {
+                            areaStr = `${p.total_plot_area} Sq.ft`;
+                        } else if (p.configurations && p.configurations.length > 0) {
+                            const areas = p.configurations.map(c => parseInt(c.size)).filter(v => !isNaN(v) && v > 0);
+                            if (areas.length > 0) {
+                                const minA = Math.min(...areas);
+                                const maxA = Math.max(...areas);
+                                areaStr = minA === maxA ? `${minA} Sq.ft` : `${minA} - ${maxA} Sq.ft`;
+                            }
+                        }
+
+                        return {
+                            id: p.id,
+                            name: p.name,
+                            image: p.images?.[0]?.url || p.images?.[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
+                            tag: p.construction_status || 'Under Construction',
+                            bhk: bhkStr,
+                            type: p.property_type?.toUpperCase(),
+                            location: `${p.locality}, ${p.city}`,
+                            price: (p.min_price && p.max_price) ? `₹${p.min_price} - ₹${p.max_price}` : (p.configurations?.[0]?.price || 'Price on Request'),
+                            area: areaStr
+                        };
+                    });
                     setSimilarProjects(formattedSimilar);
                 }
             }
@@ -403,6 +438,66 @@ export default function ProjectDetails() {
 
     return (
         <div style={{ background: pageBgColor, transition: 'background 0.8s ease-in-out', color: THEME.text, minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
+            {/* Fullscreen Preview Overlay */}
+            {isFullscreenPreview && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', 
+                    background: 'rgba(0,0,0,0.95)', zIndex: 9999, display: 'flex', 
+                    alignItems: 'center', justifyContent: 'center'
+                }}>
+                    <button 
+                        onClick={() => setIsFullscreenPreview(false)}
+                        style={{ position: 'absolute', top: '20px', right: '30px', background: 'none', border: 'none', color: '#FFF', cursor: 'pointer' }}
+                    >
+                        <Lock size={32} /> {/* Placeholder for X icon, let's use a clear 'Close' or simple text if X isn't imported. I see 'X' is not imported in lucide. Wait, I can use a generic close button style */}
+                        <span style={{ fontSize: '2rem' }}>&times;</span>
+                    </button>
+                    
+                    {slides.length > 1 && (
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setActiveImage((prev) => (prev - 1 + slides.length) % slides.length); }}
+                            style={{ position: 'absolute', left: '30px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#FFF', padding: '15px', borderRadius: '50%', cursor: 'pointer', backdropFilter: 'blur(5px)' }}
+                        >
+                            <ChevronLeft size={32} />
+                        </button>
+                    )}
+
+                    <div style={{ maxWidth: '90%', maxHeight: '90vh' }}>
+                        {slides[activeImage]?.type === 'video' ? (
+                            isYouTube(slides[activeImage].url) ? (
+                                <iframe 
+                                    src={`https://www.youtube.com/embed/${getYouTubeId(slides[activeImage].url)}?autoplay=1`} 
+                                    style={{ width: '80vw', height: '80vh', border: 'none' }}
+                                    allow="autoplay; encrypted-media"
+                                    allowFullScreen
+                                />
+                            ) : (
+                                <video 
+                                    src={slides[activeImage].url} 
+                                    controls autoPlay 
+                                    style={{ maxWidth: '100%', maxHeight: '90vh' }} 
+                                />
+                            )
+                        ) : (
+                            <img 
+                                src={slides[activeImage]?.url || mainImage} 
+                                alt="preview" 
+                                style={{ maxWidth: '100%', maxHeight: '90vh', objectFit: 'contain' }} 
+                            />
+                        )}
+                    </div>
+
+                    {slides.length > 1 && (
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setActiveImage((prev) => (prev + 1) % slides.length); }}
+                            style={{ position: 'absolute', right: '30px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#FFF', padding: '15px', borderRadius: '50%', cursor: 'pointer', backdropFilter: 'blur(5px)' }}
+                        >
+                            <ChevronRight size={32} />
+                        </button>
+                    )}
+                </div>
+            )}
+
             <style>{`
                 @keyframes brochure-pulse {
                     0% { box-shadow: 0 0 0 0 rgba(94, 125, 90, 0.6); }
@@ -620,7 +715,8 @@ export default function ProjectDetails() {
                                         src={slide.url} 
                                         autoPlay muted playsInline 
                                         onEnded={() => setActiveImage((prev) => (prev + 1) % slides.length)}
-                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                                        style={{ width: '100%', height: '100%', objectFit: 'contain', cursor: 'pointer' }}
+                                        onClick={() => setIsFullscreenPreview(true)}
                                     />
                                 )}
                             </div>
@@ -648,7 +744,8 @@ export default function ProjectDetails() {
                                 <img 
                                     src={slide.url} 
                                     alt={project.name} 
-                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', cursor: 'pointer' }}
+                                    onClick={() => setIsFullscreenPreview(true)}
                                     onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1920&q=80'; }}
                                 />
                             </div>
@@ -657,7 +754,7 @@ export default function ProjectDetails() {
                 )) : (
                     <img src={mainImage} className="lux-hero-bg" alt={project.name} style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                 )}
-                <div className="lux-hero-overlay" style={{ zIndex: 1 }}></div>
+                <div className="lux-hero-overlay" style={{ zIndex: 1, pointerEvents: 'none' }}></div>
                 <div className="lux-hero-content" style={{ zIndex: 2 }}>
                     <div className="lux-hero-tagline">{project.construction_status || 'Ready To Move In'}</div>
                     <h1 className="lux-heading-primary">{project.name}</h1>
@@ -1345,6 +1442,8 @@ export default function ProjectDetails() {
                 </div>
 
                 {similarProjects.length > 0 && <div style={{ marginTop: '20px', marginBottom: '80px' }}><PropertySlider title="Similar Projects in Area" properties={similarProjects} baseRoute="/project" /></div>}
+                
+                <FooterFilters />
                 <div style={{ height: '100px' }}></div>
             </div>
 

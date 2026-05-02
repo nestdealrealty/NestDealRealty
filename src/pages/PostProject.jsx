@@ -85,6 +85,7 @@ const PostProject = () => {
     const [step, setStep] = useState(0);
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
+    const hasFetchedRef = React.useRef(false);
 
     const fetchUserProfile = async () => {
         try {
@@ -114,9 +115,13 @@ const PostProject = () => {
             navigate('/login', { state: { from: '/post-project' } });
             return;
         }
-        fetchUserProfile();
-        if (editId) {
-            fetchProjectForEdit();
+        
+        if (!hasFetchedRef.current) {
+            hasFetchedRef.current = true;
+            fetchUserProfile();
+            if (editId) {
+                fetchProjectForEdit();
+            }
         }
     }, [editId, user, navigate]);
 
@@ -426,7 +431,8 @@ const PostProject = () => {
             // 3. Upload Brochure if exists
             let brochureUrl = formData.brochure_url || '';
             if (formData.brochure_file) {
-                const fileName = `brochure_${Date.now()}_${formData.brochure_file.name}`;
+                const sanitizedName = formData.brochure_file.name.replace(/[^a-zA-Z0-9.\-]/g, '_');
+                const fileName = `brochure_${Date.now()}_${sanitizedName}`;
                 const { data, error } = await supabase.storage.from('property-images').upload(`brochures/${user.id}/${fileName}`, formData.brochure_file);
                 if (error) throw error;
                 const { data: { publicUrl } } = supabase.storage.from('property-images').getPublicUrl(data.path);
@@ -643,8 +649,8 @@ const PostProject = () => {
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                             {renderInput("Project Name", "name", "e.g., Param Nest", "text", errors.name)}
-                            {renderInput("Custom Tagline", "tagline", "e.g., Signature Homes")}
-                            {renderInput("Developer Name", "developer", "e.g., Venus Group", "text", errors.developer)}
+                            {renderInput("Builder Name", "tagline", "e.g., Signature Group")}
+                            {renderInput("Developer Name", "developer", "e.g., Venus Builders", "text", errors.developer)}
                             
 
 

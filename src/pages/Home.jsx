@@ -3,6 +3,7 @@ import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter
 import { Link, useNavigate } from 'react-router-dom';
 import ValuationModal from '../components/ValuationModal';
 import FeaturedProjects from '../components/FeaturedProjects';
+import FooterFilters from '../components/FooterFilters';
 import logo from '../assets/logo.jpg';
 import './Home.css';
 
@@ -109,8 +110,9 @@ const Home = () => {
                 .from('properties')
                 .select('*')
                 .eq('status', 'approved')
+                .order('homepage_slot', { ascending: true, nullsFirst: false })
                 .order('created_at', { ascending: false })
-                .limit(10);
+                .limit(30);
 
             if (propsData && !propsError) {
                 setRealProperties(propsData.map(p => ({
@@ -134,7 +136,9 @@ const Home = () => {
                 .from('projects')
                 .select('*')
                 .eq('status', 'approved')
-                .order('created_at', { ascending: false });
+                .order('homepage_slot', { ascending: true, nullsFirst: false })
+                .order('created_at', { ascending: false })
+                .limit(30);
 
             if (projectsData && !projError) {
                 setRealProjects(projectsData.map(p => ({
@@ -823,6 +827,9 @@ const Home = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Footer Filters component */}
+            <FooterFilters />
 
             {/* Help Section */}
             <div className="help-section-container">

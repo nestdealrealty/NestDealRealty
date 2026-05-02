@@ -11,6 +11,8 @@ import { getPropertyById } from '../data/properties';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import './PropertyDetails.css';
+import FooterFilters from '../components/FooterFilters';
+import PropertySlider from '../components/PropertySlider';
 import logo from '../assets/logo.jpg';
 
 // Move demo data outside component for stability
@@ -59,6 +61,7 @@ const PropertyDetails = () => {
     const { id } = useParams();
     const { user } = useAuth();
     const [property, setProperty] = useState(null);
+    const [similarProperties, setSimilarProperties] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -125,6 +128,34 @@ const PropertyDetails = () => {
                         };
                         console.log('Setting mapped property:', mappedProperty);
                         setProperty(mappedProperty);
+
+                        // Fetch similar properties
+                        if (data.locality) {
+                            const { data: similarData, error: similarError } = await supabase
+                                .from('properties')
+                                .select('*')
+                                .eq('status', 'approved')
+                                .eq('locality', data.locality)
+                                .neq('id', id)
+                                .order('homepage_slot', { ascending: true, nullsFirst: false })
+                                .limit(5);
+
+                            if (similarData && !similarError) {
+                                const formattedSimilar = similarData.map(p => ({
+                                    id: p.id,
+                                    name: p.project_name || p.property_type,
+                                    image: p.images?.[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
+                                    tag: p.construction_status || 'Ready to Move',
+                                    bhk: p.bhk || 'Premium',
+                                    type: p.property_type?.toUpperCase(),
+                                    location: `${p.locality}, ${p.city}`,
+                                    price: `₹ ${p.cost?.toLocaleString('en-IN')}`,
+                                    area: p.built_up_area ? `${p.built_up_area} Sq.ft` : 'N/A'
+                                }));
+                                setSimilarProperties(formattedSimilar);
+                            }
+                        }
+
                     } else {
                         // Handle numeric IDs or not found
                         console.log('Supabase data not found or error, trying static property');
@@ -362,7 +393,7 @@ const PropertyDetails = () => {
                             <div
                                 key={idx}
                                 className="hero-slide"
-                                onDoubleClick={() => openLightbox(idx)}
+                                onClick={() => openLightbox(idx)}
                             >
                                 {slide.type === 'video' ? (
                                     <div style={{ width: '100%', height: '100%', background: '#000', position: 'relative', overflow: 'hidden' }}>
@@ -996,6 +1027,10 @@ const PropertyDetails = () => {
                     </div>
                 </div>
             </div>
+
+            {similarProperties.length > 0 && <div style={{ marginTop: '20px', marginBottom: '80px', padding: '0 5%' }}><PropertySlider title="Similar Properties in Area" properties={similarProperties} baseRoute="/property" /></div>}
+
+            <FooterFilters />
 
             {/* 2. FULL-SCREEN IMAGE VIEW */}
             {

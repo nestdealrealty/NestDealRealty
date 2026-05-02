@@ -111,14 +111,20 @@ const PostPlotProject = () => {
     const editId = searchParams.get('editId');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [step, setStep] = useState(1);
+    const hasFetchedRef = React.useRef(false);
+    
     useEffect(() => {
         if (!user) {
             navigate('/login', { state: { from: '/post-plot-project' } });
             return;
         }
-        fetchUserProfile();
-        if (editId) {
-            fetchProjectForEdit();
+        
+        if (!hasFetchedRef.current) {
+            hasFetchedRef.current = true;
+            fetchUserProfile();
+            if (editId) {
+                fetchProjectForEdit();
+            }
         }
     }, [editId, user, navigate]);
 
@@ -230,6 +236,7 @@ const PostPlotProject = () => {
         sourceName: '',
         sourceNumber: '',
         sourceEmail: '',
+        sourceProfession: '',
         sourceEnrollCode: ''
     });
 
@@ -361,6 +368,7 @@ const PostPlotProject = () => {
                 source_name: formData.sourceName,
                 source_number: formData.sourceNumber,
                 source_email: formData.sourceEmail,
+                source_profession: formData.sourceProfession,
                 source_enroll_code: formData.sourceEnrollCode
             };
 
@@ -401,6 +409,13 @@ const PostPlotProject = () => {
                             <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Source Details</h2>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                            <div style={{ marginBottom: '5px' }}>
+                                <label style={{ display: 'block', color: THEME.muted, fontSize: '0.85rem', marginBottom: '8px' }}>Your Profession</label>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <button onClick={() => updateForm('sourceProfession', 'DEVELOPER')} style={{ flex: 1, padding: '12px', background: formData.sourceProfession === 'DEVELOPER' ? `${THEME.gold}20` : 'transparent', border: `1px solid ${formData.sourceProfession === 'DEVELOPER' ? THEME.gold : THEME.border}`, color: formData.sourceProfession === 'DEVELOPER' ? THEME.gold : THEME.text, borderRadius: '8px', cursor: 'pointer' }}>DEVELOPER</button>
+                                    <button onClick={() => updateForm('sourceProfession', 'BROKER')} style={{ flex: 1, padding: '12px', background: formData.sourceProfession === 'BROKER' ? `${THEME.gold}20` : 'transparent', border: `1px solid ${formData.sourceProfession === 'BROKER' ? THEME.gold : THEME.border}`, color: formData.sourceProfession === 'BROKER' ? THEME.gold : THEME.text, borderRadius: '8px', cursor: 'pointer' }}>BROKER</button>
+                                </div>
+                            </div>
                             {renderInput("User Name", formData.sourceName, (v) => updateForm('sourceName', v), "Enter Full Name")}
                             {renderInput("User Number", formData.sourceNumber, (v) => updateForm('sourceNumber', v), "Enter Phone Number")}
                             {renderInput("User Email", formData.sourceEmail, (v) => updateForm('sourceEmail', v), "Enter Email Address", "email")}
@@ -414,8 +429,8 @@ const PostPlotProject = () => {
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '30px' }}>
                             <button 
                                 onClick={() => {
-                                    if (!formData.sourceName || !formData.sourceNumber || !formData.sourceEmail) {
-                                        alert("Please fill all required source details");
+                                    if (!formData.sourceProfession || !formData.sourceName || !formData.sourceNumber || !formData.sourceEmail) {
+                                        alert("Please fill all required source details, including your profession");
                                         return;
                                     }
                                     setStep(1);
@@ -438,7 +453,7 @@ const PostPlotProject = () => {
                         <Section title="PROJECT STATUS" icon={Building2}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         {renderSelect("Construction Status", formData.construction_status, (v) => updateForm('construction_status', v), ['Upcoming', 'Under Construction', 'Ready to Move'])}
-                        {renderInput("Custom Tagline", formData.tagline, (v) => updateForm('tagline', v), "e.g. Signature Homes")}
+                        {renderInput("Builder Name", formData.tagline, (v) => updateForm('tagline', v), "e.g. Signature Group")}
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <label style={{ color: THEME.muted, fontSize: '0.8rem', marginBottom: '6px' }}>Project City</label>
                             <div style={{ padding: '10px 12px', background: `${THEME.gold}10`, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.gold, fontSize: '0.9rem', fontWeight: 'bold' }}>

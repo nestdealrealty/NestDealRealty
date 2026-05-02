@@ -34,27 +34,32 @@ const PropertyCard = ({ property, baseRoute = '/property' }) => {
                     <Maximize2 size={18} />
                 </button>
             </div>
-            <div className="property-info">
-                <div className="property-type-row">
-                    <span className="bhk">{property.bhk} {property.type}</span>
+            <div className="property-info" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div className="property-price" style={{ color: '#E3BC5A', fontSize: '1.25rem', fontWeight: 'bold' }}>
+                    {property.price}
                 </div>
-                <h3 className="property-name">{property.name}</h3>
-                <div className="property-location">
+                
+                <h3 className="property-name" style={{ margin: '4px 0', fontSize: '1.1rem', color: '#1A1A1A' }}>
+                    {property.name}
+                </h3>
+                
+                <div className="property-type-row" style={{ color: '#666666', fontSize: '0.85rem', fontWeight: '600', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    {property.bhk} {property.type}
+                </div>
+                
+                {property.area && property.area !== 'N/A' && (
+                    <div className="property-area" style={{ color: '#444444', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ color: '#E3BC5A' }}>•</span> {property.area}
+                    </div>
+                )}
+
+                <div className="property-location" style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#666', fontSize: '0.85rem', marginTop: '8px', borderTop: '1px solid #EAEAEA', paddingTop: '12px' }}>
                     <MapPin size={14} /> {property.location}
                 </div>
-                <div className="property-meta">
-                    <div className="meta-item">
-                        <span className="label">Price</span>
-                        <span className="value">{property.price}</span>
-                    </div>
-                    <div className="meta-divider"></div>
-                    <div className="meta-item">
-                        <span className="label">Area</span>
-                        <span className="value">{property.area}</span>
-                    </div>
-                </div>
+
                 <button
                     className="view-details-btn"
+                    style={{ marginTop: '12px' }}
                     onClick={(e) => {
                         e.stopPropagation();
                         handleDoubleClick();

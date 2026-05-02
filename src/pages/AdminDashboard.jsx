@@ -697,8 +697,10 @@ const AdminDashboard = () => {
 
                 {activeTab === 'featured' && (
                     <FeaturedManagement 
-                        featuredProjects={featuredProjects} 
-                        setFeaturedProjects={setFeaturedProjects} 
+                        projects={projects}
+                        properties={properties}
+                        setProjects={setProjects}
+                        setProperties={setProperties}
                         supabase={supabase}
                         THEME={THEME}
                     />
@@ -708,75 +710,122 @@ const AdminDashboard = () => {
     );
 };
 
-const FeaturedManagement = ({ featuredProjects, setFeaturedProjects, supabase, THEME }) => {
-    const [uploading, setUploading] = useState(false);
-    const [form, setForm] = useState({ name: '', developer: '', bhk: '', price: '', image_file: null });
+const FeaturedManagement = ({ projects, properties, setProjects, setProperties, supabase, THEME }) => {
+    const [selectingFor, setSelectingFor] = useState(null);
 
-    const handleAdd = async (e) => {
-        e.preventDefault();
-        if (featuredProjects.length >= 5) return alert("Limit of 5 projects reached.");
-        if (!form.image_file) return alert("Please select an image.");
-        setUploading(true);
+    const SLOT_SECTIONS = [
+        { id: 'ahm_proj', title: 'Explore Ahmedabad - Projects', type: 'projects' },
+        { id: 'ahm_prop', title: 'Explore Ahmedabad - Properties', type: 'properties' },
+        { id: 'gan_proj', title: 'Explore Gandhinagar - Projects', type: 'projects' },
+        { id: 'gan_prop', title: 'Explore Gandhinagar - Properties', type: 'properties' },
+        { id: 'sim_proj', title: 'Global Similar Projects', type: 'projects' }
+    ];
+
+    const getAssignedItem = (sectionId, slotIndex, type) => {
+        const list = type === 'projects' ? projects : properties;
+        const slotId = `${sectionId}_${slotIndex}`;
+        return list.find(item => item.homepage_slot === slotId);
+    };
+
+    const handleAssign = async (item) => {
+        const { sectionId, slotIndex, type } = selectingFor;
+        const slotId = `${sectionId}_${slotIndex}`;
+        const table = type === 'projects' ? 'projects' : 'properties';
+        const list = type === 'projects' ? projects : properties;
+        const setter = type === 'projects' ? setProjects : setProperties;
+
         try {
-            const fileExt = form.image_file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const { error: uploadError } = await supabase.storage.from('property-images').upload(`featured/${fileName}`, form.image_file);
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage.from('property-images').getPublicUrl(`featured/${fileName}`);
+            const existing = list.find(i => i.homepage_slot === slotId);
+            if (existing) {
+                await supabase.from(table).update({ homepage_slot: null }).eq('id', existing.id);
+            }
             
-            const { data, error } = await supabase.from('featured_projects').insert([{
-                name: form.name,
-                developer: form.developer,
-                bhk: form.bhk,
-                price: form.price,
-                image_url: publicUrl
-            }]).select();
-
-            if (error) throw error;
-            setFeaturedProjects([...featuredProjects, data[0]]);
-            setForm({ name: '', developer: '', bhk: '', price: '', image_file: null });
+            await supabase.from(table).update({ homepage_slot: slotId }).eq('id', item.id);
+            
+            setter(prev => prev.map(p => {
+                if (p.homepage_slot === slotId) return { ...p, homepage_slot: null };
+                if (p.id === item.id) return { ...p, homepage_slot: slotId };
+                return p;
+            }));
+            
+            setSelectingFor(null);
         } catch (err) {
-            alert(err.message);
-        } finally {
-            setUploading(false);
+            alert('Failed to assign item: ' + err.message);
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Delete this featured project?")) return;
-        const { error } = await supabase.from('featured_projects').delete().eq('id', id);
-        if (!error) setFeaturedProjects(featuredProjects.filter(p => p.id !== id));
+    const handleClearSlot = async (sectionId, slotIndex, type) => {
+        const slotId = `${sectionId}_${slotIndex}`;
+        const table = type === 'projects' ? 'projects' : 'properties';
+        const setter = type === 'projects' ? setProjects : setProperties;
+        const item = getAssignedItem(sectionId, slotIndex, type);
+        if (!item) return;
+
+        try {
+            await supabase.from(table).update({ homepage_slot: null }).eq('id', item.id);
+            setter(prev => prev.map(p => p.id === item.id ? { ...p, homepage_slot: null } : p));
+        } catch(err) {
+            alert('Failed to clear slot');
+        }
     };
 
     return (
         <div>
-            <h2>Featured Projects UI (Skewed Section)</h2>
-            <form onSubmit={handleAdd} style={{ background: '#1A1F1D', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                    <input type="file" required onChange={e => setForm({...form, image_file: e.target.files[0]})} style={{ gridColumn: '1/-1' }} />
-                    <input placeholder="Project Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required style={{ padding: '10px', background: '#333', border: 'none', color: '#fff' }} />
-                    <input placeholder="Developer" value={form.developer} onChange={e => setForm({...form, developer: e.target.value})} required style={{ padding: '10px', background: '#333', border: 'none', color: '#fff' }} />
-                    <input placeholder="BHK (e.g. 3 & 4 BHK)" value={form.bhk} onChange={e => setForm({...form, bhk: e.target.value})} required style={{ padding: '10px', background: '#333', border: 'none', color: '#fff' }} />
-                    <input placeholder="Price (e.g. 1.25 Cr*)" value={form.price} onChange={e => setForm({...form, price: e.target.value})} required style={{ padding: '10px', background: '#333', border: 'none', color: '#fff' }} />
-                    <button type="submit" disabled={uploading} style={{ gridColumn: '1/-1', padding: '12px', background: THEME.gold, color: '#000', border: 'none', fontWeight: 'bold' }}>
-                        {uploading ? 'UPLOADING...' : 'ADD FEATURED PROJECT'}
-                    </button>
-                </div>
-            </form>
+            <h2>Homepage Content Management</h2>
+            <p style={{ color: THEME.muted, marginBottom: '30px' }}>Assign specific projects and properties to the exact positions on the Homepage. Note: You must manually add a text column named "homepage_slot" to your projects and properties tables in Supabase for this to work.</p>
 
-            <div style={{ display: 'grid', gap: '15px' }}>
-                {featuredProjects.map(p => (
-                    <div key={p.id} style={{ background: '#1A1F1D', padding: '15px', borderRadius: '8px', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                        <img src={p.image_url} alt="" style={{ width: '120px', height: '80px', objectFit: 'cover' }} />
-                        <div style={{ flex: 1 }}>
-                            <h4 style={{ margin: 0 }}>{p.name}</h4>
-                            <p style={{ margin: 0, fontSize: '0.85rem', color: '#888' }}>{p.developer} • {p.bhk} • {p.price}</p>
-                        </div>
-                        <button onClick={() => handleDelete(p.id)} style={{ background: '#FF5252', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '4px' }}>Delete</button>
+            {SLOT_SECTIONS.map(section => (
+                <div key={section.id} style={{ background: '#1A1F1D', padding: '25px', borderRadius: '12px', border: `1px solid ${THEME.border}`, marginBottom: '30px' }}>
+                    <h3 style={{ color: THEME.gold, marginTop: 0, marginBottom: '20px' }}>{section.title}</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        {[1, 2, 3, 4].map(slotIndex => {
+                            const assignedItem = getAssignedItem(section.id, slotIndex, section.type);
+                            return (
+                                <div key={slotIndex} style={{ border: `1px dashed ${THEME.border}`, padding: '15px', borderRadius: '8px', background: '#000', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    <div style={{ color: THEME.muted, fontSize: '0.8rem', fontWeight: 'bold' }}>SLOT {slotIndex}</div>
+                                    {assignedItem ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                            <img src={section.type === 'projects' ? (assignedItem.images?.[0]?.url || assignedItem.images?.[0]) : assignedItem.images?.[0]} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '6px' }} />
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: THEME.text }}>{section.type === 'projects' ? assignedItem.name : assignedItem.project_name}</div>
+                                                <div style={{ fontSize: '0.8rem', color: THEME.muted }}>{assignedItem.locality}, {assignedItem.city}</div>
+                                            </div>
+                                            <button onClick={() => handleClearSlot(section.id, slotIndex, section.type)} style={{ background: '#FF5252', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>Clear</button>
+                                        </div>
+                                    ) : (
+                                        <button onClick={() => setSelectingFor({ sectionId: section.id, slotIndex, type: section.type })} style={{ padding: '20px', background: 'transparent', border: `1px solid ${THEME.gold}`, color: THEME.gold, borderRadius: '6px', cursor: 'pointer', borderStyle: 'dashed', transition: 'all 0.2s' }}>
+                                            + Select {section.type === 'projects' ? 'Project' : 'Property'}
+                                        </button>
+                                    )}
+                                </div>
+                            )
+                        })}
                     </div>
-                ))}
-            </div>
+                </div>
+            ))}
+
+            {selectingFor && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+                    <div style={{ background: '#1A1F1D', width: '100%', maxWidth: '800px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', borderRadius: '12px', border: `1px solid ${THEME.border}`, overflow: 'hidden' }}>
+                        <div style={{ padding: '20px', borderBottom: `1px solid ${THEME.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3 style={{ margin: 0, color: THEME.gold }}>Select {selectingFor.type === 'projects' ? 'Project' : 'Property'} for Slot {selectingFor.slotIndex}</h3>
+                            <button onClick={() => setSelectingFor(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}><X size={24} /></button>
+                        </div>
+                        <div style={{ padding: '20px', overflowY: 'auto', flex: 1, display: 'grid', gap: '15px' }}>
+                            {(selectingFor.type === 'projects' ? projects : properties).map(item => (
+                                <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', background: '#000', borderRadius: '8px', border: `1px solid ${THEME.border}` }}>
+                                    <img src={selectingFor.type === 'projects' ? (item.images?.[0]?.url || item.images?.[0]) : item.images?.[0]} style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: 'bold' }}>{selectingFor.type === 'projects' ? item.name : item.project_name}</div>
+                                        <div style={{ color: THEME.muted, fontSize: '0.85rem' }}>{item.locality}, {item.city}</div>
+                                    </div>
+                                    <button onClick={() => handleAssign(item)} style={{ background: THEME.gold, color: '#000', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>Select</button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

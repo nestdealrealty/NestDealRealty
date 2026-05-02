@@ -1768,3 +1768,115 @@ img {
     background-color: #E3BC5A !important;
     color: #000000 !important;
 }
+
+/* --- EXPLORE NEW PROJECT BY LOCALITIES --- */
+.localities-projects-section {
+    padding: 60px 5%;
+    background-color: #ffffff;
+    border-top: 1px solid #f0f0f0;
+}
+
+.localities-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 25px;
+    font-family: "Playfair Display", serif;
+}
+
+.localities-tabs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.locality-tab-btn {
+    background: transparent;
+    border: 1px solid #ddd;
+    padding: 8px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #444;
+    transition: all 0.3s;
+}
+
+.locality-tab-btn:hover,
+.locality-tab-btn.active {
+    background: #E3BC5A;
+    border-color: #E3BC5A;
+    color: #fff;
+}
+
+.localities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.locality-project-link {
+    color: #555;
+    text-decoration: none;
+    font-size: 0.95rem;
+    padding: 5px 0;
+    transition: color 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.locality-project-link:hover {
+    color: #E3BC5A;
+    text-decoration: underline;
+}
+
+/* --- PROPERTY OPTIONS IN AHMEDABAD --- */
+.property-options-section {
+    padding: 60px 5%;
+    background-color: #fafafa;
+    border-top: 1px solid #eaeaea;
+}
+
+.property-options-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 30px;
+    font-family: "Playfair Display", serif;
+}
+
+.property-options-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+}
+
+.option-col-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 15px;
+}
+
+.option-col-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.option-link {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.option-link:hover {
+    color: #E3BC5A;
+    text-decoration: underline;
+}

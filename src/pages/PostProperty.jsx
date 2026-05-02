@@ -236,11 +236,13 @@ const PostProperty = () => {
     const [submitting, setSubmitting] = useState(false);
     const { user } = useAuth();
     const navigate = useNavigate();
+    const hasFetchedRef = React.useRef(false);
 
     React.useEffect(() => {
         if (!user) {
             navigate('/login', { state: { from: '/post-property' } });
-        } else {
+        } else if (!hasFetchedRef.current) {
+            hasFetchedRef.current = true;
             fetchUserProfile();
         }
     }, [user, navigate]);
