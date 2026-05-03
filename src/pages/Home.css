@@ -14,6 +14,19 @@
     color: #000000;
 }
 
+/* Smooth theme transition between hero and dark section */
+.explore-section-transition {
+    position: relative;
+    z-index: 1;
+}
+
+/* Smooth transition from dark explore section back to light property grid */
+.explore-ahmedabad-section {
+    background: linear-gradient(180deg, #030712 0%, #0a0f1e 5%, #FAF9F6 15%);
+    padding-top: 40px;
+}
+
+
 .split-hero-container {
     position: relative;
     /* Changed from flex */

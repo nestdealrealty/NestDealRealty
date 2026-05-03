@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter, Tag, Key, Briefcase, Star, ShieldCheck, X, Check, MapPin, Bed, Building2, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import ValuationModal from '../components/ValuationModal';
-import FeaturedProjects from '../components/FeaturedProjects';
+import ExploreAhmedabad from '../components/ExploreAhmedabad';
 import FooterFilters from '../components/FooterFilters';
 import logo from '../assets/logo.jpg';
 import './Home.css';
@@ -715,17 +715,11 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* NEW PROPERTY LISTING SECTION */}
-            <FeaturedProjects />
+            {/* Interactive Explore Ahmedabad Section */}
+            <ExploreAhmedabad />
 
             {/* Explore Ahmedabad Section */}
             <div className="explore-ahmedabad-section">
-                <div className="explore-header-container" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Link to="/explore?city=Ahmedabad" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <h2 style={{ margin: 0, color: '#E3BC5A', fontFamily: '"Playfair Display", serif', fontSize: '3rem', fontWeight: 600, letterSpacing: '1px' }}>Explore Ahmedabad</h2>
-                        <ChevronRight size={38} color="#E3BC5A" />
-                    </Link>
-                </div>
 
                 <div className="new-prop-listing-container">
                     {/* LEFT CONTAINER: Popular Projects (Ahmedabad) */}
