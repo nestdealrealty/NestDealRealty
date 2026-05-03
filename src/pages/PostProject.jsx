@@ -5,7 +5,7 @@ import {
     ArrowUpToLine, Flame, Zap, Baby, Footprints, Gamepad2, Trophy, BadgeCheck, Heart, DoorClosed, Waves, Wine, ChefHat, 
     Bike, Lamp, GraduationCap, Flag, Globe, Bath, Mic2, Lock, WashingMachine, Repeat, UserCheck, 
     Droplets, Volleyball, Activity, Scissors, Gift, Calendar, Leaf, Tent, Users, Music, Sofa, Tv, Droplet, 
-    Joystick, Coffee, Library, Store, DoorOpen, Accessibility, Home, PhoneForwarded, Minus, Map
+    Joystick, Coffee, Library, Store, DoorOpen, Accessibility, Home, PhoneForwarded, Minus, Map, IndianRupee
 } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -222,6 +222,7 @@ const PostProject = () => {
         video_file: null,
         tour_360_url: '',
         google_map_link: '',
+        price_range: '',
 
         // Source Details
         sourceName: '',
@@ -479,6 +480,7 @@ const PostProject = () => {
                 video_url: finalVideoUrl,
                 tour_360_url: formData.tour_360_url,
                 google_map_link: formData.google_map_link,
+                price_range: formData.price_range,
                 address: formData.address,
                 pincode: formData.pincode,
                 available_from: formData.available_from,
@@ -649,7 +651,6 @@ const PostProject = () => {
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                             {renderInput("Project Name", "name", "e.g., Param Nest", "text", errors.name)}
-                            {renderInput("Builder Name", "tagline", "e.g., Signature Group")}
                             {renderInput("Developer Name", "developer", "e.g., Venus Builders", "text", errors.developer)}
                             
 
@@ -1150,11 +1151,6 @@ const PostProject = () => {
                                                 newPent[idx].price = e.target.value;
                                                 updateForm('penthouse_configurations', newPent);
                                             }} style={{ padding: '12px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text }} />
-                                            <input placeholder="Price Range" value={config.price_range} onChange={(e) => {
-                                                const newPent = [...formData.penthouse_configurations];
-                                                newPent[idx].price_range = e.target.value;
-                                                updateForm('penthouse_configurations', newPent);
-                                            }} style={{ padding: '12px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text }} />
                                             <button onClick={() => removePenthouseConfig(idx)} style={{ background: 'none', border: 'none', color: THEME.red, cursor: 'pointer' }}><Trash2 size={24} /></button>
                                         </div>
                                     </div>
@@ -1328,11 +1324,6 @@ const PostProject = () => {
                                             <input placeholder="Price (e.g. 5 Cr)" value={config.price} onChange={(e) => {
                                                 const newDuplex = [...formData.duplex_penthouse_configurations];
                                                 newDuplex[idx].price = e.target.value;
-                                                updateForm('duplex_penthouse_configurations', newDuplex);
-                                            }} style={{ padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text }} />
-                                            <input placeholder="Price Range" value={config.price_range} onChange={(e) => {
-                                                const newDuplex = [...formData.duplex_penthouse_configurations];
-                                                newDuplex[idx].price_range = e.target.value;
                                                 updateForm('duplex_penthouse_configurations', newDuplex);
                                             }} style={{ padding: '10px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text }} />
                                             <button onClick={() => removeDuplexPenthouseConfig(idx)} style={{ background: 'none', border: 'none', color: THEME.red, cursor: 'pointer' }}><Trash2 size={24} /></button>
@@ -1653,26 +1644,13 @@ const PostProject = () => {
                                 )}
                                 <div style={{ flex: 1 }}>
                                     <label style={{ display: 'block', fontSize: '0.75rem', color: THEME.muted, marginBottom: '8px', fontWeight: 'bold' }}>OR PASTE VIDEO LINK</label>
-                                    <div style={{ position: 'relative' }}>
-                                        <input 
-                                            placeholder="YouTube or Drive link..." 
-                                            value={formData.video_url} 
-                                            onChange={(e) => updateForm('video_url', e.target.value)} 
-                                            style={{ 
-                                                width: '100%', 
-                                                padding: '12px 15px', 
-                                                background: THEME.inputBg, 
-                                                border: `1px solid ${THEME.border}`, 
-                                                borderRadius: '10px', 
-                                                color: THEME.text,
-                                                fontSize: '0.9rem',
-                                                outline: 'none',
-                                                transition: 'border-color 0.2s'
-                                            }} 
-                                            onFocus={(e) => e.target.style.borderColor = THEME.gold}
-                                            onBlur={(e) => e.target.style.borderColor = THEME.border}
-                                        />
-                                    </div>
+                                    <input 
+                                        type="text" 
+                                        placeholder="e.g. https://www.youtube.com/watch?v=..." 
+                                        value={formData.video_url}
+                                        onChange={(e) => updateForm('video_url', e.target.value)}
+                                        style={{ width: '100%', padding: '12px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text, outline: 'none' }}
+                                    />
                                     <p style={{ fontSize: '0.65rem', color: THEME.muted, marginTop: '8px' }}>
                                         * YouTube videos will automatically be embedded in the gallery.
                                     </p>
@@ -1718,6 +1696,27 @@ const PostProject = () => {
                                 onChange={(e) => updateForm('google_map_link', e.target.value)}
                                 style={{ width: '100%', padding: '15px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text }} 
                             />
+                        </div>
+
+                        {/* Price Range Section - Moved to last */}
+                        <div style={{ marginTop: '40px', padding: '30px', background: `${THEME.gold}05`, borderRadius: '16px', border: `1px solid ${THEME.gold}40` }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                                <div style={{ padding: '8px', background: `${THEME.gold}20`, borderRadius: '10px' }}>
+                                    <IndianRupee size={20} color={THEME.gold} />
+                                </div>
+                                <h3 style={{ margin: 0, fontSize: '1.2rem', color: THEME.gold, fontFamily: 'Outfit, sans-serif' }}>Project Pricing</h3>
+                            </div>
+                            <div style={{ marginBottom: '10px' }}>
+                                <label style={{ display: 'block', color: THEME.muted, fontSize: '0.85rem', marginBottom: '10px' }}>Overall Price Range (Required)</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g. 75 Lacs - 1.25 Cr" 
+                                    value={formData.price_range}
+                                    onChange={(e) => updateForm('price_range', e.target.value)}
+                                    style={{ width: '100%', padding: '15px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '10px', color: THEME.text, fontSize: '1.1rem', outline: 'none', fontWeight: 'bold' }}
+                                />
+                                <p style={{ color: THEME.muted, fontSize: '0.75rem', marginTop: '10px' }}>This price will be highlighted at the top of the project details page.</p>
+                            </div>
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px' }}>

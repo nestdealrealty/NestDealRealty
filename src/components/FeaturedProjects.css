@@ -10,8 +10,8 @@
 
 .featured-container {
     display: flex;
-    width: 120%; /* Slightly wider to accommodate skew overflow */
-    margin-left: -10%;
+    width: 150%; /* Increased width for 10 items */
+    margin-left: -25%;
     height: 450px;
     gap: 0;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);

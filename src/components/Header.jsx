@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, Search, Heart, User, Menu, X, ArrowRight, Home, MoreVertical, LogOut, ChevronRight, Building } from 'lucide-react';
+import { ChevronDown, Search, Heart, User, Menu, X, ArrowRight, Home, MoreVertical, LogOut, ChevronRight, Building, Mail, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ValuationModal from './ValuationModal';
 import './Header.css';
@@ -78,7 +78,14 @@ const Header = () => {
             <div className="container header-container">
                 <Link to="/" className="logo">
                     <img src={logo} alt="Nest Deal Realty" className="logo-img" />
-                    <span>Nest Deal Realty</span>
+                    <div className="logo-text-wrapper">
+                        <span className="brand-name">Nest Deal Realty</span>
+                        <div className="slogan-container">
+                            <div className="slogan-line"></div>
+                            <span className="brand-slogan">ON KEY UNLOCK YOUR FUTURE</span>
+                            <div className="slogan-line"></div>
+                        </div>
+                    </div>
                 </Link>
 
                 <nav className={`nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
@@ -333,66 +340,88 @@ const Header = () => {
                 </nav>
 
                 <div className="header-actions">
-                    <Link to="/post-project" className="post-property-btn project-btn">
-                        <span>Post Project</span> <span className="free-tag">NEW</span>
+                    <Link to="/post-project" className="header-btn-pill project-pill">
+                        Post Project <span className="pill-badge-new">NEW</span>
                     </Link>
-                    <Link to="/post-property" className="post-property-btn">
-                        <span>Post Property</span> <span className="free-tag">FREE</span>
+                    <Link to="/post-property" className="header-btn-pill property-pill">
+                        Post Property <span className="pill-badge-free">FREE</span>
                     </Link>
-                    <button className="action-btn"><Search size={20} /></button>
 
                     {user ? (
-                        <button onClick={logOut} className="action-btn login-btn">
-                            <LogOut size={20} /> <span>Sign Out</span>
-                        </button>
+                        <div className="account-dropdown-wrapper">
+                            <button 
+                                className="account-trigger-btn"
+                                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                            >
+                                <div className="user-icon-circle">
+                                    <User size={18} />
+                                </div>
+                                <span className="user-label">Sign Out</span>
+                                <ChevronDown size={14} className={`chevron-anim ${isUserMenuOpen ? 'open' : ''}`} />
+                            </button>
+
+                            {isUserMenuOpen && (
+                                <div className="custom-dropdown-menu">
+                                    <Link to="/profile" className="dropdown-item">
+                                        <User size={16} /> My Profile
+                                    </Link>
+                                    <Link to="/saved-properties" className="dropdown-item">
+                                        <Heart size={16} /> Saved Properties
+                                    </Link>
+                                    <Link to="/my-properties" className="dropdown-item">
+                                        <Home size={16} /> My Projects
+                                    </Link>
+                                    <Link to="/settings" className="dropdown-item">
+                                        <Building size={16} /> Settings
+                                    </Link>
+                                    {user?.email === 'minecraftxbox1389@gmail.com' && (
+                                        <Link to="/admin" className="dropdown-item admin-dash" onClick={() => setIsUserMenuOpen(false)}>
+                                            <Building size={16} /> My Dashboard
+                                        </Link>
+                                    )}
+                                    <div className="dropdown-divider"></div>
+                                    <button onClick={logOut} className="dropdown-item sign-out">
+                                        <LogOut size={16} /> Sign Out
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     ) : (
-                        <Link to="/login" className="action-btn login-btn">
-                            <User size={20} /> <span>Sign In</span>
+                        <Link to="/login" className="account-trigger-btn">
+                            <div className="user-icon-circle">
+                                <User size={18} />
+                            </div>
+                            <span className="user-label">Sign In</span>
                         </Link>
                     )}
 
-                    <div style={{ position: 'relative' }}>
-                        <button
-                            className="action-btn"
-                            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                            style={{ display: 'flex', alignItems: 'center', padding: '8px' }}
+                    <div className="options-dropdown-wrapper">
+                        <button 
+                            className="dots-trigger-btn"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} // Reusing mobile menu state or creating a new one? Let's use a new one if possible, but for now let's use a simple state.
                         >
                             <MoreVertical size={20} />
                         </button>
-
-                        {isUserMenuOpen && (
-                            <div className="dropdown-menu-user" style={{
-                                position: 'absolute',
-                                top: '120%',
-                                right: 0,
-                                background: '#0b1f17',
-                                border: '1px solid #E3BC5A',
-                                borderRadius: '8px',
-                                padding: '10px',
-                                width: '200px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '5px',
-                                zIndex: 1000,
-                                boxShadow: '0 5px 20px rgba(0,0,0,0.5)'
-                            }}>
-                                <Link to="/saved-properties" className="user-menu-item" onClick={() => setIsUserMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', color: '#fff', textDecoration: 'none', borderRadius: '4px' }}>
-                                    <Heart size={18} fill={user ? "var(--accent)" : "none"} color={user ? "var(--accent)" : "currentColor"} /> Saved Properties
-                                </Link>
-
-                                {user && (
-                                    <Link to="/my-properties" className="user-menu-item" onClick={() => setIsUserMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', color: '#fff', textDecoration: 'none', borderRadius: '4px' }}>
-                                        <Home size={18} /> My Properties
-                                    </Link>
-                                )}
-
-                                {user?.email === 'minecraftxbox1389@gmail.com' && (
-                                    <Link to="/admin" className="user-menu-item" onClick={() => setIsUserMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', color: '#E3BC5A', fontWeight: 'bold', textDecoration: 'none', borderRadius: '4px' }}>
-                                        <Building size={18} /> My Dashboard
-                                    </Link>
-                                )}
-                            </div>
-                        )}
+                        
+                        {/* More Options Dropdown */}
+                        <div className="custom-dropdown-menu options-menu">
+                            <Link to="/notifications" className="dropdown-item">
+                                <Search size={16} /> Notifications
+                            </Link>
+                            <Link to="/messages" className="dropdown-item">
+                                <Mail size={16} /> Messages
+                            </Link>
+                            <Link to="/help" className="dropdown-item">
+                                <Search size={16} /> Help Center
+                            </Link>
+                            <div className="dropdown-divider"></div>
+                            <Link to="/privacy" className="dropdown-item">
+                                <Lock size={16} /> Privacy Policy
+                            </Link>
+                            <Link to="/terms" className="dropdown-item">
+                                <Search size={16} /> Terms & Conditions
+                            </Link>
+                        </div>
                     </div>
 
                     <button

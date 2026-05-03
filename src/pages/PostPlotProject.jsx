@@ -61,7 +61,7 @@ const AMENITIES_OPTIONS = [
     { name: "24/7 Security", icon: UserCheck },
     { name: "CCTV Surveillance", icon: Camera },
     { name: "RCC Internal Roads", icon: Repeat },
-    { name: "Street Lights", icon: Lamp }, // Using Landlord as fallback or change to Lamp if available
+    { name: "Street Lights", icon: Lamp }, 
     { name: "Entrance Gate", icon: DoorOpen },
     { name: "Security Cabin", icon: Lock },
     { name: "Gazebo / Seating Area", icon: Home },
@@ -182,7 +182,8 @@ const PostPlotProject = () => {
                     sourceName: data.source_name || prev.sourceName || '',
                     sourceNumber: data.source_number || prev.sourceNumber || '',
                     sourceEmail: data.source_email || prev.sourceEmail || '',
-                    sourceEnrollCode: data.source_enroll_code || prev.sourceEnrollCode || ''
+                    sourceEnrollCode: data.source_enroll_code || prev.sourceEnrollCode || '',
+                    price_range: data.price_range || ''
                 }));
                 if (Array.isArray(data.images)) {
                     setPreviews(data.images.map(img => typeof img === 'string' ? img : img.url));
@@ -207,37 +208,32 @@ const PostPlotProject = () => {
         property_type: 'Plots',
         construction_status: 'Upcoming',
         
-        // 1. PLOTS Configurations
         plot_config: [{ size_sqft: '', price_per_sqft: '', sba_percent: '', construction_percent: '', map_file: null }],
         
-        // 2. VILLA CONFIGURATION
-        villa_config: [], // { bhk_type: '', built_up: '', plot_area: '', map_file: null, bedrooms: 3... }
+        villa_config: [],
         
-        // 3. PHASE Logic
         phases: [{ name: '', total_units: '', plot_distributions: [{ count: '', size: '' }] }],
         
-        // 4. Overall Details
         launch_date: '',
         possession_date: '',
-        total_plot_area: '', // Total area in sq.ft
+        total_plot_area: '',
         total_phases: '',
         total_plots: '',
         min_price: '',
         max_price: '',
         
-        // 5. Media & Links
-        images: [], // { url, file }
+        images: [],
         google_map_link: '',
         video_url: '',
         video_file: null,
         amenities: [],
 
-        // Source Details
         sourceName: '',
         sourceNumber: '',
         sourceEmail: '',
         sourceProfession: '',
-        sourceEnrollCode: ''
+        sourceEnrollCode: '',
+        price_range: ''
     });
 
     const [previews, setPreviews] = useState([]);
@@ -246,7 +242,6 @@ const PostPlotProject = () => {
         setFormData(prev => ({ ...prev, [key]: value }));
     };
 
-    // Handlers for Plots
     const addPlotConfig = () => {
         updateForm('plot_config', [...formData.plot_config, { size_sqft: '', price_per_sqft: '', sba_percent: '', construction_percent: '', map_file: null }]);
     };
@@ -254,7 +249,6 @@ const PostPlotProject = () => {
         updateForm('plot_config', formData.plot_config.filter((_, i) => i !== idx));
     };
 
-    // Handlers for Villas
     const addVillaConfig = () => {
         updateForm('villa_config', [...formData.villa_config, { 
             bhk_type: '3 BHK', built_up: '', map_file: null,
@@ -265,7 +259,6 @@ const PostPlotProject = () => {
         updateForm('villa_config', formData.villa_config.filter((_, i) => i !== idx));
     };
 
-    // Handlers for Phases
     const addPhase = () => {
         updateForm('phases', [...formData.phases, { name: '', total_units: '', plot_distributions: [{ count: '', size: '' }] }]);
     };
@@ -308,28 +301,24 @@ const PostPlotProject = () => {
         if (!user) return alert("Please login first");
         setIsSubmitting(true);
         try {
-            // Upload main images
             const imageUrls = [];
             for (const img of formData.images) {
                 const url = await uploadFile(img.file);
                 if (url) imageUrls.push({ url, category: 'General' });
             }
 
-            // Upload Plot Maps
             const processedPlotConfig = await Promise.all(formData.plot_config.map(async (p) => {
                 const map_url = p.map_file ? await uploadFile(p.map_file) : p.map_url;
                 const { map_file, ...rest } = p;
                 return { ...rest, map_url };
             }));
 
-            // Upload Villa Maps
             const processedVillaConfig = await Promise.all(formData.villa_config.map(async (v) => {
                 const map_url = v.map_file ? await uploadFile(v.map_file) : v.map_url;
                 const { map_file, ...rest } = v;
                 return { ...rest, map_url };
             }));
 
-            // 3. Upload Video if exists
             let finalVideoUrl = formData.video_url;
             if (formData.video_file) {
                 const url = await uploadFile(formData.video_file);
@@ -364,12 +353,12 @@ const PostPlotProject = () => {
                 amenities: formData.amenities,
                 status: editId ? (formData.status || 'pending') : 'pending',
 
-                // Source Details
                 source_name: formData.sourceName,
                 source_number: formData.sourceNumber,
                 source_email: formData.sourceEmail,
                 source_profession: formData.sourceProfession,
-                source_enroll_code: formData.sourceEnrollCode
+                source_enroll_code: formData.sourceEnrollCode,
+                price_range: formData.price_range
             };
 
             const { error } = editId 
@@ -386,8 +375,6 @@ const PostPlotProject = () => {
         } finally { setIsSubmitting(false); }
     };
 
-
-
     return (
         <div style={{ background: '#070B09', minHeight: '100vh', padding: '40px 20px', color: '#FFF' }}>
             <div style={{ maxWidth: '900px', margin: '0 auto' }}>
@@ -395,7 +382,6 @@ const PostPlotProject = () => {
                     <ArrowLeft size={18} /> Back to Step 1
                 </Link>
 
-                {/* Progress Bar */}
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '40px' }}>
                     {[0, 1].map(s => (
                         <div key={s} style={{ flex: 1, height: '4px', background: step >= s ? THEME.gold : THEME.border, borderRadius: '2px' }} />
@@ -763,6 +749,25 @@ const PostPlotProject = () => {
                         </div>
                     </div>
                 </Section>
+
+                {/* Price Range Section - Added before Submit */}
+                <div style={{ background: `${THEME.gold}05`, padding: '30px', borderRadius: '16px', border: `1px solid ${THEME.gold}40`, marginTop: '30px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                        <IndianRupee size={22} color={THEME.gold} />
+                        <h3 style={{ margin: 0, fontSize: '1.2rem', color: THEME.gold }}>Project Pricing</h3>
+                    </div>
+                    <div style={{ marginBottom: '10px' }}>
+                        <label style={{ display: 'block', color: THEME.muted, fontSize: '0.85rem', marginBottom: '10px' }}>Overall Price Range (Required)</label>
+                        <input 
+                            type="text" 
+                            placeholder="e.g. 1.5 Cr - 4.5 Cr" 
+                            value={formData.price_range}
+                            onChange={(e) => updateForm('price_range', e.target.value)}
+                            style={{ width: '100%', padding: '15px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '10px', color: THEME.text, fontSize: '1.1rem', outline: 'none', fontWeight: 'bold' }}
+                        />
+                        <p style={{ color: THEME.muted, fontSize: '0.75rem', marginTop: '10px' }}>This price will be highlighted at the top of the project details page.</p>
+                    </div>
+                </div>
 
                 <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'center' }}>
                     <button 

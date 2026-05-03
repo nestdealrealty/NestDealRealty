@@ -51,11 +51,11 @@ const Footer = () => {
                     <h4>Contact Us</h4>
                     <div className="contact-item">
                         <MapPin size={20} className="icon" />
-                        <span>Shela, Ahmedabad, Gujarat</span>
+                        <span>412 Ganesh Glory, Jagatpur, Ahmedabad - 382470</span>
                     </div>
                     <div className="contact-item">
                         <Phone size={20} className="icon" />
-                        <span>+91 98765 43210</span>
+                        <span>+91 84656 30555</span>
                     </div>
                     <div className="contact-item">
                         <Mail size={20} className="icon" />

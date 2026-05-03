@@ -1,12 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --header-bg: #FAF9F6;
+    --brand-green: #1A3A32;
+    --brand-gold: #C5A059;
+}
+
 .header {
-    height: var(--header-height);
-    background-color: var(--bg-dark);
-    border-bottom: 1px solid var(--border-color);
+    height: 100px;
+    background-color: var(--header-bg);
+    margin: 15px 25px;
+    border-radius: 20px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.04);
     position: sticky;
-    top: 0;
+    top: 15px;
     z-index: 1000;
     display: flex;
     align-items: center;
+    border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 .header-container {
@@ -14,46 +25,67 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    max-width: 1440px;
-    /* Increased from 1280px */
+    max-width: 100% !important;
+    padding: 0 35px !important;
 }
 
+/* --- LOGO SECTION --- */
 .logo {
     display: flex;
     align-items: center;
-    gap: 16px;
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #5E7D5A;
-    /* Specific color requested by user */
-    letter-spacing: 0.2px;
-    flex-shrink: 0;
-    margin-right: 40px;
-    width: max-content;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-.logo span {
-    color: #5E7D5A;
-    /* Using the requested green color for visibility */
-    white-space: nowrap;
-    display: inline-block;
+    gap: 18px;
+    text-decoration: none;
 }
 
 .logo-img {
-    height: 60px;
-    width: 60px;
+    height: 70px;
+    width: 70px;
     object-fit: cover;
-    border-radius: 12px;
-    border: 1.5px solid var(--accent);
+    border-radius: 14px;
+    border: 1.5px solid var(--brand-gold);
     padding: 2px;
+}
+
+.logo-text-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: var(--brand-green);
+    line-height: 1;
+}
+
+.slogan-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.slogan-line {
+    flex: 1;
+    height: 1px;
+    background-color: var(--brand-gold);
+    min-width: 15px;
+}
+
+.brand-slogan {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 900;
+    color: #BA8E23;
+    letter-spacing: 2px;
+    white-space: nowrap;
 }
 
 .nav-list {
     display: flex;
-    gap: 20px;
+    gap: 25px;
+    list-style: none;
 }
 
 .nav-item {
@@ -154,7 +186,8 @@
 }
 
 .cascading-column {
-    min-width: 130px; /* More compact */
+    min-width: 130px;
+    /* More compact */
     max-width: 170px;
     padding: 12px 6px;
     border-right: 1px solid rgba(0, 0, 0, 0.05);
@@ -165,7 +198,8 @@
 
 .cascading-column:last-child {
     border-right: none;
-    min-width: 180px; /* Variants column needs a bit more space */
+    min-width: 180px;
+    /* Variants column needs a bit more space */
 }
 
 .cascading-column h4 {
@@ -274,56 +308,202 @@
     margin-bottom: 15px;
 }
 
+/* --- HEADER ACTIONS (Style Guide) --- */
 .header-actions {
     display: flex;
     align-items: center;
     gap: 16px;
 }
 
-.action-btn {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--white);
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s;
-}
-
-.action-btn:hover {
-    background: var(--accent);
-    color: var(--bg-dark);
-}
-
-.login-btn {
+.header-btn-pill {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    /* Inter Medium */
+    text-decoration: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+/* 1. Post Project Button */
+.project-pill {
+    background-color: #1F4D3A;
+    color: #FFFFFF;
+    border: none;
+}
+
+.project-pill:hover {
+    background-color: #163629;
+    transform: translateY(-1px);
+}
+
+.pill-badge-new {
+    background-color: #FFFFFF;
+    color: #1F4D3A;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+}
+
+/* 2. Post Property Button */
+.property-pill {
+    background-color: #FFFFFF;
+    color: #1F4D3A;
+    border: 1px solid #1F4D3A;
+    font-weight: 700;
+}
+
+.property-pill:hover {
+    background-color: #f5fdf9;
+    transform: translateY(-1px);
+}
+
+.pill-badge-free {
+    background-color: #1F4D3A;
+    color: #FFFFFF;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+}
+
+/* 3. Account / Trigger Styles */
+.account-dropdown-wrapper,
+.options-dropdown-wrapper {
+    position: relative;
+}
+
+.account-trigger-btn,
+.dots-trigger-btn {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     padding: 8px 16px;
-    background: var(--primary);
-    border-radius: 10px;
-    color: white;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    color: #1F4D3A;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
 }
 
-.login-btn span {
-    font-weight: 700;
-    font-size: 0.85rem;
+.account-trigger-btn:hover,
+.dots-trigger-btn:hover {
+    background-color: #FFF7E6;
 }
 
-.btn-primary {
-    background: var(--accent);
-    color: var(--bg-dark);
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 700;
+.user-icon-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #1F4D3A;
     display: flex;
     align-items: center;
-    gap: 8px;
-    transition: all 0.3s;
+    justify-content: center;
+    color: #FFFFFF;
+    border: 1.5px solid #FFFFFF;
 }
 
-.btn-primary:hover {
-    background: var(--accent-orange);
-    color: white;
+.dots-trigger-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+    border: 1px solid #1F4D3A;
+    color: #1F4D3A;
+}
+
+/* 4. Custom Dropdown Menu */
+.custom-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    background: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.08);
+    width: 220px;
+    padding: 8px;
+    z-index: 1000;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    animation: fadeInDropdown 0.2s ease;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    color: #1F4D3A;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background 0.2s;
+    width: 100%;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color: #FFF7E6;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: #f0f0f0;
+    margin: 8px 0;
+}
+
+.dropdown-item.sign-out {
+    color: #d93025;
+    /* Standard red for sign out */
+}
+
+.dropdown-item.admin-dash {
+    color: #C8A96A;
+    font-weight: 700;
+}
+
+/* Hover reveal for options menu since it doesn't have a click toggle in the image logic usually */
+.options-dropdown-wrapper:hover .options-menu {
+    display: block;
+}
+
+.options-menu {
+    display: none;
+}
+
+@keyframes fadeInDropdown {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 1024px) {
+    .header-btn-pill span:not(.pill-badge-new):not(.pill-badge-free) {
+        display: none;
+    }
 }
 
 .mobile-toggle {
@@ -461,7 +641,8 @@
 }
 
 .scrollable-list {
-    max-height: 400px; /* Approximately 10 items */
+    max-height: 400px;
+    /* Approximately 10 items */
     overflow-y: auto;
     padding-right: 5px;
 }
@@ -477,16 +658,4 @@
 .scrollable-list::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-}
-
-@keyframes fadeInDropdown {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }

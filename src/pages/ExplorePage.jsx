@@ -1,11 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { MapPin, Filter, Search, ChevronDown, X, Building, Home, Check } from 'lucide-react';
+import { MapPin, Filter, Search, ChevronDown, X, Building, Home, Check, Building2, Bed, User, ArrowRight } from 'lucide-react';
+import './Home.css';
 
-const PRICE_OPTIONS = [
-    '₹25L', '₹50L', '₹75L', '₹1Cr', '₹1.5Cr', '₹2Cr', '₹3Cr', '₹5Cr', '₹7Cr', '₹10Cr+'
+const BUDGET_OPTIONS = [
+    '₹20L', '₹30L', '₹40L', '₹50L', '₹60L', '₹70L', '₹80L', '₹90L', 
+    '₹1Cr', '₹2Cr', '₹3Cr', '₹4Cr', '₹5Cr', '₹6Cr', '₹7Cr', '₹8Cr', '₹9Cr', '₹10Cr+'
 ];
+
+const BHK_OPTIONS_FULL = [
+    '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK',
+    '3 BHK Penthouse', '4 BHK Penthouse', '5 BHK Penthouse', '6 BHK Penthouse', '7 BHK Penthouse',
+    '3 BHK Duplex Penthouse', '4 BHK Duplex Penthouse', '5 BHK Duplex Penthouse', '6 BHK Duplex Penthouse', '7 BHK Duplex Penthouse'
+];
+
+const LOCALITIES_AHMEDABAD = [
+    "Bopal", "Satellite", "Prahlad Nagar", "Gota", "Thaltej", "Bodakdev", "SG Highway", "Ambawadi", "Vastrapur", "Navrangpura", 
+    "Naranpura", "Memnagar", "South Bopal", "Shilaj", "Science City", "Chandkheda", "Motera", "Sabarmati", "Paldi", "Vasna", 
+    "Maninagar", "Chandlodiya", "Ranip", "Vejalpur", "Jodhpur", "Gurukul", "Usmanpura", "Shahibaug", "Ellisbridge", "Ashram Road", 
+    "C G Road", "Income Tax", "Nikol", "Naroda", "Odhav", "Isanpur", "Vatva", "Lambha", "Narol", "Sarkhej", 
+    "Juhapura", "Makarba", "Shela", "Sanand", "Adalaj", "Zundal", "Tragad", "Khoraj", "Vaishno Devi", "Kathwada"
+];
+
+const POSSESSION_OPTIONS = ["Ready to Move", "1 Year", "2 Year", "2 Year+"];
+const PROPERTY_TYPES = ["Flat", "Duplex", "Penthouse", "Villas", "Plots", "Bungalows", "Commercial"];
+const CONSTRUCTION_STATUSES = ["Under Construction", "Ready to Move"];
+const SORT_OPTIONS = ["Price: Low to High", "Price: High to Low"];
 
 const ALL_AMENITY_NAMES = [
     "Garden Play Area", "Lush Green Garden", "Box Cricket", "Gazebo", "Terrace Garden",
@@ -42,13 +63,13 @@ function dbPriceToLacs(rawPrice) {
 }
 
 const THEME = {
-    bg: '#0C1512',
-    card: '#1A1F1D',
-    inputBg: '#252B29',
-    text: '#E6ECE9',
-    muted: '#8E9CA3',
-    gold: '#E3BC5A',
-    border: '#2A2F2D',
+    bg: '#E9F0E8',
+    card: '#FFFFFF',
+    inputBg: '#FFFFFF',
+    text: '#1A1A1A',
+    muted: '#757575',
+    gold: '#C4A96C',
+    border: 'rgba(0,0,0,0.06)',
 };
 
 const ExplorePage = () => {
@@ -76,6 +97,8 @@ const ExplorePage = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [amenitySearch, setAmenitySearch] = useState('');
     const [budgetOpen, setBudgetOpen] = useState(null);
+    const [sortBy, setSortBy] = useState('');
+    const [selectedLocality, setSelectedLocality] = useState('');
 
     // Fetch all approved data once
     useEffect(() => {
@@ -87,42 +110,83 @@ const ExplorePage = () => {
                     supabase.from('projects').select('*').eq('status', 'approved')
                 ]);
 
-                const propItems = (properties || []).map(p => ({
-                    id: p.id,
-                    isProject: false,
-                    title: `${p.bhk || ''} ${p.property_type || ''} in ${p.project_name || p.locality || ''}`,
-                    price: String(p.cost || ''),
-                    priceLacs: dbPriceToLacs(p.cost),
-                    image: (p.images && p.images.length > 0)
-                        ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0]?.url)
-                        : null,
-                    location: p.locality || '',
-                    city: p.city || '',
-                    badge: (p.looking_to || 'sell').toUpperCase(),
-                    bhk: p.bhk ? String(p.bhk).replace(/[^0-9]/g, '') : '',
-                    amenities: p.amenities || [],
-                    constructionStatus: p.construction_status || '',
-                    meta: [p.built_up_area ? `${p.built_up_area} sq.ft` : null, p.furnishing].filter(Boolean),
-                    displayPrice: p.cost ? `₹${Number(p.cost).toLocaleString('en-IN')}` : 'Call for Price'
-                }));
+                const propItems = (properties || []).map(p => {
+                    let configLabel = p.bhk || p.property_type || 'Property';
+                    if (p.bhk && !isNaN(p.bhk) && !p.bhk.includes('BHK')) {
+                        configLabel = `${p.bhk} BHK`;
+                    }
+                    return {
+                        id: p.id,
+                        isProject: false,
+                        title: p.project_name || `Property in ${p.locality}`,
+                        listingTitle: p.project_name || `Property in ${p.locality}`,
+                        price: p.cost ? `₹${Number(p.cost).toLocaleString('en-IN')}` : 'Call for Price',
+                        priceLacs: dbPriceToLacs(p.cost),
+                        image: (p.images && p.images.length > 0)
+                            ? (typeof p.images[0] === 'string' ? p.images[0] : (p.images[0]?.url || p.images[0]))
+                            : 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80',
+                        location: p.locality || '',
+                        city: p.city || '',
+                        developer: p.contact_name || 'Individual Seller',
+                        badge: (p.looking_to || 'sell').toUpperCase(),
+                        bhk: p.bhk ? String(p.bhk).replace(/[^0-9]/g, '') : '',
+                        config: configLabel,
+                        type: p.property_type || '',
+                        amenities: p.amenities || [],
+                        constructionStatus: p.construction_status || '',
+                        meta: [p.built_up_area ? `${p.built_up_area} sq.ft` : null, p.furnishing].filter(Boolean),
+                        displayPrice: p.cost ? `₹${Number(p.cost).toLocaleString('en-IN')}` : 'Call for Price'
+                    };
+                });
 
                 const projItems = (projects || []).map(p => {
+                    // Build config label from bedrooms field across all 3 config arrays
+                    let configText = p.property_type || 'Residential';
+                    const bhkNums = [];
+                    const extras = [];
+
+                    if (Array.isArray(p.configurations) && p.configurations.length > 0) {
+                        p.configurations.forEach(c => {
+                            if (c?.bhk_type) {
+                                const n = parseInt(c.bhk_type);
+                                if (!isNaN(n)) bhkNums.push(n);
+                            } else if (c?.bedrooms) {
+                                bhkNums.push(parseInt(c.bedrooms));
+                            }
+                        });
+                    }
+                    if (Array.isArray(p.penthouse_configurations) && p.penthouse_configurations.length > 0) {
+                        extras.push('Penthouse');
+                    }
+                    if (Array.isArray(p.duplex_penthouse_configurations) && p.duplex_penthouse_configurations.length > 0) {
+                        extras.push('Duplex Penthouse');
+                    }
+                    const sortedBhks = [...new Set(bhkNums)].sort((a, b) => a - b);
+                    const parts = [];
+                    if (sortedBhks.length > 0) parts.push(`${sortedBhks.join(', ')} BHK Flat`);
+                    extras.forEach(e => parts.push(e));
+                    if (parts.length > 0) configText = parts.join(', ');
+
                     const firstConfig = p.configurations?.[0];
                     const rawPrice = firstConfig?.price || p.plot_config?.[0]?.price_per_sqft;
+
                     return {
                         id: p.id,
                         isProject: true,
                         title: p.name || '',
-                        price: String(rawPrice || ''),
+                        listingTitle: p.name || '',
+                        price: rawPrice || 'Call for Price',
                         priceLacs: dbPriceToLacs(rawPrice),
                         image: (p.images && p.images.length > 0)
-                            ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0]?.url)
-                            : null,
+                            ? (typeof p.images[0] === 'string' ? p.images[0] : (p.images[0]?.url || p.images[0]))
+                            : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
                         location: p.locality || '',
                         city: p.city || '',
-                        developer: p.developer || '',
+                        developer: p.developer || 'NestDeal',
                         badge: 'NEW PROJECT',
                         bhk: firstConfig?.bedrooms ? String(firstConfig.bedrooms) : '',
+                        config: configText,
+                        type: p.property_type || '',
                         amenities: p.amenities || [],
                         constructionStatus: p.construction_status || '',
                         meta: [p.property_type || 'Project', p.developer].filter(Boolean),
@@ -163,50 +227,61 @@ const ExplorePage = () => {
 
         // BHK filter
         if (selectedBHK.length > 0) {
-            const bhkNums = selectedBHK.map(b => b.replace(/[^0-9]/g, ''));
-            results = results.filter(item => item.bhk && bhkNums.includes(item.bhk));
+            results = results.filter(item => {
+                const itemConfig = String(item.config || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                return selectedBHK.some(b => {
+                    const sel = b.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    return itemConfig.includes(sel) || sel.includes(itemConfig);
+                });
+            });
         }
 
-        // Budget filter
+        // Budget Filter
         const minLacs = priceStringToLacs(minBudget);
         const maxLacs = priceStringToLacs(maxBudget);
         if (minLacs !== null || maxLacs !== null) {
             results = results.filter(item => {
                 const pLacs = item.priceLacs;
-                if (pLacs === null) return true; // keep if unknown
+                if (pLacs === null) return false; 
                 if (minLacs !== null && pLacs < minLacs) return false;
-                if (maxLacs !== null && pLacs > maxLacs) return false;
+                if (maxLacs !== null && maxBudget !== '₹10Cr+' && pLacs > maxLacs) return false;
                 return true;
             });
         }
 
-        // Amenities filter — item must have ALL selected amenities
-        if (selectedAmenities.length > 0) {
-            results = results.filter(item =>
-                selectedAmenities.every(a =>
-                    Array.isArray(item.amenities) && item.amenities.includes(a)
-                )
-            );
-        }
-
-        // Construction filter
+        // Possession & Construction Status
         if (selectedConstruction.length > 0) {
-            results = results.filter(item => 
-                item.constructionStatus && selectedConstruction.includes(item.constructionStatus.toUpperCase())
-            );
+            results = results.filter(item => {
+                const status = (item.constructionStatus || '').toUpperCase();
+                return selectedConstruction.some(s => status.includes(s.toUpperCase()));
+            });
         }
 
-        // Variant filter (Penthouse / Duplex)
+        // Property Type / Variant
         if (variant) {
             const v = variant.toLowerCase();
             results = results.filter(item => 
-                item.title?.toLowerCase().includes(v) || 
-                (item.meta && item.meta.some(m => m.toLowerCase().includes(v)))
+                (item.config || '').toLowerCase().includes(v) ||
+                (item.type || '').toLowerCase().includes(v)
             );
         }
 
+        // Locality
+        if (selectedLocality) {
+            results = results.filter(item => 
+                (item.location || '').toLowerCase().includes(selectedLocality.toLowerCase())
+            );
+        }
+
+        // Sorting
+        if (sortBy === "Price: Low to High") {
+            results.sort((a, b) => (a.priceLacs || 0) - (b.priceLacs || 0));
+        } else if (sortBy === "Price: High to Low") {
+            results.sort((a, b) => (b.priceLacs || 0) - (a.priceLacs || 0));
+        }
+
         setFilteredItems(results);
-    }, [allItems, city, searchText, selectedBHK, minBudget, maxBudget, selectedAmenities, selectedConstruction, variant]);
+    }, [allItems, city, searchText, selectedBHK, minBudget, maxBudget, selectedConstruction, variant, sortBy, selectedLocality]);
 
     const toggleBHK = (bhk) => {
         setSelectedBHK(prev => prev.includes(bhk) ? prev.filter(b => b !== bhk) : [...prev, bhk]);
@@ -242,34 +317,203 @@ const ExplorePage = () => {
 
     return (
         <div style={{ background: THEME.bg, minHeight: '100vh', color: THEME.text, fontFamily: 'Outfit, sans-serif' }}>
-            {/* Top bar */}
-            <div style={{ padding: '16px 32px', borderBottom: `1px solid ${THEME.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', background: THEME.card }}>
-                <div>
-                    <h1 style={{ fontSize: '1.4rem', margin: 0, color: THEME.gold, fontWeight: '700' }}>
-                        {city ? `Properties in ${city}` : 'Explore Properties & Projects'}
-                    </h1>
-                    <p style={{ color: THEME.muted, margin: '4px 0 0 0', fontSize: '0.9rem' }}>
-                        {loading ? 'Searching...' : `${filteredItems.length} result${filteredItems.length !== 1 ? 's' : ''} found`}
-                    </p>
+            {/* Header Section */}
+            <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '32px 24px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: THEME.muted, marginBottom: '16px' }}>
+                    <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>Home</Link>
+                    <span>&gt;</span>
+                    <span>Properties</span>
+                    <span>&gt;</span>
+                    <span style={{ color: THEME.text }}>{city || 'All Cities'}</span>
                 </div>
-                <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    style={{
-                        padding: '10px 20px', background: showFilters ? THEME.gold : THEME.inputBg,
-                        border: `1px solid ${showFilters ? THEME.gold : THEME.border}`,
-                        color: showFilters ? '#000' : THEME.text, borderRadius: '10px',
-                        display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
-                        fontWeight: '600', fontSize: '0.9rem', transition: 'all 0.2s'
-                    }}
-                >
-                    <Filter size={16} /> Filters
-                    {activeFilterCount > 0 && (
-                        <span style={{ background: THEME.gold, color: '#000', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: '800' }}>
-                            {activeFilterCount}
-                        </span>
-                    )}
-                </button>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+                    <div>
+                        <h1 style={{ 
+                            fontSize: '2.5rem', 
+                            fontFamily: "'Playfair Display', serif", 
+                            margin: 0, 
+                            color: '#1A1A1A',
+                            fontWeight: '700'
+                        }}>
+                            {city ? `Properties in ${city}` : 'Explore Properties'}
+                        </h1>
+                        <p style={{ color: THEME.muted, margin: '8px 0 0 0', fontSize: '1rem' }}>
+                            {loading ? 'Searching...' : `${filteredItems.length} results found`}
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        style={{
+                            padding: '10px 24px', background: '#FFFFFF',
+                            border: `1px solid ${THEME.border}`,
+                            color: THEME.text, borderRadius: '12px',
+                            display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer',
+                            fontWeight: '600', fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                        }}
+                    >
+                        <Filter size={18} /> Filters
+                    </button>
+                </div>
+
+                {/* Active Chips */}
+                {(activeFilterCount > 0) && (
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '24px', alignItems: 'center' }}>
+                        <span style={{ color: THEME.muted, fontSize: '0.9rem' }}>Active filters:</span>
+                        {city && <Chip label={city} onRemove={() => setCity('')} />}
+                        {selectedBHK.map(b => <Chip key={b} label={b} onRemove={() => toggleBHK(b)} />)}
+                        <button onClick={clearAll} style={{ background: 'none', border: 'none', color: THEME.gold, cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', marginLeft: '8px' }}>Clear All</button>
+                    </div>
+                )}
+
+                {/* Quick Filters Row */}
+                {/* Pill Filters Row */}
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '12px', 
+                    marginBottom: '32px',
+                    overflowX: 'auto',
+                    paddingBottom: '8px',
+                    scrollbarWidth: 'none'
+                }}>
+                    {/* City Pill */}
+                    <div className="filter-pill">
+                        <select value={city} onChange={(e) => setCity(e.target.value)}>
+                            <option value="">Ahmedabad</option>
+                            <option value="Ahmedabad">Ahmedabad</option>
+                            <option value="Gandhinagar">Gandhinagar</option>
+                        </select>
+                        <span style={{ fontSize: '0.85rem' }}>{city || 'Ahmedabad'}</span>
+                        <ChevronDown size={14} className="pill-chevron" />
+                    </div>
+
+                    {/* Search Pill */}
+                    <div className="filter-pill search-pill" style={{ flex: '1', minWidth: '220px' }}>
+                        <Search size={14} style={{ color: THEME.muted }} />
+                        <input 
+                            type="text" 
+                            placeholder="Location, Builder..." 
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                            style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', marginLeft: '8px', fontSize: '0.85rem' }}
+                        />
+                    </div>
+
+                    {/* Localities Pill */}
+                    <div className="filter-pill">
+                        <select value={selectedLocality} onChange={(e) => setSelectedLocality(e.target.value)}>
+                            <option value="">Localities</option>
+                            {LOCALITIES_AHMEDABAD.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                        </select>
+                        <span>{selectedLocality || 'Localities'}</span>
+                        <ChevronDown size={14} className="pill-chevron" />
+                    </div>
+
+                    {/* BHK Pill */}
+                    <div className="filter-pill">
+                        <select value={selectedBHK[0] || ''} onChange={(e) => setSelectedBHK(e.target.value ? [e.target.value] : [])}>
+                            <option value="">BHK</option>
+                            {BHK_OPTIONS_FULL.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                        <span>{selectedBHK[0] || 'BHK'}</span>
+                        <ChevronDown size={14} className="pill-chevron" />
+                    </div>
+
+                    {/* Budget Min Pill */}
+                    <div className="filter-pill">
+                        <select value={minBudget} onChange={(e) => setMinBudget(e.target.value)}>
+                            <option value="">Min Budget</option>
+                            {BUDGET_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                        <span>{minBudget || 'Min'}</span>
+                        <ChevronDown size={14} className="pill-chevron" />
+                    </div>
+
+                    {/* Budget Max Pill */}
+                    <div className="filter-pill">
+                        <select value={maxBudget} onChange={(e) => setMaxBudget(e.target.value)}>
+                            <option value="">Max Budget</option>
+                            {BUDGET_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                        <span>{maxBudget || 'Max'}</span>
+                        <ChevronDown size={14} className="pill-chevron" />
+                    </div>
+
+                    {/* Possession Pill */}
+                    <div className="filter-pill">
+                        <select value={selectedConstruction[0] || ''} onChange={(e) => setSelectedConstruction(e.target.value ? [e.target.value] : [])}>
+                            <option value="">Possession</option>
+                            {POSSESSION_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                        <span>{selectedConstruction[0] || 'Possession'}</span>
+                        <ChevronDown size={14} className="pill-chevron" />
+                    </div>
+
+                    {/* Property Type Pill */}
+                    <div className="filter-pill">
+                        <select value={variant} onChange={(e) => setVariant(e.target.value)}>
+                            <option value="">Property Type</option>
+                            {PROPERTY_TYPES.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                        <span>{variant || 'Type'}</span>
+                        <ChevronDown size={14} className="pill-chevron" />
+                    </div>
+
+                    {/* Sort By Pill */}
+                    <div className="filter-pill">
+                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                            <option value="">Sort By</option>
+                            {SORT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                        <span>{sortBy.split(':')[1] || 'Sort'}</span>
+                        <ChevronDown size={14} className="pill-chevron" />
+                    </div>
+                </div>
             </div>
+
+            <style>{`
+                .filter-pill {
+                    background: #FFFFFF;
+                    border: 1px solid ${THEME.border};
+                    border-radius: 30px;
+                    padding: 8px 18px;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    cursor: pointer;
+                    white-space: nowrap;
+                    position: relative;
+                    min-height: 44px;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+                    transition: all 0.2s;
+                }
+                .filter-pill:hover {
+                    border-color: ${THEME.gold};
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+                }
+                .filter-pill select {
+                    position: absolute;
+                    inset: 0;
+                    opacity: 0;
+                    width: 100%;
+                    height: 100%;
+                    cursor: pointer;
+                    z-index: 2;
+                }
+                .filter-pill span {
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    color: ${THEME.text};
+                }
+                .pill-chevron {
+                    color: ${THEME.muted};
+                }
+                .search-pill {
+                    padding: 8px 20px;
+                    cursor: text;
+                }
+            `}</style>
 
             {/* Filter Panel */}
             {showFilters && (
@@ -434,21 +678,6 @@ const ExplorePage = () => {
                 </div>
             )}
 
-            {/* Active filter chips */}
-            {activeFilterCount > 0 && (
-                <div style={{ padding: '12px 32px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <span style={{ color: THEME.muted, fontSize: '0.8rem' }}>Active filters:</span>
-                    {city && <Chip label={city} onRemove={() => setCity('')} />}
-                    {searchText && <Chip label={`"${searchText}"`} onRemove={() => setSearchText('')} />}
-                    {selectedBHK.map(b => <Chip key={b} label={b} onRemove={() => toggleBHK(b)} />)}
-                    {minBudget && <Chip label={`Min: ${minBudget}`} onRemove={() => setMinBudget('')} />}
-                    {maxBudget && <Chip label={`Max: ${maxBudget}`} onRemove={() => setMaxBudget('')} />}
-                    {selectedAmenities.map(a => <Chip key={a} label={a} onRemove={() => toggleAmenity(a)} />)}
-                    {selectedConstruction.map(c => <Chip key={c} label={c} onRemove={() => toggleConstruction(c)} />)}
-                    {variant && <Chip label={variant} onRemove={() => setVariant('')} />}
-                    <button onClick={clearAll} style={{ background: 'none', border: 'none', color: THEME.gold, cursor: 'pointer', fontSize: '0.8rem', fontWeight: '600', padding: '0 4px' }}>Clear All</button>
-                </div>
-            )}
 
             {/* Results grid */}
             <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '24px 24px 60px' }}>
@@ -471,55 +700,32 @@ const ExplorePage = () => {
                             <Link
                                 to={item.isProject ? `/project/${item.id}` : `/property/${item.id}`}
                                 key={`${item.isProject ? 'proj' : 'prop'}-${item.id}`}
-                                style={{ textDecoration: 'none', color: 'inherit' }}
+                                className="premium-prop-card"
                             >
-                                <div style={{
-                                    background: THEME.card, borderRadius: '16px', overflow: 'hidden',
-                                    border: `1px solid ${THEME.border}`, transition: 'transform 0.2s, box-shadow 0.2s',
-                                    height: '100%', display: 'flex', flexDirection: 'column',
-                                    cursor: 'pointer'
-                                }}
-                                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = `0 12px 30px rgba(0,0,0,0.35)`; }}
-                                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                                >
-                                    {/* Image */}
-                                    <div style={{ height: '220px', background: THEME.inputBg, position: 'relative', overflow: 'hidden' }}>
-                                        {item.image ? (
-                                            <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
-                                        ) : (
-                                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: THEME.muted }}>
-                                                {item.isProject ? <Building size={40} opacity={0.3} /> : <Home size={40} opacity={0.3} />}
-                                            </div>
-                                        )}
-                                        <div style={{
-                                            position: 'absolute', top: '12px', right: '12px',
-                                            background: item.isProject ? `${THEME.gold}DD` : 'rgba(0,0,0,0.7)',
-                                            color: item.isProject ? '#000' : THEME.text,
-                                            padding: '4px 12px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '700',
-                                            backdropFilter: 'blur(4px)', letterSpacing: '0.5px'
-                                        }}>
-                                            {item.badge}
+                                <div className="premium-img-section">
+                                    <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                    <div className="premium-gradient-overlay"></div>
+                                    <div className="premium-img-text">
+                                        <h4 className="premium-title">{item.listingTitle}</h4>
+                                        <div className="premium-developer">
+                                            {item.isProject ? <Building2 size={14} /> : <User size={14} />}
+                                            by {item.developer || 'NestDeal'}
                                         </div>
                                     </div>
-
-                                    {/* Details */}
-                                    <div style={{ padding: '18px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                        <div style={{ fontSize: '1.25rem', fontWeight: '700', color: THEME.gold, marginBottom: '4px' }}>
-                                            {item.displayPrice}
+                                </div>
+                                <div className="premium-details-section">
+                                    <div className="detail-line">
+                                        <Bed size={14} /> <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: '500', color: '#555' }}>{item.config}</span>
+                                    </div>
+                                    <div className="detail-line">
+                                        <MapPin size={14} /> <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: '500', color: '#555' }}>{item.location}, {item.city}</span>
+                                    </div>
+                                    <div className="price-row">
+                                        <div className="premium-price-value" style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1A1A1A' }}>
+                                            ₹ {item.displayPrice} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup>
                                         </div>
-                                        <h3 style={{ fontSize: '1rem', fontWeight: '600', color: THEME.text, margin: '0 0 8px', lineHeight: '1.4' }}>
-                                            {item.title}
-                                        </h3>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: THEME.muted, fontSize: '0.85rem', marginBottom: '14px' }}>
-                                            <MapPin size={13} color={THEME.gold} />
-                                            {item.location}{item.city ? `, ${item.city}` : ''}
-                                        </div>
-                                        <div style={{ marginTop: 'auto', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                            {item.meta.map((m, i) => (
-                                                <span key={i} style={{ background: THEME.inputBg, padding: '5px 10px', borderRadius: '6px', fontSize: '0.78rem', color: THEME.muted }}>
-                                                    {m}
-                                                </span>
-                                            ))}
+                                        <div className="view-details-btn" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+                                            View Details <ArrowRight size={12} />
                                         </div>
                                     </div>
                                 </div>

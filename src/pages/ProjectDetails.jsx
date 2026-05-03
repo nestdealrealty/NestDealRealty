@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { 
-    ChevronLeft, ChevronRight, Maximize2, CheckCircle2, Navigation, MapPin, Share2, Download, TrendingUp, User, Phone, Mail, Heart,
+    ChevronLeft, ChevronRight, Maximize2, CheckCircle2, Navigation, MapPin, Share2, Download, TrendingUp, User, Phone, Mail, Heart, Eye,
     Trees, Flower2, Target, Car, Palmtree, Mountain, Dumbbell, PartyPopper, ShieldCheck, Camera, ParkingCircle, Award,
     ArrowUpToLine, Flame, Zap, Baby, Footprints, Gamepad2, Trophy, BadgeCheck, DoorClosed, Waves, Wine, ChefHat, 
     Bike, Lamp, GraduationCap, Flag, Bath, Mic2, Lock, WashingMachine, Repeat, UserCheck, 
@@ -13,6 +13,8 @@ import './ProjectDetails.css';
 import FooterFilters from '../components/FooterFilters';
 import Logo from '../assets/logo.jpg';
 import PropertySlider from '../components/PropertySlider';
+import NearbyMap from '../components/NearbyMap';
+import { useAuth } from '../context/AuthContext';
 
 const THEME = {
     dark: '#F5F5EF',
@@ -176,6 +178,8 @@ const getAmenityImage = (name) => {
 
 export default function ProjectDetails() {
     const { id } = useParams();
+    const navigate = useNavigate();
+    const { user } = useAuth();
     const [project, setProject] = useState(null);
     const [similarProjects, setSimilarProjects] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -185,6 +189,9 @@ export default function ProjectDetails() {
     const [activeVillaIndex, setActiveVillaIndex] = useState(0);
     const [activeImage, setActiveImage] = useState(0);
     const [activeTowerIndex, setActiveTowerIndex] = useState(0);
+    const [isSaved, setIsSaved] = useState(false);
+    const [hasUnlockedMaps, setHasUnlockedMaps] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [activeLevelMap, setActiveLevelMap] = useState('L1');
     const [activePhaseIndex, setActivePhaseIndex] = useState(0);
     const [isBrochureModalOpen, setIsBrochureModalOpen] = useState(false);
@@ -196,7 +203,9 @@ export default function ProjectDetails() {
     const [showAllAmenities, setShowAllAmenities] = useState(false);
     const [activeAmenity, setActiveAmenity] = useState(null);
     const [pageBgColor, setPageBgColor] = useState(THEME.dark);
+    const [leadSource, setLeadSource] = useState('brochure');
     const [isFullscreenPreview, setIsFullscreenPreview] = useState(false);
+    const [isReraModalOpen, setIsReraModalOpen] = useState(false);
     const amenitiesRef = useRef(null);
 
     useEffect(() => {
@@ -229,6 +238,21 @@ export default function ProjectDetails() {
 
             if (data && !error) {
                 setProject(data);
+                
+                // Check if project is saved if user is logged in
+                if (user) {
+                    const { data: savedData } = await supabase
+                        .from('saved_projects')
+                        .select('id')
+                        .eq('user_id', user.id)
+                        .eq('project_id', id)
+                        .single();
+                    setIsSaved(!!savedData);
+                }
+
+                // Check if user has already submitted a lead in this session (optional but helpful)
+                const unlocked = localStorage.getItem(`unlocked_maps_${id}`);
+                if (unlocked) setHasUnlockedMaps(true);
                 
                 // Fetch similar projects
                 const { data: slotData } = await supabase
@@ -308,7 +332,7 @@ export default function ProjectDetails() {
             }]);
             setSubmitted(true);
         } catch (error) {
-            console.error(error);
+            console.error("Error submitting inquiry:", error);
         }
     };
 
@@ -329,35 +353,70 @@ export default function ProjectDetails() {
             if (!project?.id) throw new Error("Project ID is missing");
 
             // Save as lead
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from('leads')
                 .insert([{
                     project_id: project.id,
                     name: brochureForm.name,
                     phone: `+91 ${brochureForm.phone}`,
-                    type: 'brochure',
-                    message: `Downloaded brochure for ${project.name}`
+                    type: leadSource === 'map' ? 'map_layout' : 'brochure',
+                    message: leadSource === 'map' 
+                        ? `Applied for map layout of this ${project.name} project`
+                        : `Requested Brochure for ${project.name}`
                 }]);
 
-            if (error) {
-                console.error("Supabase Insert Error:", error.message, error.details);
-                throw error;
-            }
+            if (error) throw error;
 
-            // Trigger download
-            setVerifying(false);
-            setIsBrochureModalOpen(false);
+            // Unlock maps for this session
+            setHasUnlockedMaps(true);
+            localStorage.setItem(`unlocked_maps_${id}`, 'true');
+
+            // Trigger download if brochure exists
             if (project.brochure_url) {
                 window.open(project.brochure_url, '_blank');
-            } else {
-                alert("Brochure URL not found for this project.");
             }
-            // Reset
-            setBrochureForm({ name: '', phone: '', otp: '' });
+            
+            setIsBrochureModalOpen(false);
+            setBrochureForm({ name: '', phone: '', email: '' });
+            alert("Details unlocked successfully!");
         } catch (error) {
-            console.error("Full Error Context:", error);
-            alert(`Something went wrong: ${error.message || 'Unknown Error'}`);
+            console.error("Error in brochure/map unlock:", error);
+            alert("Something went wrong. Please try again.");
+        } finally {
             setVerifying(false);
+        }
+    };
+
+    const handleToggleSave = async () => {
+        if (!user) {
+            alert("Please log in to save projects.");
+            navigate('/login');
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            if (isSaved) {
+                await supabase
+                    .from('saved_projects')
+                    .delete()
+                    .eq('user_id', user.id)
+                    .eq('project_id', id);
+                setIsSaved(false);
+            } else {
+                await supabase
+                    .from('saved_projects')
+                    .insert([{ user_id: user.id, project_id: id }]);
+                setIsSaved(true);
+            }
+        } catch (error) {
+            console.error("Error toggling save:", error);
+            // Table might not exist yet, let's inform the user if it's a 404
+            if (error.code === 'PGRST116' || error.message?.includes('relation "saved_projects" does not exist')) {
+                alert("Database table 'saved_projects' not found. Please run the SQL migration.");
+            }
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -426,13 +485,70 @@ export default function ProjectDetails() {
         }
     };
 
-    let fullBhkString = "";
+    let regularBhks = [];
     if (project.configurations && project.configurations.length > 0) {
-        const uniqueBhk = [...new Set(project.configurations.map(c => c.bedrooms))].sort();
-        fullBhkString = uniqueBhk.length > 1 
-            ? `${uniqueBhk[0]} & ${uniqueBhk[uniqueBhk.length-1]} BHK`
-            : `${uniqueBhk[0]} BHK`;
+        regularBhks = [...new Set(project.configurations.map(c => c.bedrooms))].sort((a, b) => a - b);
     }
+    
+    let bhkParts = [];
+    if (regularBhks.length > 0) {
+        bhkParts.push(`${regularBhks.join(', ')} BHK Flat`);
+    }
+    if (project.penthouse_configurations && project.penthouse_configurations.length > 0) {
+        bhkParts.push("Penthouse");
+    }
+    if (project.duplex_penthouse_configurations && project.duplex_penthouse_configurations.length > 0) {
+        bhkParts.push("Duplex Penthouse");
+    }
+    
+    let fullBhkString = bhkParts.join(" & ");
+
+    const MapGatedImage = ({ src, alt, style }) => {
+        if (!src) return <div style={{ color: THEME.cardMuted }}>No Map Uploaded</div>;
+        
+        return (
+            <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: '12px' }}>
+                <img 
+                    src={src} 
+                    alt={alt} 
+                    style={{ 
+                        ...style, 
+                        filter: hasUnlockedMaps ? 'none' : 'blur(15px)',
+                        transition: 'filter 0.5s ease'
+                    }} 
+                />
+                {!hasUnlockedMaps && (
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.1)' }}>
+                        <button 
+                            onClick={() => {
+                                setLeadSource('map');
+                                setIsBrochureModalOpen(true);
+                            }}
+                            style={{ 
+                                background: 'rgba(0,0,0,0.7)', 
+                                color: '#FFF', 
+                                border: 'none', 
+                                padding: '12px 30px', 
+                                borderRadius: '8px', 
+                                fontWeight: 'bold', 
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                fontSize: '1rem',
+                                transition: 'transform 0.2s',
+                                backdropFilter: 'blur(5px)'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        >
+                            <Eye size={20} /> View Map
+                        </button>
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     const mainImage = project.images?.[0]?.url || project.images?.[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1920&q=80';
 
@@ -524,6 +640,32 @@ export default function ProjectDetails() {
                     background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent);
                     animation: brochure-shine 4s infinite;
                 }
+                @keyframes developer-pulse {
+                    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+                    70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+                }
+                .developer-pill-premium {
+                    animation: developer-pulse 3s infinite;
+                    position: relative;
+                    overflow: hidden;
+                    transition: all 0.3s ease;
+                }
+                .developer-pill-premium::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 50%;
+                    height: 100%;
+                    background: linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent);
+                    animation: brochure-shine 6s infinite;
+                }
+                .developer-pill-premium:hover {
+                    transform: translateY(-2px);
+                    background: rgba(255,255,255,0.15) !important;
+                    border-color: rgba(227, 188, 90, 0.5) !important;
+                }
                 .dynamic-amenity-wrapper {
                     position: relative;
                     height: 56px;
@@ -548,7 +690,7 @@ export default function ProjectDetails() {
                 }
 
                 .dynamic-amenity-card:hover {
-                    height: 120px;
+                    height: 100px;
                     border-radius: 16px;
                     border-color: #5E7D5A;
                     box-shadow: 0 15px 35px rgba(94, 125, 90, 0.15);
@@ -665,6 +807,14 @@ export default function ProjectDetails() {
                     color: #FFFFFF !important;
                     transform: scale(1.1);
                 }
+                @keyframes rera-glow {
+                    0% { box-shadow: 0 0 5px rgba(74, 222, 128, 0.2); border-color: rgba(255,255,255,0.2); }
+                    50% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.6); border-color: rgba(74, 222, 128, 0.8); }
+                    100% { box-shadow: 0 0 5px rgba(74, 222, 128, 0.2); border-color: rgba(255,255,255,0.2); }
+                }
+                .rera-btn-glow {
+                    animation: rera-glow 3s infinite ease-in-out;
+                }
             `}</style>
             
             {/* HERO SECTION INJECTED HERE */}
@@ -755,85 +905,148 @@ export default function ProjectDetails() {
                     <img src={mainImage} className="lux-hero-bg" alt={project.name} style={{ zIndex: 0, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                 )}
                 <div className="lux-hero-overlay" style={{ zIndex: 1, pointerEvents: 'none' }}></div>
-                <div className="lux-hero-content" style={{ zIndex: 2 }}>
-                    <div className="lux-hero-tagline">{project.construction_status || 'Ready To Move In'}</div>
-                    <h1 className="lux-heading-primary">{project.name}</h1>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'flex-start', marginTop: '15px' }}>
-                        <div className="lux-hero-details" style={{ margin: 0 }}>
-                            <span className="detail-item">
-                                <BedDouble size={18} /> 
-                                {project.configurations?.[0]?.bedrooms ? `${project.configurations[0].bedrooms} BHK ${project.tagline || 'Signature Homes'}` : (project.tagline || 'Premium Residences')}
-                            </span>
-                            <span className="detail-item">
-                                <MapPin size={18} /> 
-                                {project.locality} {project.city}
-                            </span>
+                <div className="lux-hero-content" style={{ zIndex: 2, bottom: '8%', left: '5%', width: '90%' }}>
+                    {/* Top Row: Status and Price */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '12px' }}>
+                        <div className="lux-hero-tagline" style={{ margin: 0, padding: '6px 16px', fontSize: '0.7rem', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                            {project.construction_status || 'Under Construction'}
                         </div>
-                        <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
-                            {project.brochure_url && (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
-                                    <button 
-                                        onClick={() => setIsBrochureModalOpen(true)}
-                                        className="brochure-btn-premium"
-                                        style={{ 
-                                            background: THEME.gold, 
-                                            color: '#FFF', 
-                                            border: 'none', 
-                                            padding: '12px 30px', 
-                                            borderRadius: '50px', 
-                                            fontWeight: '600', 
-                                            cursor: 'pointer', 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            gap: '8px', 
-                                            transition: 'all 0.3s ease',
-                                            fontSize: '0.95rem',
-                                            letterSpacing: '1px'
-                                        }}
-                                    >
-                                        <Download size={18} /> GET BROCHURE
-                                    </button>
-                                    {project.rera_id && (
-                                        <div style={{ 
-                                            display: 'inline-flex', 
-                                            alignItems: 'center', 
-                                            gap: '6px', 
-                                            background: 'rgba(255,255,255,0.1)', 
-                                            backdropFilter: 'blur(10px)',
-                                            border: '1px solid rgba(255,255,255,0.2)',
-                                            padding: '6px 14px',
-                                            borderRadius: '6px',
-                                            color: '#FFF',
-                                            fontSize: '0.85rem',
-                                            fontWeight: '600',
-                                            letterSpacing: '0.5px',
-                                            marginTop: '5px'
-                                        }}>
-                                            <BadgeCheck size={16} style={{ color: '#4ADE80' }} />
-                                            RERA - {project.rera_id}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                            <div style={{ display: 'flex', gap: '15px' }}>
-                                <button 
-                                    onClick={handleShare}
-                                    style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', color: '#FFF', padding: '12px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}
-                                    onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.4)'}
-                                    onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-                                >
-                                    <Share2 size={20} />
-                                </button>
-                                <button 
-                                    style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', color: '#FFF', padding: '12px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}
-                                    onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.4)'}
-                                    onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-                                >
-                                    <Heart size={20} />
-                                </button>
+                        {project.price_range && (
+                            <div style={{ fontSize: '1.4rem', color: '#FFF', fontWeight: '400', fontFamily: 'Playfair Display, serif', letterSpacing: '1px' }}>
+                                ₹{project.price_range}
                             </div>
+                        )}
+                    </div>
+
+                    {/* Main Title */}
+                    <h1 className="lux-heading-primary" style={{ marginBottom: '10px' }}>{project.name}</h1>
+
+                    {/* Developer Name Line - Glass Pill Style */}
+                    <div className="developer-pill-premium" style={{ 
+                        display: 'inline-block',
+                        background: 'rgba(255,255,255,0.1)', 
+                        backdropFilter: 'blur(12px)', 
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        padding: '8px 18px', 
+                        borderRadius: '10px',
+                        marginBottom: '15px',
+                        cursor: 'default'
+                    }}>
+                        <div style={{ 
+                            fontSize: '0.85rem', 
+                            color: '#FFFFFF', 
+                            fontWeight: '700', 
+                            letterSpacing: '1.5px', 
+                            textTransform: 'uppercase',
+                            textShadow: '0 0 10px rgba(255, 255, 255, 0.5)'
+                        }}>
+                            DEVELOPED BY: {project.developer || 'NestDeal'}
                         </div>
                     </div>
+
+                    {/* BHK Line - Plain Text Style with Icon */}
+                    <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '12px',
+                        fontSize: '0.9rem', 
+                        color: 'rgba(255,255,255,0.95)', 
+                        fontWeight: '600', 
+                        letterSpacing: '1.5px',
+                        marginBottom: '12px',
+                        textTransform: 'uppercase'
+                    }}>
+                        <Home size={20} color={THEME.gold} />
+                        <span>{fullBhkString}</span>
+                    </div>
+
+                    {/* Area Line */}
+                    <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '12px', 
+                        color: 'rgba(255,255,255,0.95)', 
+                        fontSize: '0.9rem', 
+                        fontWeight: '600',
+                        letterSpacing: '1.5px',
+                        textTransform: 'uppercase',
+                        marginBottom: '20px' 
+                    }}>
+                        <MapPin size={20} color={THEME.gold} />
+                        <span>{project.locality} {project.city}</span>
+                    </div>
+
+                    {/* Buttons Row */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                        {project.brochure_url && (
+                            <button 
+                                onClick={() => {
+                                    setLeadSource('brochure');
+                                    setIsBrochureModalOpen(true);
+                                }}
+                                className="brochure-btn-premium"
+                                style={{ 
+                                    background: THEME.gold, color: '#FFF', border: 'none', 
+                                    padding: '10px 28px', borderRadius: '50px', fontWeight: '700', 
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', 
+                                    fontSize: '0.8rem', letterSpacing: '1px'
+                                }}
+                            >
+                                <Download size={18} /> GET BROCHURE
+                            </button>
+                        )}
+                        <div style={{ display: 'flex', gap: '15px' }}>
+                            <button 
+                                onClick={handleShare}
+                                style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.2)', color: '#FFF', padding: '12px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}
+                                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+                                onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                            >
+                                <Share2 size={22} />
+                            </button>
+                            <button 
+                                onClick={handleToggleSave}
+                                disabled={isSaving}
+                                style={{ 
+                                    background: isSaved ? THEME.gold : 'rgba(255,255,255,0.15)', 
+                                    backdropFilter: 'blur(12px)', 
+                                    border: `1px solid ${isSaved ? THEME.gold : 'rgba(255,255,255,0.2)'}`, 
+                                    color: isSaved ? '#000' : '#FFF', 
+                                    padding: '12px', 
+                                    borderRadius: '50%', 
+                                    cursor: 'pointer', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    transition: 'all 0.3s' 
+                                }}
+                                onMouseOver={(e) => !isSaved && (e.currentTarget.style.background = 'rgba(255,255,255,0.3)')}
+                                onMouseOut={(e) => !isSaved && (e.currentTarget.style.background = 'rgba(255,255,255,0.15)')}
+                            >
+                                <Heart size={22} fill={isSaved ? "currentColor" : "none"} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* RERA Line at Bottom */}
+                    {project.rera_id && (
+                        <button 
+                            onClick={() => setIsReraModalOpen(true)}
+                            className="rera-btn-glow"
+                            style={{ 
+                                display: 'inline-flex', alignItems: 'center', gap: '8px', 
+                                background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+                                padding: '8px 18px', borderRadius: '8px', color: '#FFF',
+                                fontSize: '0.8rem', fontWeight: '600', marginTop: '15px', letterSpacing: '1px',
+                                cursor: 'pointer', backdropFilter: 'blur(10px)', transition: 'all 0.3s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                        >
+                            <BadgeCheck size={16} color="#4ADE80" />
+                            RERA REGISTERED
+                        </button>
+                    )}
                 </div>
                 
                 {/* Dots Navigation */}
@@ -933,12 +1146,12 @@ export default function ProjectDetails() {
 
                                     {project.plot_config?.[activePlotIndex] && (
                                         <div style={{ background: THEME.card, padding: '40px', borderRadius: '24px', border: `1px solid ${THEME.border}`, display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '40px', alignItems: 'center' }}>
-                                            <div style={{ background: '#F8F8F8', borderRadius: '16px', overflow: 'hidden', height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${THEME.border}` }}>
-                                                {project.plot_config[activePlotIndex].map_url ? (
-                                                    <img src={project.plot_config[activePlotIndex].map_url} alt="Plot Plan" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} />
-                                                ) : (
-                                                    <div style={{ color: THEME.muted }}>No Map Uploaded</div>
-                                                )}
+                                            <div style={{ background: '#F8F8F8', borderRadius: '16px', overflow: 'hidden', height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${THEME.border}`, position: 'relative' }}>
+                                                <MapGatedImage 
+                                                    src={project.plot_config[activePlotIndex].map_url} 
+                                                    alt="Plot Plan" 
+                                                    style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} 
+                                                />
                                             </div>
                                             <div>
                                                 <h3 style={{ fontSize: '2rem', margin: '0 0 10px 0', color: THEME.text }}>{project.plot_config[activePlotIndex].size_sqft} sq.ft Premium Plot</h3>
@@ -1002,12 +1215,12 @@ export default function ProjectDetails() {
                                         </div>
                                         {project.villa_config[activeVillaIndex] && (
                                             <div style={{ background: THEME.card, padding: '40px', borderRadius: '24px', border: `1px solid ${THEME.border}`, display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '40px', alignItems: 'center' }}>
-                                                <div style={{ background: '#F8F8F8', borderRadius: '16px', overflow: 'hidden', height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${THEME.border}` }}>
-                                                    {project.villa_config[activeVillaIndex].map_url ? (
-                                                        <img src={project.villa_config[activeVillaIndex].map_url} alt="Villa Plan" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} />
-                                                    ) : (
-                                                        <div style={{ color: THEME.muted }}>No Map Uploaded</div>
-                                                    )}
+                                                <div style={{ background: '#F8F8F8', borderRadius: '16px', overflow: 'hidden', height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${THEME.border}`, position: 'relative' }}>
+                                                    <MapGatedImage 
+                                                        src={project.villa_config[activeVillaIndex].map_url} 
+                                                        alt="Villa Plan" 
+                                                        style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} 
+                                                    />
                                                 </div>
                                                 <div>
                                                     <h3 style={{ fontSize: '2rem', margin: '0 0 10px 0', color: THEME.text }}>Premium {project.villa_config[activeVillaIndex].bhk_type} Villa</h3>
@@ -1120,7 +1333,7 @@ export default function ProjectDetails() {
                                             <div style={{ marginBottom: '30px' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
                                                     <h3 style={{ fontSize: '1.8rem', margin: 0, color: activeConfig.isPenthouse ? THEME.gold : THEME.cardText }}>
-                                                        {activeConfig.bedrooms} BHK {activeConfig.isDuplex ? 'Luxury Duplex Penthouse' : (activeConfig.isPenthouse ? 'Luxury Penthouse' : 'Premium Flat')}
+                                                        {activeConfig.bedrooms} BHK {activeConfig.isDuplex ? 'Duplex Penthouse' : (activeConfig.isPenthouse ? 'Penthouse' : 'Flat')}
                                                     </h3>
                                                     {activeGroup.configs.length > 1 && (
                                                         <span style={{ background: `${THEME.gold}20`, color: THEME.gold, padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
@@ -1211,26 +1424,29 @@ export default function ProjectDetails() {
                                                     </span>
                                                     {((activeConfig.isDuplex ? (activeLevelMap === 'L1' ? activeConfig.map_url_l1 : activeConfig.map_url_l2) : activeConfig.map_url)) && (
                                                         <button 
-                                                            onClick={() => window.open(
-                                                                activeConfig.isDuplex ? (activeLevelMap === 'L1' ? activeConfig.map_url_l1 : activeConfig.map_url_l2) : activeConfig.map_url, 
-                                                                '_blank'
-                                                            )} 
+                                                            onClick={() => {
+                                                                if (!hasUnlockedMaps) {
+                                                                    setLeadSource('map');
+                                                                    setIsBrochureModalOpen(true);
+                                                                    return;
+                                                                }
+                                                                window.open(
+                                                                    activeConfig.isDuplex ? (activeLevelMap === 'L1' ? activeConfig.map_url_l1 : activeConfig.map_url_l2) : activeConfig.map_url, 
+                                                                    '_blank'
+                                                                );
+                                                            }} 
                                                             style={{ background: 'none', border: 'none', color: THEME.gold, cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '500' }}
                                                         >
                                                             <Maximize2 size={14} /> Fullscreen
                                                         </button>
                                                     )}
                                                 </div>
-                                                <div style={{ flex: 1, padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
-                                                    {activeConfig.isDuplex ? (
-                                                        activeLevelMap === 'L1' ? (
-                                                            activeConfig.map_url_l1 ? <img src={activeConfig.map_url_l1} alt="Level 1" style={{ maxWidth: '100%', maxHeight: '450px', objectFit: 'contain' }} /> : <div style={{ color: THEME.cardMuted }}>No Level 1 Map</div>
-                                                        ) : (
-                                                            activeConfig.map_url_l2 ? <img src={activeConfig.map_url_l2} alt="Level 2" style={{ maxWidth: '100%', maxHeight: '450px', objectFit: 'contain' }} /> : <div style={{ color: THEME.cardMuted }}>No Level 2 Map</div>
-                                                        )
-                                                    ) : (
-                                                        activeConfig.map_url ? <img src={activeConfig.map_url} alt="Layout" style={{ maxWidth: '100%', maxHeight: '450px', objectFit: 'contain' }} /> : <div style={{ color: THEME.cardMuted }}>No Layout Map</div>
-                                                    )}
+                                                <div style={{ flex: 1, padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px', position: 'relative' }}>
+                                                    <MapGatedImage 
+                                                        src={activeConfig.isDuplex ? (activeLevelMap === 'L1' ? activeConfig.map_url_l1 : activeConfig.map_url_l2) : activeConfig.map_url} 
+                                                        alt="Layout Map" 
+                                                        style={{ maxWidth: '100%', maxHeight: '450px', objectFit: 'contain' }} 
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -1260,9 +1476,6 @@ export default function ProjectDetails() {
                                                         </div>
                                                         <div className="dynamic-island-title">{am}</div>
                                                     </div>
-                                                    <div className="dynamic-island-content">
-                                                        Experience premium <strong>{am.toLowerCase()}</strong> facilities designed to provide you with luxury and utmost comfort.
-                                                    </div>
                                                 </div>
                                             </div>
                                         );
@@ -1279,14 +1492,35 @@ export default function ProjectDetails() {
                         {project.google_map_link && (
                             <section id="location">
                                 <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', color: THEME.text, marginBottom: '25px', fontWeight: '500', letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    Project Location
-                                    <a href={project.google_map_link} target="_blank" rel="noreferrer" style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: `${THEME.gold}15`, color: THEME.gold, borderRadius: '8px', textDecoration: 'none', fontWeight: '600' }}>
-                                        <Navigation size={16} /> Open in Google Maps
-                                    </a>
+                                    Location & Connectivity
+                                    {project.google_map_link && (
+                                        <a href={project.google_map_link} target="_blank" rel="noreferrer" style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: `${THEME.gold}15`, color: THEME.gold, borderRadius: '8px', textDecoration: 'none', fontWeight: '600' }}>
+                                            <Navigation size={16} /> Open in Google Maps
+                                        </a>
+                                    )}
                                 </h2>
-                                <div style={{ width: '100%', height: '450px', borderRadius: '16px', overflow: 'hidden', border: `1px solid ${THEME.border}`, background: THEME.card, position: 'relative', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                                    <iframe src={`https://maps.google.com/maps?q=${encodeURIComponent(`${project.name} ${project.locality} ${project.city}`)}&output=embed`} style={{ width: '100%', height: '100%', border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Project Location"></iframe>
-                                </div>
+                                
+                                {project.latitude && project.longitude ? (
+                                    <NearbyMap 
+                                        latitude={project.latitude} 
+                                        longitude={project.longitude} 
+                                        projectName={project.name}
+                                    />
+                                ) : (
+                                    <div style={{ width: '100%', height: '450px', borderRadius: '16px', overflow: 'hidden', border: `1px solid ${THEME.border}`, background: THEME.card, position: 'relative', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                                        <iframe 
+                                            src={`https://maps.google.com/maps?q=${encodeURIComponent(`${project.name} ${project.locality} ${project.city}`)}&output=embed`} 
+                                            style={{ width: '100%', height: '100%', border: 0 }} 
+                                            allowFullScreen="" 
+                                            loading="lazy" 
+                                            referrerPolicy="no-referrer-when-downgrade" 
+                                            title="Project Location"
+                                        ></iframe>
+                                        <div style={{ position: 'absolute', top: '20px', left: '20px', background: 'rgba(255,255,255,0.9)', padding: '10px 15px', borderRadius: '8px', fontSize: '0.8rem', color: THEME.muted, fontWeight: '500', border: `1px solid ${THEME.border}` }}>
+                                            Coordinates not set. Showing approximate location.
+                                        </div>
+                                    </div>
+                                )}
                             </section>
                         )}
                     </div>
@@ -1447,11 +1681,53 @@ export default function ProjectDetails() {
                 <div style={{ height: '100px' }}></div>
             </div>
 
+            {/* RERA Modal */}
+            {isReraModalOpen && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(10px)' }}>
+                    <div style={{ background: '#FFF', width: '100%', maxWidth: '400px', borderRadius: '24px', padding: '40px', position: 'relative', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+                        <button onClick={() => setIsReraModalOpen(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: '#F5F5F5', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666', fontWeight: 'bold' }}>✕</button>
+                        <div style={{ width: '60px', height: '60px', background: '#E8F5E9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                            <BadgeCheck size={32} color="#4CAF50" />
+                        </div>
+                        <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', marginBottom: '10px', color: '#1A1A1A' }}>RERA Registered</h3>
+                        <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '25px', lineHeight: '1.5' }}>This project is officially registered with the Real Estate Regulatory Authority.</p>
+                        <div style={{ 
+                            background: '#F9F9F9', 
+                            padding: '15px', 
+                            borderRadius: '12px', 
+                            border: '1px dashed #DDD', 
+                            fontSize: '1rem', 
+                            fontWeight: 'bold', 
+                            color: THEME.gold, 
+                            letterSpacing: '1px',
+                            wordBreak: 'break-word',
+                            overflowWrap: 'anywhere',
+                            lineHeight: '1.4'
+                        }}>
+                            {project.rera_id}
+                        </div>
+                        <button onClick={() => setIsReraModalOpen(false)} style={{ marginTop: '30px', width: '100%', padding: '14px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>CLOSE</button>
+                    </div>
+                </div>
+            )}
+
             {isBrochureModalOpen && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(5px)' }}>
                     <div style={{ background: THEME.card, width: '100%', maxWidth: '450px', borderRadius: '16px', border: `1px solid ${THEME.border}`, padding: '40px', position: 'relative', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', color: THEME.text }}>
                         <button onClick={() => setIsBrochureModalOpen(false)} style={{ position: 'absolute', top: '25px', right: '25px', background: 'none', border: 'none', color: THEME.muted, cursor: 'pointer' }}>✕</button>
-                        <div style={{ textAlign: 'center', marginBottom: '35px' }}><div style={{ width: '70px', height: '70px', background: `${THEME.gold}15`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', border: `1px solid ${THEME.gold}30` }}><Download color={THEME.gold} size={30} /></div><h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', margin: '0 0 10px 0', color: THEME.text, fontWeight: '500' }}>Project Brochure</h2><p style={{ color: THEME.muted, fontSize: '0.95rem', margin: 0 }}>Enter your details to instantly download the premium project brochure.</p></div>
+                        <div style={{ textAlign: 'center', marginBottom: '35px' }}>
+                            <div style={{ width: '70px', height: '70px', background: `${THEME.gold}15`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', border: `1px solid ${THEME.gold}30` }}>
+                                {hasUnlockedMaps ? <Download color={THEME.gold} size={30} /> : <Eye color={THEME.gold} size={30} />}
+                            </div>
+                            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', margin: '0 0 10px 0', color: THEME.text, fontWeight: '500' }}>
+                                {hasUnlockedMaps ? 'Project Brochure' : 'Unlock Project Details'}
+                            </h2>
+                            <p style={{ color: THEME.muted, fontSize: '0.95rem', margin: 0 }}>
+                                {hasUnlockedMaps 
+                                    ? 'Enter your details to instantly download the premium project brochure.' 
+                                    : 'Please share your details to unlock layout maps and floor plans for this project.'}
+                            </p>
+                        </div>
                         <form onSubmit={handleBrochureDownload} style={{ display: 'grid', gap: '20px' }}>
                             <div style={{ position: 'relative' }}><User size={18} style={{ position: 'absolute', left: '15px', top: '15.5px', color: THEME.muted }} /><input required placeholder="Full Name" value={brochureForm.name} onChange={(e) => setBrochureForm({...brochureForm, name: e.target.value})} style={{ width: '100%', padding: '15px 15px 15px 45px', background: THEME.dark, border: `1px solid ${THEME.border}`, borderRadius: '12px', color: THEME.text, outline: 'none' }} /></div>
                             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}><Phone size={18} style={{ position: 'absolute', left: '15px', color: THEME.muted }} /><span style={{ position: 'absolute', left: '45px', color: THEME.gold, fontWeight: 'bold' }}>+91</span><input required type="tel" maxLength={10} placeholder="Enter 10-digit Mobile" value={brochureForm.phone} onChange={(e) => setBrochureForm({...brochureForm, phone: e.target.value.replace(/\D/g,'')})} style={{ width: '100%', padding: '15px 15px 15px 85px', background: THEME.dark, border: `1px solid ${THEME.border}`, borderRadius: '12px', color: THEME.text, outline: 'none', fontSize: '1.1rem' }} /></div>

@@ -266,8 +266,8 @@ const AdminDashboard = () => {
 
     const handleAddSlide = async (e) => {
         e.preventDefault();
-        if (slides.length >= 5) {
-            alert("Maximum 5 slides allowed.");
+        if (slides.length >= 10) {
+            alert("Maximum 10 slides allowed.");
             return;
         }
 
@@ -630,7 +630,7 @@ const AdminDashboard = () => {
                 {activeTab === 'slides' && (
                     <div>
                         <h2>Homepage Slideshow Management</h2>
-                        <p style={{ color: '#888', marginBottom: '20px' }}>Manage the rotating banner images on the homepage. (Min: 2, Max: 5)</p>
+                        <p style={{ color: '#888', marginBottom: '20px' }}>Manage the rotating banner images on the homepage. (Min: 2, Max: 10)</p>
 
                         {/* Add Slide Form */}
                         <form onSubmit={handleAddSlide} style={{ background: '#1A1F1D', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
@@ -667,8 +667,8 @@ const AdminDashboard = () => {
                                     value={slideForm.tag}
                                     onChange={e => setSlideForm({ ...slideForm, tag: e.target.value })}
                                 />
-                                <button type="submit" disabled={slides.length >= 5 || uploading} style={{ gridColumn: '1/-1', padding: '12px', background: slides.length >= 5 || uploading ? '#555' : '#E3BC5A', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: slides.length >= 5 || uploading ? 'not-allowed' : 'pointer' }}>
-                                    {uploading ? 'Uploading...' : slides.length >= 5 ? 'Maximum Limit Reached (5)' : 'Add Slide'}
+                                <button type="submit" disabled={slides.length >= 10 || uploading} style={{ gridColumn: '1/-1', padding: '12px', background: slides.length >= 10 || uploading ? '#555' : '#E3BC5A', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: slides.length >= 10 || uploading ? 'not-allowed' : 'pointer' }}>
+                                    {uploading ? 'Uploading...' : slides.length >= 10 ? 'Maximum Limit Reached (10)' : 'Add Slide'}
                                 </button>
                             </div>
                         </form>
@@ -718,7 +718,8 @@ const FeaturedManagement = ({ projects, properties, setProjects, setProperties, 
         { id: 'ahm_prop', title: 'Explore Ahmedabad - Properties', type: 'properties' },
         { id: 'gan_proj', title: 'Explore Gandhinagar - Projects', type: 'projects' },
         { id: 'gan_prop', title: 'Explore Gandhinagar - Properties', type: 'properties' },
-        { id: 'sim_proj', title: 'Global Similar Projects', type: 'projects' }
+        { id: 'sim_proj', title: 'Global Similar Projects', type: 'projects' },
+        { id: 'featured_strip', title: 'Horizontal Featured Strip (Diagonal)', type: 'projects', slots: 10 }
     ];
 
     const getAssignedItem = (sectionId, slotIndex, type) => {
@@ -777,8 +778,9 @@ const FeaturedManagement = ({ projects, properties, setProjects, setProperties, 
             {SLOT_SECTIONS.map(section => (
                 <div key={section.id} style={{ background: '#1A1F1D', padding: '25px', borderRadius: '12px', border: `1px solid ${THEME.border}`, marginBottom: '30px' }}>
                     <h3 style={{ color: THEME.gold, marginTop: 0, marginBottom: '20px' }}>{section.title}</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                        {[1, 2, 3, 4].map(slotIndex => {
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                        {[...Array(section.slots || 4)].map((_, i) => {
+                            const slotIndex = i + 1;
                             const assignedItem = getAssignedItem(section.id, slotIndex, section.type);
                             return (
                                 <div key={slotIndex} style={{ border: `1px dashed ${THEME.border}`, padding: '15px', borderRadius: '8px', background: '#000', display: 'flex', flexDirection: 'column', gap: '10px' }}>

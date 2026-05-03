@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter, Tag, Key, Briefcase, Star, ShieldCheck, X, Check, MapPin, Bed } from 'lucide-react';
+import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter, Tag, Key, Briefcase, Star, ShieldCheck, X, Check, MapPin, Bed, Building2, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import ValuationModal from '../components/ValuationModal';
 import FeaturedProjects from '../components/FeaturedProjects';
@@ -57,6 +57,10 @@ const navStructure = [
 
 import { supabase } from '../supabase';
 
+const RENT_PRICE_OPTIONS = [
+    '₹5,000', '₹10,000', '₹15,000', '₹20,000', '₹25,000', '₹30,000', '₹40,000', '₹50,000', '₹75,000', '₹1L', '₹2L', '₹5L', '₹10L'
+];
+
 const Home = () => {
     const navigate = useNavigate();
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -67,14 +71,24 @@ const Home = () => {
     const [homeSlides, setHomeSlides] = useState(defaultSlides);
 
     // Search States
+    const [searchType, setSearchType] = useState('buy'); // buy or rent
     const [activeSearchDropdown, setActiveSearchDropdown] = useState(null);
     const [budgetOpen, setBudgetOpen] = useState(null);
     const [searchText, setSearchText] = useState('');
     const [selectedBHK, setSelectedBHK] = useState([]);
+    const [selectedBudget, setSelectedBudget] = useState({ min: '', max: '' });
     const [selectedConstruction, setSelectedConstruction] = useState([]);
     const [selectedAmenities, setSelectedAmenities] = useState([]);
     const [amenitySearch, setAmenitySearch] = useState('');
     const [showFinancialOptions, setShowFinancialOptions] = useState(false);
+
+    // Rent Specific States
+    const [rentPropertyType, setRentPropertyType] = useState('Apartment');
+    const [furnishingStatus, setFurnishingStatus] = useState('Unfurnished');
+    const [availability, setAvailability] = useState('Ready to move');
+    const [availableDate, setAvailableDate] = useState('');
+    const [preferredTenant, setPreferredTenant] = useState('Anyone');
+    const [propertyAge, setPropertyAge] = useState('New');
 
     // New Layout State
     const [activeAhdProjectTab, setActiveAhdProjectTab] = useState('flats');
@@ -82,17 +96,27 @@ const Home = () => {
     const [activeGnrProjectTab, setActiveGnrProjectTab] = useState('flats');
     const [activeGnrOwnerTab, setActiveGnrOwnerTab] = useState('flats');
     const slideshowRef = useRef(null);
-    const [selectedBudget, setSelectedBudget] = useState({ min: '', max: '' });
 
     const handleSearch = () => {
         const params = new URLSearchParams();
+        params.set('purpose', searchType);
         if (activeLocation) params.set('city', activeLocation);
         if (searchText) params.set('search', searchText);
         if (selectedBHK.length > 0) params.set('bhk', selectedBHK.join(','));
         if (selectedBudget.min) params.set('minBudget', selectedBudget.min);
         if (selectedBudget.max) params.set('maxBudget', selectedBudget.max);
-        if (selectedAmenities.length > 0) params.set('amenities', selectedAmenities.join('|'));
-        if (selectedConstruction.length > 0) params.set('construction', selectedConstruction.join(','));
+
+        if (searchType === 'buy') {
+            if (selectedAmenities.length > 0) params.set('amenities', selectedAmenities.join('|'));
+            if (selectedConstruction.length > 0) params.set('construction', selectedConstruction.join(','));
+        } else {
+            params.set('type', rentPropertyType);
+            params.set('furnishing', furnishingStatus);
+            params.set('availability', availability);
+            if (availableDate) params.set('availableFrom', availableDate);
+            params.set('tenant', preferredTenant);
+            params.set('age', propertyAge);
+        }
         navigate(`/explore?${params.toString()}`);
     };
 
@@ -122,7 +146,7 @@ const Home = () => {
                         : 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=80',
                     listingTitle: p.project_name || `Property in ${p.locality}`,
                     builder: p.contact_name || 'Individual Seller',
-                    config: p.bhk || p.property_type,
+                    config: p.bhk || p.property_type || 'Property',
                     location: p.locality,
                     city: p.city,
                     type: p.property_type?.toLowerCase(),
@@ -141,19 +165,57 @@ const Home = () => {
                 .limit(30);
 
             if (projectsData && !projError) {
-                setRealProjects(projectsData.map(p => ({
-                    id: p.id,
-                    image: (p.images && p.images.length > 0)
-                        ? (typeof p.images[0] === 'string' ? p.images[0] : (p.images[0]?.url || p.images[0]))
-                        : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
-                    listingTitle: p.name,
-                    builder: p.developer,
-                    location: p.locality,
-                    city: p.city,
-                    type: p.property_type?.toLowerCase(),
-                    price: p.configurations?.[0]?.price || 'Call for Price',
-                    isProject: true
-                })));
+                setRealProjects(projectsData.map(p => {
+                    // Build config label from bedrooms field across all 3 config arrays
+                    let configText = p.property_type || 'Residential';
+
+                    const bhkNums = [];
+                    const extras = [];
+
+                    // Regular configs: use 'bedrooms' count or 'bhk_type' for villas
+                    if (Array.isArray(p.configurations) && p.configurations.length > 0) {
+                        p.configurations.forEach(c => {
+                            if (c?.bhk_type) {
+                                // Villa style e.g. "4 BHK"
+                                const n = parseInt(c.bhk_type);
+                                if (!isNaN(n)) bhkNums.push(n);
+                            } else if (c?.bedrooms) {
+                                bhkNums.push(parseInt(c.bedrooms));
+                            }
+                        });
+                    }
+
+                    // Penthouse configs
+                    if (Array.isArray(p.penthouse_configurations) && p.penthouse_configurations.length > 0) {
+                        extras.push('Penthouse');
+                    }
+
+                    // Duplex Penthouse configs
+                    if (Array.isArray(p.duplex_penthouse_configurations) && p.duplex_penthouse_configurations.length > 0) {
+                        extras.push('Duplex Penthouse');
+                    }
+
+                    const sortedBhks = [...new Set(bhkNums)].sort((a, b) => a - b);
+                    const parts = [];
+                    if (sortedBhks.length > 0) parts.push(`${sortedBhks.join(', ')} BHK Flat`);
+                    extras.forEach(e => parts.push(e));
+                    if (parts.length > 0) configText = parts.join(', ');
+
+                    return {
+                        id: p.id,
+                        image: (p.images && p.images.length > 0)
+                            ? (typeof p.images[0] === 'string' ? p.images[0] : (p.images[0]?.url || p.images[0]))
+                            : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
+                        listingTitle: p.name,
+                        developer: p.developer,
+                        location: p.locality,
+                        city: p.city,
+                        type: p.property_type?.toLowerCase(),
+                        config: configText,
+                        price: p.configurations?.[0]?.price || 'Call for Price',
+                        isProject: true
+                    };
+                }));
             }
 
             // Fetch Slides
@@ -167,7 +229,8 @@ const Home = () => {
                     image: s.image_url,
                     title: s.title,
                     price: s.price,
-                    tag: s.tag
+                    tag: s.tag,
+                    developer: s.builder || s.developer
                 })));
             }
         };
@@ -249,9 +312,10 @@ const Home = () => {
                                 >
                                     <img src={slide.image} alt={slide.title} loading={idx === 0 ? "eager" : "lazy"} />
                                     <div className="slide-hero-text">
-                                        <span className="hero-tag">{slide.tag}</span>
-                                        <h2>{slide.title}</h2>
-                                        <p>{slide.price}</p>
+                                        <h2 style={{ marginBottom: '4px' }}>{slide.title}</h2>
+                                        <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: '1.2rem', margin: '0 0 16px 0', fontWeight: '500', letterSpacing: '0.5px' }}>{slide.developer || 'NestDeal'}</p>
+                                        <div className="hero-tag" style={{ color: '#FFFFFF', opacity: 1, fontSize: '1rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '8px', width: 'fit-content' }}>{slide.tag}</div>
+                                        <p style={{ marginTop: '20px', fontSize: '1.8rem', fontWeight: '700' }}>{slide.price}</p>
                                     </div>
                                 </div>
                             ))}
@@ -272,6 +336,12 @@ const Home = () => {
 
                     {/* Search Bar - Moved OUTSIDE hero-right-visual to sit on top of everything */}
                     <div className="hero-bottom-filter">
+                        <div className="search-type-toggle-wrapper">
+                            <div className="search-type-toggle">
+                                <button className={searchType === 'buy' ? 'active' : ''} onClick={() => { setSearchType('buy'); setSelectedBudget({ min: '', max: '' }); }}>BUY</button>
+                                <button className={searchType === 'rent' ? 'active' : ''} onClick={() => { setSearchType('rent'); setSelectedBudget({ min: '', max: '' }); }}>RENT</button>
+                            </div>
+                        </div>
                         <div className="advanced-search-container">
                             {/* City */}
                             <div className="search-field-group" onClick={() => toggleSearchDropdown('city')}>
@@ -353,7 +423,7 @@ const Home = () => {
                                                 <ChevronDown size={14} />
                                                 {budgetOpen === 'min' && (
                                                     <div className="price-dropdown-list">
-                                                        {PRICE_OPTIONS.map(price => (
+                                                        {(searchType === 'rent' ? RENT_PRICE_OPTIONS : PRICE_OPTIONS).map(price => (
                                                             <div key={price} className="price-option" onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 setSelectedBudget({ ...selectedBudget, min: price });
@@ -370,7 +440,7 @@ const Home = () => {
                                                 <ChevronDown size={14} />
                                                 {budgetOpen === 'max' && (
                                                     <div className="price-dropdown-list">
-                                                        {PRICE_OPTIONS.map(price => (
+                                                        {(searchType === 'rent' ? RENT_PRICE_OPTIONS : PRICE_OPTIONS).map(price => (
                                                             <div key={price} className="price-option" onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 setSelectedBudget({ ...selectedBudget, max: price });
@@ -387,97 +457,173 @@ const Home = () => {
 
                             <div className="search-divider-v"></div>
 
-                            {/* Amenities */}
-                            <div className="search-field-group" onClick={() => toggleSearchDropdown('amenities')}>
-                                <label>Amenities</label>
-                                <div className="field-control">
-                                    <span style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {selectedAmenities.length > 0 ? `${selectedAmenities.length} selected` : 'Any'}
-                                    </span>
-                                    <ChevronDown size={14} className={activeSearchDropdown === 'amenities' ? 'rotate-180' : ''} />
-                                </div>
-                                {activeSearchDropdown === 'amenities' && (
-                                    <div className="dropdown-menu-search amenities-dropdown" onClick={(e) => e.stopPropagation()} style={{ width: '280px', maxHeight: '320px', overflowY: 'auto' }}>
-                                        <div style={{ padding: '8px 12px', borderBottom: '1px solid #eee' }}>
-                                            <input
-                                                type="text"
-                                                placeholder="Search amenity..."
-                                                value={amenitySearch}
-                                                onChange={(e) => setAmenitySearch(e.target.value)}
-                                                onClick={(e) => e.stopPropagation()}
-                                                style={{ width: '100%', border: '1px solid #ddd', borderRadius: '6px', padding: '6px 10px', fontSize: '0.85rem', outline: 'none' }}
-                                            />
+                            {searchType === 'buy' ? (
+                                <>
+                                    {/* Amenities */}
+                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('amenities')}>
+                                        <label>Amenities</label>
+                                        <div className="field-control">
+                                            <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {selectedAmenities.length > 0 ? `${selectedAmenities.length} selected` : 'Any'}
+                                            </span>
+                                            <ChevronDown size={14} className={activeSearchDropdown === 'amenities' ? 'rotate-180' : ''} />
                                         </div>
-                                        {ALL_AMENITY_NAMES
-                                            .filter(a => a.toLowerCase().includes(amenitySearch.toLowerCase()))
-                                            .map(name => (
-                                                <div
-                                                    key={name}
-                                                    className={`dd-item`}
-                                                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '0.875rem', background: selectedAmenities.includes(name) ? '#E3BC5A15' : 'transparent' }}
-                                                    onClick={() => toggleAmenity(name)}
-                                                >
-                                                    <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `2px solid ${selectedAmenities.includes(name) ? '#E3BC5A' : '#ccc'}`, background: selectedAmenities.includes(name) ? '#E3BC5A' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                        {selectedAmenities.includes(name) && <Check size={10} color="white" strokeWidth={3} />}
-                                                    </div>
-                                                    {name}
+                                        {activeSearchDropdown === 'amenities' && (
+                                            <div className="dropdown-menu-search amenities-dropdown" onClick={(e) => e.stopPropagation()} style={{ width: '280px', maxHeight: '320px', overflowY: 'auto' }}>
+                                                <div style={{ padding: '8px 12px', borderBottom: '1px solid #eee' }}>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Search amenity..."
+                                                        value={amenitySearch}
+                                                        onChange={(e) => setAmenitySearch(e.target.value)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        style={{ width: '100%', border: '1px solid #ddd', borderRadius: '6px', padding: '6px 10px', fontSize: '0.85rem', outline: 'none' }}
+                                                    />
                                                 </div>
-                                            ))
-                                        }
-                                        {selectedAmenities.length > 0 && (
-                                            <div style={{ padding: '8px 12px', borderTop: '1px solid #eee', textAlign: 'center' }}>
-                                                <button onClick={() => setSelectedAmenities([])} style={{ background: 'none', border: 'none', color: '#E3BC5A', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '600' }}>Clear All ({selectedAmenities.length})</button>
+                                                <div style={{ padding: '8px' }}>
+                                                    {ALL_AMENITY_NAMES.filter(a => a.toLowerCase().includes(amenitySearch.toLowerCase())).map(name => (
+                                                        <div key={name} className={`amenity-item-check ${selectedAmenities.includes(name) ? 'active' : ''}`} onClick={() => toggleAmenity(name)}>
+                                                            <div className="check-box">{selectedAmenities.includes(name) && <Check size={12} />}</div>
+                                                            <span>{name}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
-                                )}
-                            </div>
 
-                            <div className="search-divider-v"></div>
+                                    <div className="search-divider-v"></div>
 
-                            {/* Construction */}
-                            <div className="search-field-group" onClick={() => toggleSearchDropdown('construction')}>
-                                <label>Construction</label>
-                                <div className="field-control">
-                                    <span style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {selectedConstruction.length > 0 ? `${selectedConstruction.length} selected` : 'Any Status'}
-                                    </span>
-                                    <ChevronDown size={14} className={activeSearchDropdown === 'construction' ? 'rotate-180' : ''} />
-                                </div>
-                                {activeSearchDropdown === 'construction' && (
-                                    <div className="dropdown-menu-search bhk-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        <div className="bhk-options-grid">
-                                            {['READY TO MOVE', 'UNDER CONSTRUCTION'].map(status => (
-                                                <div
-                                                    key={status}
-                                                    className={`bhk-option-btn ${selectedConstruction.includes(status) ? 'active' : ''}`}
-                                                    onClick={() => {
-                                                        const newSel = selectedConstruction.includes(status)
-                                                            ? selectedConstruction.filter(s => s !== status)
-                                                            : [...selectedConstruction, status];
-                                                        setSelectedConstruction(newSel);
-                                                    }}
-                                                    style={{ fontSize: '0.75rem' }}
-                                                >
-                                                    {status}
-                                                </div>
-                                            ))}
+                                    {/* Construction */}
+                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('construction')}>
+                                        <label>Construction</label>
+                                        <div className="field-control">
+                                            <span>{selectedConstruction.length > 0 ? `${selectedConstruction.length} selected` : 'Any Status'}</span>
+                                            <ChevronDown size={14} className={activeSearchDropdown === 'construction' ? 'rotate-180' : ''} />
                                         </div>
-                                        <div className="bhk-footer" onClick={() => setSelectedConstruction([])}>Clear All</div>
+                                        {activeSearchDropdown === 'construction' && (
+                                            <div className="dropdown-menu-search simple-dropdown" onClick={(e) => e.stopPropagation()}>
+                                                {['READY TO MOVE', 'UNDER CONSTRUCTION'].map(status => (
+                                                    <div
+                                                        key={status}
+                                                        className={`dd-item ${selectedConstruction.includes(status) ? 'selected' : ''}`}
+                                                        onClick={() => {
+                                                            const newSel = selectedConstruction.includes(status)
+                                                                ? selectedConstruction.filter(s => s !== status)
+                                                                : [...selectedConstruction, status];
+                                                            setSelectedConstruction(newSel);
+                                                        }}
+                                                    >
+                                                        {status}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Property Type */}
+                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('propType')}>
+                                        <label>Property Type</label>
+                                        <div className="field-control">
+                                            <span style={{ fontSize: '0.75rem' }}>{rentPropertyType}</span>
+                                            <ChevronDown size={14} className={activeSearchDropdown === 'propType' ? 'rotate-180' : ''} />
+                                        </div>
+                                        {activeSearchDropdown === 'propType' && (
+                                            <div className="dropdown-menu-search simple-dropdown" onClick={(e) => e.stopPropagation()}>
+                                                {['Apartment', 'Villa', 'Studio', 'Builder Floor', 'PG / Co-living'].map(t => (
+                                                    <div key={t} className={`dd-item ${rentPropertyType === t ? 'selected' : ''}`} onClick={() => { setRentPropertyType(t); toggleSearchDropdown(null); }}>{t}</div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
 
-                            <div className="search-divider-v"></div>
+                                    <div className="search-divider-v"></div>
 
-                            {/* Actions */}
-                            <div className="search-actions-group">
-                                <button className="filter-text-btn" onClick={() => toggleSearchDropdown('filter-modal')}>
-                                    <Filter size={16} />
-                                    <span>Filter</span>
-                                </button>
-                                <button className="search-submit-btn" onClick={handleSearch}>Search</button>
-                            </div>
+                                    {/* Furnishing */}
+                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('furnishing')}>
+                                        <label>Furnishing</label>
+                                        <div className="field-control">
+                                            <span style={{ fontSize: '0.75rem' }}>{furnishingStatus}</span>
+                                            <ChevronDown size={14} className={activeSearchDropdown === 'furnishing' ? 'rotate-180' : ''} />
+                                        </div>
+                                        {activeSearchDropdown === 'furnishing' && (
+                                            <div className="dropdown-menu-search simple-dropdown" onClick={(e) => e.stopPropagation()}>
+                                                {['Unfurnished', 'Semi-furnished', 'Fully furnished'].map(t => (
+                                                    <div key={t} className={`dd-item ${furnishingStatus === t ? 'selected' : ''}`} onClick={() => { setFurnishingStatus(t); toggleSearchDropdown(null); }}>{t}</div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="search-divider-v"></div>
+
+                                    {/* Availability */}
+                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('avail')}>
+                                        <label>Availability</label>
+                                        <div className="field-control">
+                                            <span style={{ fontSize: '0.75rem' }}>{availability === 'Ready to move' ? 'Ready' : (availableDate || 'Select Date')}</span>
+                                            <ChevronDown size={14} className={activeSearchDropdown === 'avail' ? 'rotate-180' : ''} />
+                                        </div>
+                                        {activeSearchDropdown === 'avail' && (
+                                            <div className="dropdown-menu-search simple-dropdown" onClick={(e) => e.stopPropagation()} style={{ width: '200px' }}>
+                                                <div className={`dd-item ${availability === 'Ready to move' ? 'selected' : ''}`} onClick={() => { setAvailability('Ready to move'); setAvailableDate(''); toggleSearchDropdown(null); }}>Ready to move</div>
+                                                <div className="dd-item" style={{ padding: '10px' }}>
+                                                    <label style={{ fontSize: '0.7rem', color: '#666', marginBottom: '4px' }}>Available from:</label>
+                                                    <input 
+                                                        type="date" 
+                                                        value={availableDate} 
+                                                        onChange={(e) => { setAvailableDate(e.target.value); setAvailability('Date'); }}
+                                                        style={{ width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '4px' }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="search-divider-v"></div>
+
+                                    {/* Tenant */}
+                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('tenant')}>
+                                        <label>Tenant</label>
+                                        <div className="field-control">
+                                            <span style={{ fontSize: '0.75rem' }}>{preferredTenant}</span>
+                                            <ChevronDown size={14} className={activeSearchDropdown === 'tenant' ? 'rotate-180' : ''} />
+                                        </div>
+                                        {activeSearchDropdown === 'tenant' && (
+                                            <div className="dropdown-menu-search simple-dropdown" onClick={(e) => e.stopPropagation()}>
+                                                {['Family', 'Bachelor', 'Anyone'].map(t => (
+                                                    <div key={t} className={`dd-item ${preferredTenant === t ? 'selected' : ''}`} onClick={() => { setPreferredTenant(t); toggleSearchDropdown(null); }}>{t}</div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="search-divider-v"></div>
+
+                                    {/* Age */}
+                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('age')}>
+                                        <label>Age</label>
+                                        <div className="field-control">
+                                            <span style={{ fontSize: '0.75rem' }}>{propertyAge}</span>
+                                            <ChevronDown size={14} className={activeSearchDropdown === 'age' ? 'rotate-180' : ''} />
+                                        </div>
+                                        {activeSearchDropdown === 'age' && (
+                                            <div className="dropdown-menu-search simple-dropdown" onClick={(e) => e.stopPropagation()}>
+                                                {['New', '0–5 yrs', '5–10 yrs', '10+ yrs'].map(t => (
+                                                    <div key={t} className={`dd-item ${propertyAge === t ? 'selected' : ''}`} onClick={() => { setPropertyAge(t); toggleSearchDropdown(null); }}>{t}</div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+
+                            <button className="main-search-btn" onClick={handleSearch}>
+                                <Search size={20} />
+                                <span>Search</span>
+                            </button>
                         </div>
                     </div>
 
@@ -604,33 +750,25 @@ const Home = () => {
                                     <div className="premium-img-section">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                         <div className="premium-gradient-overlay"></div>
-                                        <div className="premium-badges">
-                                            {item.builder && item.builder !== 'Individual Seller' && (
-                                                <div className="premium-developer-badge">
-                                                    <span>{item.builder.substring(0, 2).toUpperCase()}</span>
-                                                </div>
-                                            )}
-                                            {item.config && (
-                                                <div className="premium-bhk-badge">
-                                                    <Bed size={12} />
-                                                    <span>{item.config}</span>
-                                                </div>
-                                            )}
-                                        </div>
                                         <div className="premium-img-text">
                                             <h4 className="premium-title">{item.listingTitle}</h4>
-                                            <p className="premium-location">
-                                                <MapPin size={12} /> {item.location || item.city}
-                                            </p>
+                                            <div className="premium-developer">
+                                                <Building2 size={14} /> by {item.developer || 'NestDeal'}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="premium-details-section">
-                                        <div className="premium-price-box">
-                                            <span className="premium-price-label">Price Range</span>
-                                            <div className="premium-price-value">{item.price}</div>
+                                        <div className="detail-line">
+                                            <Bed size={16} /> <span>{item.config || item.type || 'Residential'}</span>
                                         </div>
-                                        <div className="premium-action-btn">
-                                            View Details <ArrowRight size={14} />
+                                        <div className="detail-line">
+                                            <MapPin size={16} /> <span>{item.location}, {item.city}</span>
+                                        </div>
+                                        <div className="price-row">
+                                            <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
+                                            <div className="view-details-btn">
+                                                View Details <ArrowRight size={14} />
+                                            </div>
                                         </div>
                                     </div>
                                 </Link>
@@ -662,33 +800,25 @@ const Home = () => {
                                     <div className="premium-img-section">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                         <div className="premium-gradient-overlay"></div>
-                                        <div className="premium-badges">
-                                            {item.builder && item.builder !== 'Individual Seller' && (
-                                                <div className="premium-developer-badge">
-                                                    <span>{item.builder.substring(0, 2).toUpperCase()}</span>
-                                                </div>
-                                            )}
-                                            {item.config && (
-                                                <div className="premium-bhk-badge">
-                                                    <Bed size={12} />
-                                                    <span>{item.config}</span>
-                                                </div>
-                                            )}
-                                        </div>
                                         <div className="premium-img-text">
                                             <h4 className="premium-title">{item.listingTitle}</h4>
-                                            <p className="premium-location">
-                                                <MapPin size={12} /> {item.location || item.city}
-                                            </p>
+                                            <div className="premium-developer">
+                                                <User size={14} /> by {item.developer || 'Individual'}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="premium-details-section">
-                                        <div className="premium-price-box">
-                                            <span className="premium-price-label">Price Range</span>
-                                            <div className="premium-price-value">{item.price}</div>
+                                        <div className="detail-line">
+                                            <Bed size={16} /> <span>{item.config || item.type || 'Property'}</span>
                                         </div>
-                                        <div className="premium-action-btn">
-                                            View Details <ArrowRight size={14} />
+                                        <div className="detail-line">
+                                            <MapPin size={16} /> <span>{item.location}, {item.city}</span>
+                                        </div>
+                                        <div className="price-row">
+                                            <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
+                                            <div className="view-details-btn">
+                                                View Details <ArrowRight size={14} />
+                                            </div>
                                         </div>
                                     </div>
                                 </Link>
@@ -732,33 +862,25 @@ const Home = () => {
                                     <div className="premium-img-section">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                         <div className="premium-gradient-overlay"></div>
-                                        <div className="premium-badges">
-                                            {item.builder && item.builder !== 'Individual Seller' && (
-                                                <div className="premium-developer-badge">
-                                                    <span>{item.builder.substring(0, 2).toUpperCase()}</span>
-                                                </div>
-                                            )}
-                                            {item.config && (
-                                                <div className="premium-bhk-badge">
-                                                    <Bed size={12} />
-                                                    <span>{item.config}</span>
-                                                </div>
-                                            )}
-                                        </div>
                                         <div className="premium-img-text">
                                             <h4 className="premium-title">{item.listingTitle}</h4>
-                                            <p className="premium-location">
-                                                <MapPin size={12} /> {item.location || item.city}
-                                            </p>
+                                            <div className="premium-developer">
+                                                <Building2 size={14} /> by {item.builder || 'NestDeal'}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="premium-details-section">
-                                        <div className="premium-price-box">
-                                            <span className="premium-price-label">Price Range</span>
-                                            <div className="premium-price-value">{item.price}</div>
+                                        <div className="detail-line">
+                                            <Bed size={16} /> <span>{item.config || item.type || 'Residential'}</span>
                                         </div>
-                                        <div className="premium-action-btn">
-                                            View Details <ArrowRight size={14} />
+                                        <div className="detail-line">
+                                            <MapPin size={16} /> <span>{item.location}, {item.city}</span>
+                                        </div>
+                                        <div className="price-row">
+                                            <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
+                                            <div className="view-details-btn">
+                                                View Details <ArrowRight size={14} />
+                                            </div>
                                         </div>
                                     </div>
                                 </Link>
@@ -790,33 +912,25 @@ const Home = () => {
                                     <div className="premium-img-section">
                                         <img src={item.image} alt={item.listingTitle} loading="lazy" />
                                         <div className="premium-gradient-overlay"></div>
-                                        <div className="premium-badges">
-                                            {item.builder && item.builder !== 'Individual Seller' && (
-                                                <div className="premium-developer-badge">
-                                                    <span>{item.builder.substring(0, 2).toUpperCase()}</span>
-                                                </div>
-                                            )}
-                                            {item.config && (
-                                                <div className="premium-bhk-badge">
-                                                    <Bed size={12} />
-                                                    <span>{item.config}</span>
-                                                </div>
-                                            )}
-                                        </div>
                                         <div className="premium-img-text">
                                             <h4 className="premium-title">{item.listingTitle}</h4>
-                                            <p className="premium-location">
-                                                <MapPin size={12} /> {item.location || item.city}
-                                            </p>
+                                            <div className="premium-developer">
+                                                <User size={14} /> by {item.builder || 'Individual'}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="premium-details-section">
-                                        <div className="premium-price-box">
-                                            <span className="premium-price-label">Price Range</span>
-                                            <div className="premium-price-value">{item.price}</div>
+                                        <div className="detail-line">
+                                            <Bed size={16} /> <span>{item.config || item.type || 'Property'}</span>
                                         </div>
-                                        <div className="premium-action-btn">
-                                            View Details <ArrowRight size={14} />
+                                        <div className="detail-line">
+                                            <MapPin size={16} /> <span>{item.location}, {item.city}</span>
+                                        </div>
+                                        <div className="price-row">
+                                            <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
+                                            <div className="view-details-btn">
+                                                View Details <ArrowRight size={14} />
+                                            </div>
                                         </div>
                                     </div>
                                 </Link>
