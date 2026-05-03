@@ -3,6 +3,7 @@ import { Search, Calculator, Info, ArrowRight, ChevronRight, ChevronDown, Filter
 import { Link, useNavigate } from 'react-router-dom';
 import ValuationModal from '../components/ValuationModal';
 import ExploreAhmedabad from '../components/ExploreAhmedabad';
+import ExploreGandhinagar from '../components/ExploreGandhinagar';
 import FooterFilters from '../components/FooterFilters';
 import logo from '../assets/logo.jpg';
 import './Home.css';
@@ -761,7 +762,7 @@ const Home = () => {
                                         <div className="price-row">
                                             <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
                                             <div className="view-details-btn">
-                                                View Details <ArrowRight size={14} />
+                                                Enquire Now <ArrowRight size={14} />
                                             </div>
                                         </div>
                                     </div>
@@ -811,7 +812,7 @@ const Home = () => {
                                         <div className="price-row">
                                             <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
                                             <div className="view-details-btn">
-                                                View Details <ArrowRight size={14} />
+                                                Enquire Now <ArrowRight size={14} />
                                             </div>
                                         </div>
                                     </div>
@@ -824,14 +825,11 @@ const Home = () => {
                 </div>
             </div>
 
+            {/* Interactive Explore Gandhinagar Section */}
+            <ExploreGandhinagar />
+
             {/* Explore Gandhinagar Section */}
-            <div className="explore-gandhinagar-section" style={{ marginTop: '60px' }}>
-                <div className="explore-header-container" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Link to="/explore?city=Gandhinagar" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <h2 style={{ margin: 0, color: '#E3BC5A', fontFamily: '"Playfair Display", serif', fontSize: '3rem', fontWeight: 600, letterSpacing: '1px' }}>Explore Gandhinagar</h2>
-                        <ChevronRight size={38} color="#E3BC5A" />
-                    </Link>
-                </div>
+            <div className="explore-gandhinagar-section">
 
                 <div className="new-prop-listing-container">
                     {/* LEFT CONTAINER: Popular Projects (Gandhinagar) */}
@@ -873,7 +871,7 @@ const Home = () => {
                                         <div className="price-row">
                                             <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
                                             <div className="view-details-btn">
-                                                View Details <ArrowRight size={14} />
+                                                Enquire Now <ArrowRight size={14} />
                                             </div>
                                         </div>
                                     </div>
@@ -923,7 +921,7 @@ const Home = () => {
                                         <div className="price-row">
                                             <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
                                             <div className="view-details-btn">
-                                                View Details <ArrowRight size={14} />
+                                                Enquire Now <ArrowRight size={14} />
                                             </div>
                                         </div>
                                     </div>

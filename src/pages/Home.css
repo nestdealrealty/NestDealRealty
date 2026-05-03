@@ -1589,8 +1589,7 @@
 
 .new-col-header {
     text-align: center;
-    color: #E3BC5A;
-    /* Gold */
+    color: #5E7D5A;
     font-size: 2rem;
     font-family: 'Playfair Display', serif;
     font-weight: 600;
@@ -1608,8 +1607,8 @@
 
 .prop-tab-btn {
     background: transparent;
-    border: 1px solid #E3BC5A;
-    color: #E3BC5A;
+    border: 1px solid #5E7D5A;
+    color: #5E7D5A;
     padding: 8px 24px;
     font-size: 1rem;
     font-weight: 500;
@@ -1620,13 +1619,13 @@
 }
 
 .prop-tab-btn.active {
-    background: #E3BC5A;
-    color: #000;
+    background: #5E7D5A;
+    color: #FFFFFF;
     font-weight: bold;
 }
 
 .prop-tab-btn:hover {
-    background: rgba(227, 188, 90, 0.1);
+    background: rgba(94, 125, 90, 0.1);
 }
 
 /* 2x2 Grid */
@@ -1781,8 +1780,8 @@
     width: max-content;
     margin: 0 auto 40px auto;
     background: transparent;
-    border: 1px solid #E3BC5A;
-    color: #E3BC5A;
+    border: 1px solid #5E7D5A;
+    color: #5E7D5A;
     padding: 10px 30px;
     border-radius: 4px;
     font-size: 0.9rem;
@@ -1793,8 +1792,8 @@
 }
 
 .new-see-all-btn:hover {
-    background: #E3BC5A;
-    color: #000;
+    background: #5E7D5A;
+    color: #FFFFFF;
 }
 
 /* Second Row Split */
@@ -1832,17 +1831,17 @@ img {
 
 /* LIGHT THEME OVERRIDES FOR LISTINGS - WHITE BG, GOLD TEXT */
 .new-col-header {
-    color: #E3BC5A !important;
+    color: #5E7D5A !important;
 }
 
 .prop-tab-btn {
-    border-color: #E3BC5A !important;
-    color: #E3BC5A !important;
+    border-color: #5E7D5A !important;
+    color: #5E7D5A !important;
 }
 
 .prop-tab-btn.active {
-    background-color: #E3BC5A !important;
-    color: #000000 !important;
+    background-color: #5E7D5A !important;
+    color: #FFFFFF !important;
 }
 
 /* Ensure Explore sections are warm white */
@@ -1856,13 +1855,13 @@ img {
 /* Removed old dark-card overrides as we now use premium light cards */
 
 .new-see-all-btn {
-    border-color: #E3BC5A !important;
-    color: #E3BC5A !important;
+    border-color: #5E7D5A !important;
+    color: #5E7D5A !important;
 }
 
 .new-see-all-btn:hover {
-    background-color: #E3BC5A !important;
-    color: #000000 !important;
+    background-color: #5E7D5A !important;
+    color: #FFFFFF !important;
 }
 
 /* --- EXPLORE NEW PROJECT BY LOCALITIES --- */

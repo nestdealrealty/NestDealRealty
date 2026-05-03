@@ -150,6 +150,7 @@ const AdminDashboard = () => {
     const [selectedProject, setSelectedProject] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [featuredProjects, setFeaturedProjects] = useState([]);
+    const [skylineAssets, setSkylineAssets] = useState([]);
 
     // Helper to open project and clear property (and vice versa)
     const openProject = (p) => { setSelectedProperty(null); setSelectedProject(p); };
@@ -177,13 +178,14 @@ const AdminDashboard = () => {
                 return data;
             };
 
-            const [propsData, projectsData, valsData, slidesData, profilesData, featuredData] = await Promise.all([
+            const [propsData, projectsData, valsData, slidesData, profilesData, featuredData, skyData] = await Promise.all([
                 fetchTable('properties'),
                 fetchTable('projects'),
                 fetchTable('valuations'),
                 fetchTable('home_slides'),
                 fetchTable('profiles'),
-                fetchTable('featured_projects')
+                fetchTable('featured_projects'),
+                supabase.from('site_assets').select('*').order('asset_key', { ascending: true }).then(({ data }) => data || [])
             ]);
 
             // Leads needs a join for both properties and projects
@@ -199,6 +201,7 @@ const AdminDashboard = () => {
             setProfiles(profilesData || []);
             setLeads(leadsData || []);
             setFeaturedProjects(featuredData || []);
+            setSkylineAssets(skyData || []);
 
             if (projectsData.length === 0) {
                 console.info("Notice: No projects found or 'projects' table not yet created.");
@@ -206,6 +209,30 @@ const AdminDashboard = () => {
 
         } catch (err) {
             console.error('Error fetching admin data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleInitSkyline = async () => {
+        setLoading(true);
+        try {
+            const defaults = [
+                { asset_key: 'skyline_1', image_url: '/building_left.png', label: 'SG Highway', city: 'Ahmedabad', metadata: { width: "20%", height: "80%" } },
+                { asset_key: 'skyline_2', image_url: '/building_right.png', label: 'Sector 1-30', city: 'Gandhinagar', metadata: { width: "16%", height: "70%" } },
+                { asset_key: 'skyline_3', image_url: '/building_center.png', label: 'Prahlad Nagar', city: 'Ahmedabad', metadata: { width: "28%", height: "100%", isCenter: true } },
+                { asset_key: 'skyline_4', image_url: '/building_right.png', label: 'Bodakdev', city: 'Ahmedabad', metadata: { width: "18%", height: "78%", mirror: true } },
+                { asset_key: 'skyline_5', image_url: '/building_left.png', label: 'Gift City', city: 'Gandhinagar', metadata: { width: "14%", height: "65%", mirror: true } }
+            ];
+
+            const { error } = await supabase.from('site_assets').insert(defaults);
+            if (error) throw error;
+
+            alert("Skyline Assets Initialized!");
+            fetchAllData();
+        } catch (err) {
+            console.error(err);
+            alert("Failed to initialize assets. Please ensure the 'site_assets' table exists in your Supabase database.");
         } finally {
             setLoading(false);
         }
@@ -341,8 +368,6 @@ const AdminDashboard = () => {
     if (user.email !== ADMIN_EMAIL) return <Navigate to="/" />;
     if (loading) return <div style={{ padding: '50px', color: '#fff', background: '#0C1512', minHeight: '100vh', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem' }}>Loading admin panel...</div>;
 
-
-
     return (
         <div style={{ display: 'flex', minHeight: '100vh', background: '#0C1512', color: '#E6ECE9', fontFamily: 'Outfit, sans-serif' }}>
             {/* Sidebar */}
@@ -369,6 +394,9 @@ const AdminDashboard = () => {
                 </div>
                 <div onClick={() => setActiveTab('users')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'users' ? '#E3BC5A20' : 'transparent', color: activeTab === 'users' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Users size={20} /> Users
+                </div>
+                <div onClick={() => setActiveTab('skyline')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'skyline' ? '#E3BC5A20' : 'transparent', color: activeTab === 'skyline' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Camera size={20} /> Skyline UI
                 </div>
             </div>
 
@@ -705,6 +733,16 @@ const AdminDashboard = () => {
                         THEME={THEME}
                     />
                 )}
+
+                {activeTab === 'skyline' && (
+                    <SkylineManagement 
+                        assets={skylineAssets} 
+                        setAssets={setSkylineAssets}
+                        supabase={supabase}
+                        THEME={THEME}
+                        onInit={handleInitSkyline}
+                    />
+                )}
             </div>
         </div>
     );
@@ -773,7 +811,7 @@ const FeaturedManagement = ({ projects, properties, setProjects, setProperties, 
     return (
         <div>
             <h2>Homepage Content Management</h2>
-            <p style={{ color: THEME.muted, marginBottom: '30px' }}>Assign specific projects and properties to the exact positions on the Homepage. Note: You must manually add a text column named "homepage_slot" to your projects and properties tables in Supabase for this to work.</p>
+            <p style={{ color: THEME.muted, marginBottom: '30px' }}>Assign specific projects and properties to the exact positions on the Homepage.</p>
 
             {SLOT_SECTIONS.map(section => (
                 <div key={section.id} style={{ background: '#1A1F1D', padding: '25px', borderRadius: '12px', border: `1px solid ${THEME.border}`, marginBottom: '30px' }}>
@@ -800,7 +838,7 @@ const FeaturedManagement = ({ projects, properties, setProjects, setProperties, 
                                         </button>
                                     )}
                                 </div>
-                            )
+                            );
                         })}
                     </div>
                 </div>
@@ -826,6 +864,236 @@ const FeaturedManagement = ({ projects, properties, setProjects, setProperties, 
                             ))}
                         </div>
                     </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const SkylineManagement = ({ assets, setAssets, supabase, THEME, onInit }) => {
+    const [uploadingId, setUploadingId] = useState(null);
+    const [isAdding, setIsAdding] = useState(false);
+    const [newAsset, setNewAsset] = useState({ label: '', city: 'Gandhinagar', file: null });
+
+    const handleUpload = async (id, file) => {
+        if (!file) return;
+        setUploadingId(id);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `skyline_${id}_${Date.now()}.${fileExt}`;
+            const filePath = `site-assets/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('property-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('property-images')
+                .getPublicUrl(filePath);
+
+            const { error: dbError } = await supabase
+                .from('site_assets')
+                .update({ image_url: publicUrl })
+                .eq('id', id);
+
+            if (dbError) throw dbError;
+
+            setAssets(prev => prev.map(a => a.id === id ? { ...a, image_url: publicUrl } : a));
+            alert("Building image updated!");
+        } catch (err) {
+            console.error(err);
+            alert("Upload failed: " + err.message);
+        } finally {
+            setUploadingId(null);
+        }
+    };
+
+    const handleUpdateText = async (id, field, value) => {
+        try {
+            const { error } = await supabase
+                .from('site_assets')
+                .update({ [field]: value })
+                .eq('id', id);
+            
+            if (error) throw error;
+            setAssets(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a));
+        } catch (err) {
+            alert("Update failed");
+        }
+    };
+
+    const handleAddNew = async (e) => {
+        e.preventDefault();
+        if (!newAsset.file || !newAsset.label) return alert("Image file and Label are required");
+        setUploadingId('new');
+        try {
+            const fileExt = newAsset.file.name.split('.').pop();
+            const fileName = `skyline_new_${Date.now()}.${fileExt}`;
+            const filePath = `site-assets/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage.from('property-images').upload(filePath, newAsset.file);
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage.from('property-images').getPublicUrl(filePath);
+
+            const newRecord = {
+                asset_key: `skyline_${newAsset.city.toLowerCase()}_${Date.now()}`,
+                image_url: publicUrl,
+                label: newAsset.label,
+                city: newAsset.city,
+                metadata: { width: "20%", height: "80%" }
+            };
+
+            const { data, error: dbError } = await supabase.from('site_assets').insert([newRecord]).select();
+            if (dbError) throw dbError;
+
+            setAssets([...assets, data[0]]);
+            setIsAdding(false);
+            setNewAsset({ label: '', city: 'Gandhinagar', file: null });
+            alert("New Skyline Asset Added!");
+        } catch(err) {
+            alert(err.message);
+        } finally {
+            setUploadingId(null);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Delete this building from the skyline?")) return;
+        try {
+            const { error } = await supabase.from('site_assets').delete().eq('id', id);
+            if (error) throw error;
+            setAssets(assets.filter(a => a.id !== id));
+        } catch(err) {
+            alert("Failed to delete: " + err.message);
+        }
+    };
+
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                <div>
+                    <h2 style={{ margin: 0 }}>Skyline Interactive UI Management</h2>
+                    <p style={{ color: THEME.muted, margin: '5px 0 0 0' }}>Manage buildings for Ahmedabad & Gandhinagar skyline sections.</p>
+                </div>
+                <div style={{ display: 'flex', gap: '15px' }}>
+                    <button 
+                        onClick={() => setIsAdding(!isAdding)}
+                        style={{ padding: '12px 24px', background: 'transparent', color: THEME.gold, border: `1px solid ${THEME.gold}`, borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                        {isAdding ? 'Cancel Adding' : '+ Add New Building'}
+                    </button>
+                    {assets.length === 0 && (
+                        <button 
+                            onClick={onInit}
+                            style={{ padding: '12px 24px', background: THEME.gold, color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 15px rgba(227,188,90,0.3)' }}
+                        >
+                            Initialize Defaults
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {isAdding && (
+                <form onSubmit={handleAddNew} style={{ background: '#1A1F1D', padding: '25px', borderRadius: '12px', border: `1px solid ${THEME.gold}`, marginBottom: '30px' }}>
+                    <h3 style={{ marginTop: 0, color: THEME.gold }}>Add Building Silhouette</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        <div style={{ gridColumn: '1/-1' }}>
+                            <label style={{ display: 'block', color: '#666', fontSize: '0.85rem', marginBottom: '8px' }}>Upload Image (Transparent PNG recommended)</label>
+                            <input 
+                                type="file" accept="image/*" required
+                                onChange={e => setNewAsset({...newAsset, file: e.target.files[0]})}
+                                style={{ background: '#252B29', color: '#fff', padding: '15px', borderRadius: '8px', width: '100%', border: `1px solid ${THEME.border}` }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', color: '#666', fontSize: '0.85rem', marginBottom: '8px' }}>Location Label</label>
+                            <input 
+                                type="text" required placeholder="e.g. Gift City"
+                                value={newAsset.label} onChange={e => setNewAsset({...newAsset, label: e.target.value})}
+                                style={{ background: '#000', color: '#fff', border: `1px solid ${THEME.border}`, padding: '15px', borderRadius: '8px', width: '100%', fontSize: '1.1rem' }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', color: '#666', fontSize: '0.85rem', marginBottom: '8px' }}>City Category</label>
+                            <select 
+                                value={newAsset.city} onChange={e => setNewAsset({...newAsset, city: e.target.value})}
+                                style={{ background: '#000', color: '#fff', border: `1px solid ${THEME.border}`, padding: '15px', borderRadius: '8px', width: '100%', fontSize: '1.1rem' }}
+                            >
+                                <option value="Ahmedabad">Ahmedabad</option>
+                                <option value="Gandhinagar">Gandhinagar</option>
+                            </select>
+                        </div>
+                        <button type="submit" disabled={uploadingId === 'new'} style={{ gridColumn: '1/-1', padding: '15px', background: THEME.gold, color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            {uploadingId === 'new' ? 'Uploading...' : 'Save Asset to Skyline'}
+                        </button>
+                    </div>
+                </form>
+            )}
+
+            {assets.length === 0 ? (
+                <div style={{ padding: '60px', textAlign: 'center', background: '#1A1F1D', borderRadius: '12px', border: `1px dashed ${THEME.border}` }}>
+                    <div style={{ color: THEME.gold, fontSize: '3rem', marginBottom: '20px' }}>🏙️</div>
+                    <h3 style={{ margin: '0 0 10px 0' }}>No Assets Found</h3>
+                    <p style={{ color: THEME.muted, maxWidth: '400px', margin: '0 auto 20px auto' }}>It looks like your skyline UI hasn't been set up yet. Click the button above to initialize the default building slots.</p>
+                </div>
+            ) : (
+                <div style={{ display: 'grid', gap: '20px' }}>
+                    {assets.sort((a,b) => a.asset_key.localeCompare(b.asset_key)).map(asset => (
+                        <div key={asset.id} style={{ background: '#1A1F1D', padding: '40px', borderRadius: '20px', border: `1px solid ${THEME.border}`, display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                            <div style={{ width: '100%', height: '640px', background: '#000', borderRadius: '16px', overflow: 'hidden', border: `1px solid ${THEME.border}`, position: 'relative' }}>
+                                <img src={asset.image_url} style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'screen' }} />
+                                {uploadingId === asset.id && (
+                                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.2rem', color: THEME.gold, fontWeight: 'bold' }}>
+                                        Uploading silhouette...
+                                    </div>
+                                )}
+                                <div style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(0,0,0,0.8)', padding: '10px 20px', borderRadius: '30px', border: `1px solid ${THEME.gold}`, color: THEME.gold, fontWeight: '900', fontSize: '1.2rem' }}>
+                                    SLOT {asset.asset_key.split('_')[1]}
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                <div style={{ gridColumn: '1/-1' }}>
+                                    <label style={{ display: 'block', color: '#666', fontSize: '0.85rem', marginBottom: '8px', fontWeight: 'bold' }}>REPLACE BUILDING IMAGE (SILHOUETTE)</label>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={(e) => handleUpload(asset.id, e.target.files[0])}
+                                        style={{ background: '#252B29', color: '#fff', padding: '15px', borderRadius: '8px', width: '100%', fontSize: '0.9rem', border: `1px solid ${THEME.border}` }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', color: '#666', fontSize: '0.85rem', marginBottom: '8px' }}>LOCATION LABEL</label>
+                                    <input 
+                                        type="text" 
+                                        defaultValue={asset.label}
+                                        onBlur={(e) => handleUpdateText(asset.id, 'label', e.target.value)}
+                                        style={{ background: '#000', color: THEME.gold, border: `1px solid ${THEME.border}`, padding: '15px', borderRadius: '8px', width: '100%', fontSize: '1.1rem', fontWeight: 'bold' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', color: '#666', fontSize: '0.85rem', marginBottom: '8px' }}>CITY NAME</label>
+                                    <input 
+                                        type="text" 
+                                        defaultValue={asset.city}
+                                        onBlur={(e) => handleUpdateText(asset.id, 'city', e.target.value)}
+                                        style={{ background: '#000', color: '#fff', border: `1px solid ${THEME.border}`, padding: '15px', borderRadius: '8px', width: '100%', fontSize: '1.1rem' }}
+                                    />
+                                </div>
+                                <div style={{ gridColumn: '1/-1', display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                                    <button 
+                                        onClick={() => handleDelete(asset.id)}
+                                        style={{ background: 'transparent', color: '#FF5252', border: '1px solid #FF5252', padding: '8px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                                    >
+                                        Delete Asset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

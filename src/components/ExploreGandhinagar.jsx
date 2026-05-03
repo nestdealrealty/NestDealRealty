@@ -8,27 +8,24 @@ const DEFAULT_BUILDINGS = [
     image: '/building_left.png',
     widthPct: '20%',
     heightPct: '80%',
-    glowColor: 'rgba(59, 130, 246, 0.4)',
-    city: 'Ahmedabad',
-    label: 'SG Highway',
+    city: 'Gandhinagar',
+    label: 'Gift City',
   },
   {
     id: 2,
     image: '/building_right.png',
     widthPct: '16%',
     heightPct: '70%',
-    glowColor: 'rgba(99, 179, 237, 0.3)',
     city: 'Gandhinagar',
-    label: 'Sector 1-30',
+    label: 'Infocity',
   },
   {
     id: 3,
     image: '/building_center.png',
     widthPct: '28%',
     heightPct: '100%',
-    glowColor: 'rgba(147, 197, 253, 0.5)',
-    city: 'Ahmedabad',
-    label: 'Prahlad Nagar',
+    city: 'Gandhinagar',
+    label: 'Sector 21',
     isCenter: true,
   },
   {
@@ -36,9 +33,8 @@ const DEFAULT_BUILDINGS = [
     image: '/building_right.png',
     widthPct: '18%',
     heightPct: '78%',
-    glowColor: 'rgba(96, 165, 250, 0.4)',
-    city: 'Ahmedabad',
-    label: 'Bodakdev',
+    city: 'Gandhinagar',
+    label: 'Kudasan',
     mirror: true,
   },
   {
@@ -46,14 +42,13 @@ const DEFAULT_BUILDINGS = [
     image: '/building_left.png',
     widthPct: '14%',
     heightPct: '65%',
-    glowColor: 'rgba(186, 230, 253, 0.3)',
     city: 'Gandhinagar',
-    label: 'Gift City',
+    label: 'Randesan',
     mirror: true,
   },
 ];
 
-export default function ExploreAhmedabad() {
+export default function ExploreGandhinagar() {
   const navigate = useNavigate();
   const [hoveredBuilding, setHoveredBuilding] = useState(null);
   const [textOnTop, setTextOnTop] = useState(false);
@@ -68,12 +63,21 @@ export default function ExploreAhmedabad() {
         const { data, error } = await supabase
           .from('site_assets')
           .select('*')
+          // Assuming Gandhinagar might use a specific key pattern or we just use defaults for now
+          // If the user wants to configure Gandhinagar separately later, they can add a 'section' column
           .order('asset_key', { ascending: true });
         
         if (error) throw error;
-        if (data && data.length >= 5) {
-          const mapped = data.slice(0,5).map((item, idx) => {
-            // Hardcode layout pattern to match the cinematic skyline look perfectly
+        
+        // Since we don't have a way to distinguish Ahmedabad vs Gandhinagar assets in the current schema without changing the admin panel,
+        // we will stick to the default Gandhinagar buildings unless the user explicitly asks for Supabase integration here.
+        // For now, I'll filter for assets that specifically mention Gandhinagar in their label or city if available, 
+        // else fallback to DEFAULT_BUILDINGS so it doesn't just duplicate Ahmedabad exactly.
+        const gnrAssets = data?.filter(item => item.city?.toLowerCase() === 'gandhinagar' || item.label?.toLowerCase().includes('gandhinagar'));
+        
+        if (gnrAssets && gnrAssets.length >= 5) {
+          const mapped = gnrAssets.slice(0,5).map((item, idx) => {
+            // Hardcode layout pattern to match Ahmedabad's cinematic skyline look perfectly
             const layoutPattern = [
               { w: '20%', h: '80%' },
               { w: '16%', h: '70%' },
@@ -86,10 +90,9 @@ export default function ExploreAhmedabad() {
               id: item.id,
               image: item.image_url,
               label: item.label,
-              city: item.city,
+              city: item.city || 'Gandhinagar',
               widthPct: layoutPattern.w,
               heightPct: layoutPattern.h,
-              glowColor: item.metadata ? (typeof item.metadata === 'string' ? JSON.parse(item.metadata).glowColor : item.metadata.glowColor) : 'rgba(96, 165, 250, 0.4)',
               isCenter: layoutPattern.isCenter || false,
               mirror: layoutPattern.mirror || false,
             };
@@ -242,7 +245,7 @@ export default function ExploreAhmedabad() {
           onMouseLeave={() => setTextOnTop(false)}
         >
 
-          {/* EXPLORE AHMEDABAD text - Light Theme */}
+          {/* EXPLORE GANDHINAGAR text - Light Theme */}
           <div style={{
             position: 'absolute',
             left: 0, right: 0,
@@ -258,9 +261,9 @@ export default function ExploreAhmedabad() {
           }}>
             <div style={{
               fontFamily: "'Outfit', sans-serif",
-              fontSize: 'clamp(40px, 8vw, 110px)',
+              fontSize: 'clamp(30px, 6vw, 90px)', /* Slightly smaller font to fit longer word */
               fontWeight: 900,
-              letterSpacing: '-2px',
+              letterSpacing: '-1px',
               lineHeight: 0.85,
               textAlign: 'center',
               color: 'transparent',
@@ -274,7 +277,7 @@ export default function ExploreAhmedabad() {
               transform: 'perspective(1200px) rotateX(10deg)',
             }}>
               <div>EXPLORE</div>
-              <div style={{ letterSpacing: '-1px' }}>AHMEDABAD</div>
+              <div style={{ letterSpacing: '-1px' }}>GANDHINAGAR</div>
             </div>
           </div>
 
