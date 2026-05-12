@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase';
 import {
-    Home, Activity, MessageCircle, Building2, MapPin, X, ChevronRight, Check, Star,
+    Home, Activity, MessageCircle, Building2, MapPin, X, ChevronRight, Check, Star, Image,
     Trees, Flower2, Target, Car, Palmtree, Mountain, Dumbbell, PartyPopper, ShieldCheck, Camera, ParkingCircle,
     ArrowUpToLine, Flame, Zap, Baby, Footprints, Gamepad2, Trophy, BadgeCheck, DoorClosed, Waves, Wine, ChefHat,
     Bike, Lamp, GraduationCap, Flag, Globe, Bath, Mic2, Lock, WashingMachine, Repeat, UserCheck,
     Droplets, Volleyball, Scissors, Gift, Calendar, Leaf, Tent, Users, Music, Sofa, Tv, Droplet,
-    Joystick, Coffee, Library, Store, DoorOpen, Accessibility, PhoneForwarded, Trash2, CheckCircle2
+    Joystick, Coffee, Library, Store, DoorOpen, Accessibility, PhoneForwarded, Trash2, CheckCircle2, Search, Info
 } from 'lucide-react';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -387,7 +387,7 @@ const AdminDashboard = () => {
                     <Building2 size={20} /> Projects
                 </div>
                 <div onClick={() => setActiveTab('slides')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'slides' ? '#E3BC5A20' : 'transparent', color: activeTab === 'slides' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <MapPin size={20} /> Slideshow
+                    <Image size={20} /> Hero Slideshow
                 </div>
                 <div onClick={() => setActiveTab('featured')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'featured' ? '#E3BC5A20' : 'transparent', color: activeTab === 'featured' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Star size={20} /> Featured UI
@@ -397,6 +397,9 @@ const AdminDashboard = () => {
                 </div>
                 <div onClick={() => setActiveTab('skyline')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'skyline' ? '#E3BC5A20' : 'transparent', color: activeTab === 'skyline' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Camera size={20} /> Skyline UI
+                </div>
+                <div onClick={() => setActiveTab('dictionary')} style={{ padding: '12px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'dictionary' ? '#E3BC5A20' : 'transparent', color: activeTab === 'dictionary' ? '#E3BC5A' : '#8E9CA3', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Library size={20} /> Dictionary
                 </div>
             </div>
 
@@ -742,6 +745,10 @@ const AdminDashboard = () => {
                         THEME={THEME}
                         onInit={handleInitSkyline}
                     />
+                )}
+
+                {activeTab === 'dictionary' && (
+                    <DictionaryManagement supabase={supabase} THEME={THEME} projects={projects} />
                 )}
             </div>
         </div>
@@ -1366,6 +1373,321 @@ const ProjectModal = ({ project, isEditing, setIsEditing, editForm, setEditForm,
                     )}
                 </div>
             </div>
+        </div>
+    );
+};
+
+const DictionaryManagement = ({ supabase, THEME, projects }) => {
+    const [locations, setLocations] = useState([]);
+    const [newCity, setNewCity] = useState('');
+    const [newAreaCity, setNewAreaCity] = useState('');
+    const [newArea, setNewArea] = useState('');
+
+    // Trending Projects Logic
+    const [selectedArea, setSelectedArea] = useState(null);
+    const [areaTrending, setAreaTrending] = useState([]); // Array of {slot_number, project_id, projects: {...}}
+    const [isPickingProject, setIsPickingProject] = useState(null); // slot number currently being picked
+    const [searchQuery, setSearchQuery] = useState('');
+
+    useEffect(() => {
+        fetchDictionary();
+    }, []);
+
+    const fetchDictionary = async () => {
+        const { data } = await supabase.from('locations_dictionary').select('*').order('city').order('area');
+        if (data) {
+            setLocations(data);
+            
+            // Auto-fix: Ensure city-only records exist for the two main cities
+            const mainCities = ['Ahmedabad', 'Gandhinagar'];
+            for (const city of mainCities) {
+                const exists = data.find(l => l.city === city && (!l.area || l.area === ''));
+                if (!exists) {
+                    console.log(`Initializing city record for ${city}...`);
+                    await supabase.from('locations_dictionary').insert([{ city, area: '' }]);
+                }
+            }
+            if (data.length > 0) {
+                const { data: updatedData } = await supabase.from('locations_dictionary').select('*').order('city').order('area');
+                if (updatedData) setLocations(updatedData);
+            }
+        }
+    };
+
+    const fetchAreaTrending = async (areaId) => {
+        const { data } = await supabase
+            .from('area_trending_projects')
+            .select('*, projects(*)')
+            .eq('area_id', areaId)
+            .order('slot_number');
+        if (data) setAreaTrending(data);
+        else setAreaTrending([]);
+    };
+
+    const handleOpenTrending = async (area) => {
+        setSelectedArea(area);
+        await fetchAreaTrending(area.id);
+    };
+
+    const handleAssignTrending = async (slot, project) => {
+        try {
+            const existing = areaTrending.find(t => t.slot_number === slot);
+            
+            if (existing) {
+                const { error } = await supabase
+                    .from('area_trending_projects')
+                    .update({ project_id: project.id })
+                    .eq('id', existing.id);
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('area_trending_projects')
+                    .insert([{ 
+                        area_id: selectedArea.id, 
+                        project_id: project.id, 
+                        slot_number: slot 
+                    }]);
+                if (error) throw error;
+            }
+            
+            await fetchAreaTrending(selectedArea.id);
+            setIsPickingProject(null);
+        } catch (err) {
+            alert("Failed to assign project: " + err.message);
+        }
+    };
+
+    const handleRemoveTrending = async (id) => {
+        if (!window.confirm("Remove this project from trending?")) return;
+        const { error } = await supabase.from('area_trending_projects').delete().eq('id', id);
+        if (error) alert("Failed to remove");
+        else fetchAreaTrending(selectedArea.id);
+    };
+
+    const handleAddCity = async (e) => {
+        e.preventDefault();
+        if (!newCity) return;
+        const { error } = await supabase.from('locations_dictionary').insert([{ city: newCity, area: '' }]);
+        if (error) alert("Error adding city: " + error.message);
+        else { setNewCity(''); fetchDictionary(); }
+    };
+
+    const handleAddArea = async (e) => {
+        e.preventDefault();
+        if (!newAreaCity || !newArea) return;
+        const { error } = await supabase.from('locations_dictionary').insert([{ city: newAreaCity, area: newArea }]);
+        if (error) alert("Error adding area: " + error.message);
+        else { setNewArea(''); fetchDictionary(); }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Delete this entry?")) return;
+        const { error } = await supabase.from('locations_dictionary').delete().eq('id', id);
+        if (error) alert("Error deleting: " + error.message);
+        else fetchDictionary();
+    };
+
+    const filteredProjects = projects.filter(p => 
+        p.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        p.developer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.locality?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const cities = [...new Set(locations.map(l => l.city).filter(Boolean))];
+
+    return (
+        <div>
+            <h2>Dictionary Management</h2>
+            <p style={{ color: THEME.muted, marginBottom: '30px' }}>Manage cities, areas, and their respective Trending Projects (Top 10).</p>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div style={{ background: THEME.card, padding: '20px', borderRadius: '8px', border: `1px solid ${THEME.border}` }}>
+                    <h3 style={{ color: THEME.gold, marginTop: 0 }}>Add City</h3>
+                    <form onSubmit={handleAddCity} style={{ display: 'flex', gap: '10px' }}>
+                        <input type="text" placeholder="City Name" value={newCity} onChange={e => setNewCity(e.target.value)} style={{ flex: 1, padding: '10px', background: '#333', border: 'none', color: '#fff', borderRadius: '4px' }} required />
+                        <button type="submit" style={{ padding: '10px 20px', background: THEME.gold, color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Add</button>
+                    </form>
+                </div>
+
+                <div style={{ background: THEME.card, padding: '20px', borderRadius: '8px', border: `1px solid ${THEME.border}` }}>
+                    <h3 style={{ color: THEME.gold, marginTop: 0 }}>Add Area</h3>
+                    <form onSubmit={handleAddArea} style={{ display: 'flex', gap: '10px' }}>
+                        <select value={newAreaCity} onChange={e => setNewAreaCity(e.target.value)} style={{ padding: '10px', background: '#333', border: 'none', color: '#fff', borderRadius: '4px' }} required>
+                            <option value="">Select City</option>
+                            {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        <input type="text" placeholder="Area Name" value={newArea} onChange={e => setNewArea(e.target.value)} style={{ flex: 1, padding: '10px', background: '#333', border: 'none', color: '#fff', borderRadius: '4px' }} required />
+                        <button type="submit" style={{ padding: '10px 20px', background: THEME.gold, color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Add</button>
+                    </form>
+                </div>
+            </div>
+
+            <div style={{ marginTop: '40px' }}>
+                <h3 style={{ color: THEME.gold, borderBottom: `1px solid ${THEME.border}`, paddingBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Star size={20} /> MAIN CITY TRENDING (HOMEPAGE)
+                </h3>
+                <p style={{ color: THEME.muted, fontSize: '0.85rem', marginBottom: '20px' }}>Configure the projects that appear in the Ahmedabad and Gandhinagar sections on the homepage.</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '20px' }}>
+                    {['Ahmedabad', 'Gandhinagar'].map(cityName => {
+                        const cityRecord = locations.find(l => l.city === cityName && (!l.area || l.area === ''));
+                        return (
+                            <div key={cityName} style={{ background: '#1A1F1D', padding: '25px', borderRadius: '12px', border: `2px solid ${THEME.gold}40`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <div style={{ color: THEME.gold, fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>Homepage Section</div>
+                                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{cityName}</div>
+                                </div>
+                                {cityRecord ? (
+                                    <button 
+                                        onClick={() => handleOpenTrending(cityRecord)}
+                                        style={{ padding: '12px 24px', background: THEME.gold, color: '#000', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                    >
+                                        <Flame size={18} /> MANAGE TRENDING
+                                    </button>
+                                ) : (
+                                    <div style={{ color: THEME.muted, fontSize: '0.8rem' }}>City record missing in dictionary</div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div style={{ marginTop: '50px' }}>
+                <h3 style={{ borderBottom: `1px solid ${THEME.border}`, paddingBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <MapPin size={20} /> AREA-WISE DICTIONARY & TRENDING
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '15px', marginTop: '20px' }}>
+                    {locations.filter(l => l.area).map(l => (
+                        <div key={l.id} style={{ background: THEME.card, padding: '15px', borderRadius: '8px', border: `1px solid ${THEME.border}`, position: 'relative' }}>
+                            <div style={{ marginBottom: '15px' }}>
+                                <div style={{ color: THEME.gold, fontSize: '0.8rem', fontWeight: 'bold' }}>{l.city}</div>
+                                <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{l.area}</div>
+                            </div>
+                            
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button 
+                                    onClick={() => handleOpenTrending(l)}
+                                    style={{ flex: 1, padding: '8px', background: THEME.gold, color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
+                                >
+                                    <Flame size={14} /> TRENDING
+                                </button>
+                                <button 
+                                    onClick={() => handleDelete(l.id)} 
+                                    style={{ width: '40px', background: '#FF525220', border: '1px solid #FF525240', color: '#FF5252', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Trending Projects Selection Modal */}
+            {selectedArea && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 1100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+                    <div style={{ background: '#1A1F1D', width: '100%', maxWidth: '1000px', maxHeight: '90vh', borderRadius: '16px', border: `1px solid ${THEME.border}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <div style={{ padding: '25px', borderBottom: `1px solid ${THEME.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <h3 style={{ margin: 0, color: THEME.gold }}>Trending Projects for {selectedArea.area}, {selectedArea.city}</h3>
+                                <p style={{ color: THEME.muted, margin: '5px 0 0 0', fontSize: '0.9rem' }}>Assign up to 10 projects to show in the trending section for this area.</p>
+                            </div>
+                            <button onClick={() => setSelectedArea(null)} style={{ background: '#333', border: 'none', color: '#fff', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer' }}><X size={24} /></button>
+                        </div>
+
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '25px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', gap: '20px' }}>
+                            {[...Array(10)].map((_, i) => {
+                                const slot = i + 1;
+                                const assigned = areaTrending.find(t => t.slot_number === slot);
+                                
+                                return (
+                                    <div key={slot} style={{ background: '#000', borderRadius: '12px', padding: '20px', border: `1px solid ${assigned ? THEME.gold + '40' : THEME.border}`, display: 'flex', alignItems: 'center', gap: '20px' }}>
+                                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: assigned ? THEME.gold : '#333', color: assigned ? '#000' : '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '1.2rem', flexShrink: 0 }}>
+                                            {slot}
+                                        </div>
+                                        
+                                        <div style={{ flex: 1 }}>
+                                            {assigned ? (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                                    <img 
+                                                        src={Array.isArray(assigned.projects?.images) ? assigned.projects.images[0] : (typeof assigned.projects?.images === 'string' ? JSON.parse(assigned.projects.images)[0] : '')} 
+                                                        style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} 
+                                                    />
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontWeight: 'bold', color: THEME.text }}>{assigned.projects?.name}</div>
+                                                        <div style={{ fontSize: '0.8rem', color: THEME.muted }}>{assigned.projects?.developer}</div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                                        <button onClick={() => setIsPickingProject(slot)} style={{ background: '#333', color: THEME.gold, border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>Change</button>
+                                                        <button onClick={() => handleRemoveTrending(assigned.id)} style={{ background: '#FF525220', color: '#FF5252', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => setIsPickingProject(slot)}
+                                                    style={{ width: '100%', padding: '15px', background: 'transparent', border: `1px dashed ${THEME.gold}`, color: THEME.gold, borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+                                                >
+                                                    + Assign Project {slot}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Project Picker Modal (Secondary) */}
+            {isPickingProject && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.95)', zIndex: 1200, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+                    <div style={{ background: '#1A1F1D', width: '100%', maxWidth: '800px', maxHeight: '85vh', borderRadius: '16px', border: `1px solid ${THEME.gold}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <div style={{ padding: '25px', borderBottom: `1px solid ${THEME.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3 style={{ margin: 0, color: THEME.gold }}>Select Project for Slot {isPickingProject}</h3>
+                            <button onClick={() => { setIsPickingProject(null); setSearchQuery(''); }} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}><X size={24} /></button>
+                        </div>
+                        
+                        <div style={{ padding: '20px', borderBottom: `1px solid ${THEME.border}` }}>
+                            <div style={{ position: 'relative' }}>
+                                <Search size={20} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#666' }} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search by name, developer or locality..." 
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    style={{ width: '100%', padding: '15px 15px 15px 50px', background: '#000', border: `1px solid ${THEME.border}`, color: '#fff', borderRadius: '8px', fontSize: '1rem' }}
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'grid', gap: '10px' }}>
+                            {filteredProjects.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>No projects found matching your search.</div>
+                            ) : (
+                                filteredProjects.map(project => (
+                                    <div key={project.id} style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '15px', background: '#000', borderRadius: '12px', border: `1px solid ${THEME.border}`, transition: 'border-color 0.2s' }}>
+                                        <img 
+                                            src={Array.isArray(project.images) ? project.images[0] : (typeof project.images === 'string' ? JSON.parse(project.images)[0] : '')} 
+                                            style={{ width: '100px', height: '70px', objectFit: 'cover', borderRadius: '8px' }} 
+                                        />
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{project.name}</div>
+                                            <div style={{ color: THEME.muted, fontSize: '0.9rem' }}>{project.developer} • {project.locality}, {project.city}</div>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleAssignTrending(isPickingProject, project)}
+                                            style={{ padding: '10px 25px', background: THEME.gold, color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                                        >
+                                            Select
+                                        </button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

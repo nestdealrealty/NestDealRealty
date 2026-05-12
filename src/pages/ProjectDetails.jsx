@@ -305,7 +305,7 @@ export default function ProjectDetails() {
                             bhk: bhkStr,
                             type: p.property_type?.toUpperCase(),
                             location: `${p.locality}, ${p.city}`,
-                            price: (p.min_price && p.max_price) ? `₹${p.min_price} - ₹${p.max_price}` : (p.configurations?.[0]?.price || 'Price on Request'),
+                            price: p.price_range || ((p.min_price && p.max_price) ? `₹${p.min_price} - ₹${p.max_price}` : (p.configurations?.[0]?.price || 'Price on Request')),
                             area: areaStr
                         };
                     });
@@ -420,10 +420,41 @@ export default function ProjectDetails() {
         }
     };
 
+    const extractImageUrl = (images, index = 0) => {
+        if (!images) return null;
+        let imgArray = images;
+        if (typeof images === 'string') {
+            try {
+                imgArray = JSON.parse(images);
+            } catch (e) {
+                if (images.includes(',')) {
+                    imgArray = images.split(',').map(s => s.trim());
+                } else {
+                    imgArray = [images.trim()];
+                }
+            }
+        }
+        
+        if (Array.isArray(imgArray) && imgArray.length > 0) {
+            const img = imgArray[index % imgArray.length];
+            return typeof img === 'string' ? img : (img?.url || img);
+        }
+        return typeof imgArray === 'string' ? imgArray : null;
+    };
+
     const slides = [
         ...(project?.video_url ? [{ type: 'video', url: project.video_url }] : []),
-        ...(project?.images || []).map(img => ({ type: 'image', url: typeof img === 'string' ? img : (img?.url || '') }))
+        ...(Array.isArray(project?.images) || typeof project?.images === 'string' 
+            ? (typeof project.images === 'string' ? extractImageUrl(project.images, -1) : project.images)
+            : []
+        ).map(img => ({ type: 'image', url: typeof img === 'string' ? img : (img?.url || '') }))
     ];
+
+    // If extractImageUrl returned a single string for slides, make it an array
+    if (typeof slides[slides.length - 1]?.url === 'undefined' && typeof project?.images === 'string') {
+        const url = extractImageUrl(project.images, 0);
+        if (url) slides.push({ type: 'image', url });
+    }
 
     const isYouTube = (url) => url && (url.includes('youtube.com') || url.includes('youtu.be'));
     const getYouTubeId = (url) => {
@@ -550,7 +581,7 @@ export default function ProjectDetails() {
         );
     };
 
-    const mainImage = project.images?.[0]?.url || project.images?.[0] || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1920&q=80';
+    const mainImage = extractImageUrl(project.images, 0) || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1920&q=80';
 
     return (
         <div style={{ background: pageBgColor, transition: 'background 0.8s ease-in-out', color: THEME.text, minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
@@ -912,7 +943,7 @@ export default function ProjectDetails() {
                             {project.construction_status || 'Under Construction'}
                         </div>
                         {project.price_range && (
-                            <div style={{ fontSize: '1.4rem', color: '#FFF', fontWeight: '400', fontFamily: 'Playfair Display, serif', letterSpacing: '1px' }}>
+                            <div style={{ fontSize: '2.1rem', color: '#FFF', fontWeight: '400', fontFamily: 'Playfair Display, serif', letterSpacing: '1px' }}>
                                 ₹{project.price_range}
                             </div>
                         )}
@@ -1349,8 +1380,9 @@ export default function ProjectDetails() {
                                             </div>
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                                 {[
-                                                        { label: 'General Toilet', key: 'general_toilet', icon: Toilet },
-                                                        { label: 'Personal Toilet', key: 'personal_toilet', icon: Toilet },
+                                                        { label: 'Common Washroom', key: 'general_toilet', icon: Toilet },
+                                                        { label: 'Attach Washroom', key: 'personal_toilet', icon: Toilet },
+                                                        { label: 'Kitchen', key: 'kitchens', icon: ChefHat },
                                                         { label: 'Master Bedroom', key: 'master_bedroom', icon: BedDouble },
                                                         { label: 'Children\'s Room', key: 'children_room', icon: BedDouble },
                                                         { label: 'Study Room', key: 'study_room', icon: BookOpen },
@@ -1540,7 +1572,7 @@ export default function ProjectDetails() {
                                 {project.property_type !== 'Plots' && project.total_units && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Total Units</span><span style={{ fontWeight: 'bold' }}>{project.total_units}</span></div>
                                 )}
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Price Range</span><span style={{ fontWeight: 'bold', color: THEME.gold }}>₹{project.min_price} - ₹{project.max_price}</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.muted }}>Price Range</span><span style={{ fontWeight: 'bold', color: THEME.gold }}>{project.price_range ? `₹ ${project.price_range}` : `₹${project.min_price || 0} - ₹${project.max_price || 0}`}</span></div>
                             </div>
                         </div>
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { MapPin, Filter, Search, ChevronDown, X, Building, Home, Check, Building2, Bed, User, ArrowRight } from 'lucide-react';
+import LatestLaunches from '../components/LatestLaunches';
 import './Home.css';
 
 const BUDGET_OPTIONS = [
@@ -79,7 +80,7 @@ const ExplorePage = () => {
     const [loading, setLoading] = useState(true);
 
     // Local filter states (synced from URL)
-    const [city, setCity] = useState(searchParams.get('city') || '');
+    const [city, setCity] = useState(searchParams.get('city') || 'Ahmedabad');
     const [searchText, setSearchText] = useState(searchParams.get('search') || '');
     const [selectedBHK, setSelectedBHK] = useState(
         searchParams.get('bhk') ? searchParams.get('bhk').split(',') : []
@@ -168,7 +169,7 @@ const ExplorePage = () => {
                     if (parts.length > 0) configText = parts.join(', ');
 
                     const firstConfig = p.configurations?.[0];
-                    const rawPrice = firstConfig?.price || p.plot_config?.[0]?.price_per_sqft;
+                    const rawPrice = p.price_range || firstConfig?.price || p.plot_config?.[0]?.price_per_sqft;
 
                     return {
                         id: p.id,
@@ -228,10 +229,17 @@ const ExplorePage = () => {
         // BHK filter
         if (selectedBHK.length > 0) {
             results = results.filter(item => {
-                const itemConfig = String(item.config || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                const itemConfigStr = (String(item.config || '') + ' ' + String(item.type || '') + ' ' + String(item.bhk || '')).toLowerCase();
                 return selectedBHK.some(b => {
-                    const sel = b.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    return itemConfig.includes(sel) || sel.includes(itemConfig);
+                    const selWords = b.toLowerCase().replace('bhk', '').trim().split(/\s+/).filter(Boolean);
+                    return selWords.every(w => {
+                        if (!isNaN(w)) {
+                            // Ensure distinct number matching (e.g. '3' doesn't match '13')
+                            const regex = new RegExp(`\\b${w}\\b`);
+                            return regex.test(itemConfigStr);
+                        }
+                        return itemConfigStr.includes(w);
+                    });
                 });
             });
         }
@@ -365,7 +373,20 @@ const ExplorePage = () => {
                         <button onClick={clearAll} style={{ background: 'none', border: 'none', color: THEME.gold, cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', marginLeft: '8px' }}>Clear All</button>
                     </div>
                 )}
+            </div>
 
+            {/* Trending Projects Section */}
+            {!loading && filteredItems.length > 0 && (city || selectedLocality || searchText) && (
+                <div style={{ marginBottom: '0px' }}>
+                    <LatestLaunches 
+                        city={city || 'Ahmedabad'} 
+                        area={selectedLocality || searchText || null} 
+                        trendingProjects={filteredItems.filter(item => item.isProject).length > 0 ? filteredItems.filter(item => item.isProject) : filteredItems} 
+                    />
+                </div>
+            )}
+
+            <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '32px 24px 0' }}>
                 {/* Quick Filters Row */}
                 {/* Pill Filters Row */}
                 <div style={{ 
@@ -380,7 +401,6 @@ const ExplorePage = () => {
                     {/* City Pill */}
                     <div className="filter-pill">
                         <select value={city} onChange={(e) => setCity(e.target.value)}>
-                            <option value="">Ahmedabad</option>
                             <option value="Ahmedabad">Ahmedabad</option>
                             <option value="Gandhinagar">Gandhinagar</option>
                         </select>
@@ -678,9 +698,13 @@ const ExplorePage = () => {
                 </div>
             )}
 
-
             {/* Results grid */}
             <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '24px 24px 60px' }}>
+                {!loading && filteredItems.length > 0 && (
+                    <h2 style={{ fontSize: '1.8rem', fontFamily: "'Playfair Display', serif", marginBottom: '24px', color: '#1A1A1A' }}>
+                        More Properties matching your search
+                    </h2>
+                )}
                 {loading ? (
                     <div style={{ textAlign: 'center', padding: '80px', color: THEME.muted }}>
                         <div style={{ fontSize: '1.1rem', color: THEME.gold }}>Searching properties...</div>

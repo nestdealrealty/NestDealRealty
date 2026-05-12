@@ -1,133 +1,224 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase';
+import React, { useState, useEffect, useRef } from 'react';
 
-const DEFAULT_BUILDINGS = [
-  {
-    id: 1,
-    image: '/building_left.png',
-    widthPct: '20%',
-    heightPct: '80%',
-    city: 'Gandhinagar',
-    label: 'Gift City',
-  },
-  {
-    id: 2,
-    image: '/building_right.png',
-    widthPct: '16%',
-    heightPct: '70%',
-    city: 'Gandhinagar',
-    label: 'Infocity',
-  },
-  {
-    id: 3,
-    image: '/building_center.png',
-    widthPct: '28%',
-    heightPct: '100%',
-    city: 'Gandhinagar',
-    label: 'Sector 21',
-    isCenter: true,
-  },
-  {
-    id: 4,
-    image: '/building_right.png',
-    widthPct: '18%',
-    heightPct: '78%',
-    city: 'Gandhinagar',
-    label: 'Kudasan',
-    mirror: true,
-  },
-  {
-    id: 5,
-    image: '/building_left.png',
-    widthPct: '14%',
-    heightPct: '65%',
-    city: 'Gandhinagar',
-    label: 'Randesan',
-    mirror: true,
-  },
+/* ───── icon SVGs (electric-blue outline style) ───── */
+const icons = {
+  totalProjects: (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="9" width="7" height="12" rx="1"/><rect x="14" y="4" width="7" height="17" rx="1"/><path d="M10 15h4"/><path d="M10 19h4"/>
+    </svg>
+  ),
+  ongoing: (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="6" width="16" height="14" rx="2"/><path d="M4 10h16"/><path d="M8 6V3"/><path d="M16 6V3"/><circle cx="12" cy="15" r="2"/>
+    </svg>
+  ),
+  completed: (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6"/><path d="M9 11h6"/><path d="M9 15h4"/><path d="M5 7h-1"/><path d="M5 11h-1"/><path d="M5 15h-1"/>
+    </svg>
+  ),
+  upcoming: (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4h6v4"/><path d="M9 10h1"/><path d="M14 10h1"/><path d="M9 14h1"/><path d="M14 14h1"/>
+    </svg>
+  ),
+  sqftDelivered: (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 8h6"/><path d="M8 11h6"/><path d="M8 14h3"/>
+    </svg>
+  ),
+  sqftDev: (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="6" width="20" height="14" rx="2"/><path d="M12 6V4"/><path d="M7 12h2"/><path d="M15 12h2"/><path d="M7 16h10"/><circle cx="12" cy="12" r="2"/>
+    </svg>
+  ),
+  homes: (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9.5 12 4l9 5.5"/><path d="M19 9.5V19a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V9.5"/><rect x="9" y="14" width="6" height="6"/>
+    </svg>
+  ),
+  units: (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 4v16"/><path d="M15 4v16"/><path d="M4 9h16"/><path d="M4 15h16"/>
+    </svg>
+  ),
+  location: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9.5 12 4l9 5.5"/><path d="M19 9.5V19a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V9.5"/><rect x="9" y="14" width="6" height="6"/>
+    </svg>
+  ),
+  verified: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2l2.4 4.8L20 7.6l-4 3.9.9 5.5-4.9-2.6L7.1 17l.9-5.5-4-3.9 5.6-.8z"/><path d="m9 12 2 2 4-4"/>
+    </svg>
+  ),
+  quality: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a10 10 0 1 0 0 20 10 10 0 1 0 0-20z"/><path d="M12 6v6l4 2"/>
+    </svg>
+  ),
+  support: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 16v2a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+    </svg>
+  ),
+};
+
+const stats = [
+  { num: '97', suffix: '+', label: 'Total Projects', sub: 'Across Gandhinagar', icon: icons.totalProjects },
+  { num: '9',  suffix: '+', label: 'Ongoing Projects', sub: 'Building Today', icon: icons.ongoing },
+  { num: '81', suffix: '+', label: 'Completed Projects', sub: 'Successfully Delivered', icon: icons.completed },
+  { num: '7',  suffix: '+', label: 'Upcoming Projects', sub: 'Future Ready', icon: icons.upcoming },
+  { num: '43', suffix: 'M+', label: 'Sq.ft Delivered', sub: 'Quality Delivered', icon: icons.sqftDelivered },
+  { num: '9',  suffix: 'M+', label: 'Sq.ft Under Development', sub: 'Building The Future', icon: icons.sqftDev },
+  { num: '30', suffix: 'K+', label: 'Homes Delivered', sub: 'Happy Families', icon: icons.homes },
+  { num: '4',  suffix: 'K+', label: 'Units Under Development', sub: 'Expanding Horizons', icon: icons.units },
 ];
 
+const features = [
+  { icon: icons.location, title: 'Prime Locations', sub: 'Best neighborhoods in Gandhinagar' },
+  { icon: icons.verified, title: 'Verified Properties', sub: '100% Verified & Legal' },
+  { icon: icons.quality, title: 'Premium Quality', sub: 'World-class construction' },
+  { icon: icons.support, title: 'Expert Support', sub: 'Dedicated property advisors' },
+];
+
+/* ───── Animated Counter Hook ───── */
+function useCounter(target, duration = 2000, startAnimate) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!startAnimate) return;
+    let start = 0;
+    const end = parseInt(target, 10);
+    if (end === 0) return;
+    const step = Math.ceil(end / (duration / 16));
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= end) { setCount(end); clearInterval(timer); }
+      else setCount(start);
+    }, 16);
+    return () => clearInterval(timer);
+  }, [target, duration, startAnimate]);
+  return count;
+}
+
+/* ───── Stat Card ───── */
+function StatCard({ stat, visible, delay }) {
+  const count = useCounter(stat.num, 1800, visible);
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: hovered
+          ? 'rgba(255,255,255,0.98)'
+          : 'rgba(255,255,255,0.75)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRadius: '24px',
+        padding: '32px 28px',
+        border: hovered
+          ? '1px solid rgba(59,130,246,0.35)'
+          : '1px solid rgba(59,130,246,0.1)',
+        boxShadow: hovered
+          ? '0 8px 40px rgba(59,130,246,0.15), 0 0 0 1px rgba(59,130,246,0.08)'
+          : '0 4px 24px rgba(0,0,0,0.04), 0 0 0 1px rgba(255,255,255,0.6)',
+        transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)',
+        transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
+        opacity: visible ? 1 : 0,
+        animation: visible ? `fadeSlideUp 0.7s ${delay}s ease both` : 'none',
+        cursor: 'default',
+      }}
+    >
+      {/* Icon */}
+      <div style={{
+        width: '56px',
+        height: '56px',
+        borderRadius: '16px',
+        background: 'linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(59,130,246,0.04) 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '20px',
+        border: '1px solid rgba(59,130,246,0.1)',
+      }}>
+        {stat.icon}
+      </div>
+
+      {/* Number */}
+      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '6px' }}>
+        <span style={{
+          fontSize: 'clamp(2rem, 3.5vw, 2.8rem)',
+          fontWeight: 800,
+          color: '#0f172a',
+          fontFamily: "'Outfit', sans-serif",
+          lineHeight: 1,
+        }}>
+          {count}
+        </span>
+        <span style={{
+          fontSize: 'clamp(1rem, 1.8vw, 1.4rem)',
+          fontWeight: 700,
+          color: '#22c55e',
+          fontFamily: "'Outfit', sans-serif",
+          marginLeft: '2px',
+        }}>
+          {stat.suffix}
+        </span>
+      </div>
+
+      {/* Label */}
+      <div style={{
+        fontSize: '0.95rem',
+        fontWeight: 700,
+        color: '#1e293b',
+        marginBottom: '4px',
+        fontFamily: "'Outfit', sans-serif",
+      }}>
+        {stat.label}
+      </div>
+
+      {/* Subtitle */}
+      <div style={{
+        fontSize: '0.8rem',
+        fontWeight: 400,
+        color: '#94a3b8',
+        fontFamily: "'Outfit', sans-serif",
+      }}>
+        {stat.sub}
+      </div>
+    </div>
+  );
+}
+
+/* ───── Main Component ───── */
 export default function ExploreGandhinagar() {
-  const navigate = useNavigate();
-  const [hoveredBuilding, setHoveredBuilding] = useState(null);
-  const [textOnTop, setTextOnTop] = useState(false);
   const sectionRef = useRef(null);
-  const [stars, setStars] = useState([]);
   const [visible, setVisible] = useState(false);
-  const [buildings, setBuildings] = useState(DEFAULT_BUILDINGS);
+  const [particles, setParticles] = useState([]);
 
   useEffect(() => {
-    const fetchAssets = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('site_assets')
-          .select('*')
-          // Assuming Gandhinagar might use a specific key pattern or we just use defaults for now
-          // If the user wants to configure Gandhinagar separately later, they can add a 'section' column
-          .order('asset_key', { ascending: true });
-        
-        if (error) throw error;
-        
-        // Since we don't have a way to distinguish Ahmedabad vs Gandhinagar assets in the current schema without changing the admin panel,
-        // we will stick to the default Gandhinagar buildings unless the user explicitly asks for Supabase integration here.
-        // For now, I'll filter for assets that specifically mention Gandhinagar in their label or city if available, 
-        // else fallback to DEFAULT_BUILDINGS so it doesn't just duplicate Ahmedabad exactly.
-        const gnrAssets = data?.filter(item => item.city?.toLowerCase() === 'gandhinagar' || item.label?.toLowerCase().includes('gandhinagar'));
-        
-        if (gnrAssets && gnrAssets.length >= 5) {
-          const mapped = gnrAssets.slice(0,5).map((item, idx) => {
-            // Hardcode layout pattern to match Ahmedabad's cinematic skyline look perfectly
-            const layoutPattern = [
-              { w: '20%', h: '80%' },
-              { w: '16%', h: '70%' },
-              { w: '28%', h: '100%', isCenter: true },
-              { w: '18%', h: '78%', mirror: true },
-              { w: '14%', h: '65%', mirror: true }
-            ][idx];
-
-            return {
-              id: item.id,
-              image: item.image_url,
-              label: item.label,
-              city: item.city || 'Gandhinagar',
-              widthPct: layoutPattern.w,
-              heightPct: layoutPattern.h,
-              isCenter: layoutPattern.isCenter || false,
-              mirror: layoutPattern.mirror || false,
-            };
-          });
-          setBuildings(mapped);
-        }
-      } catch (err) {
-        console.warn("Failed to fetch site assets, using defaults:", err.message);
-      }
-    };
-
-    fetchAssets();
-  }, []);
-
-  useEffect(() => {
-    setStars(
-      Array.from({ length: 150 }, (_, i) => ({
+    setParticles(
+      Array.from({ length: 40 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
-        y: Math.random() * 90,
-        size: 1 + Math.random() * 2,
-        opacity: 0.2 + Math.random() * 0.4,
-        duration: 3 + Math.random() * 4,
-        delay: Math.random() * 3,
+        y: Math.random() * 100,
+        size: 2 + Math.random() * 3,
+        opacity: 0.15 + Math.random() * 0.25,
+        dur: 4 + Math.random() * 6,
+        delay: Math.random() * 5,
       }))
     );
   }, []);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
-      { threshold: 0.05 }
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setVisible(true); },
+      { threshold: 0.1 }
     );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => observer.disconnect();
+    if (sectionRef.current) obs.observe(sectionRef.current);
+    return () => obs.disconnect();
   }, []);
 
   return (
@@ -136,262 +227,244 @@ export default function ExploreGandhinagar() {
       style={{
         position: 'relative',
         width: '100%',
-        minHeight: '110vh',
         overflow: 'hidden',
-        background: '#FFFFFF', // Clean white background
+        background: 'linear-gradient(180deg, #f0f7ff 0%, #ffffff 40%, #f0f7ff 100%)',
+        padding: '100px 20px 80px',
       }}
     >
       <style>{`
-        @keyframes starTwinkle {
-          0%, 100% { opacity: var(--op, 0.3); transform: scale(1); }
-          50%       { opacity: calc(var(--op, 0.3) * 0.2); transform: scale(0.8); }
-        }
-        @keyframes buildingRise {
-          from { transform: translateY(200px); opacity: 0; }
-          to   { transform: translateY(0);    opacity: 1; }
-        }
-        @keyframes floatInUp {
-          from { opacity: 0; transform: translateY(20px); }
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(30px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        @keyframes scrollBounce {
-          0%, 100% { transform: translateY(0); }
-          50%       { transform: translateY(8px); }
+        @keyframes particleFloat {
+          0%, 100% { transform: translateY(0) scale(1); opacity: var(--p-op); }
+          50%      { transform: translateY(-20px) scale(1.3); opacity: calc(var(--p-op) * 0.4); }
         }
-        .explore-building-wrap {
-          transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
-                      filter 0.4s ease;
-          cursor: pointer;
-          transform-origin: bottom center;
-        }
-        .explore-building-wrap:hover {
-          transform: scale(1.03) translateY(-20px) !important;
-          z-index: 100 !important;
-        }
-        .building-img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          object-position: bottom center;
-          display: block;
-          transition: filter 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease;
-          /* Black and white monochrome look (black strokes effect) */
-          filter: grayscale(100%) contrast(1.5) brightness(0.8);
-          opacity: 0.8;
-        }
-        .explore-building-wrap:hover .building-img {
-          /* Full original colorful version on hover */
-          filter: grayscale(0%) contrast(1.1) sepia(0) hue-rotate(0) saturate(1.1) brightness(1.05);
-          opacity: 1;
+        @keyframes skylinePulse {
+          0%, 100% { opacity: 0.07; }
+          50%      { opacity: 0.12; }
         }
       `}</style>
 
-      {/* Blueish Stars/Sparkles */}
-      <div style={{ position: 'absolute', inset: 0, top: '5%', pointerEvents: 'none', zIndex: 1 }}>
-        {stars.map(s => (
-          <div key={s.id} style={{
+      {/* ── Skyline silhouette background ── */}
+      <div style={{
+        position: 'absolute',
+        bottom: '60px',
+        left: 0,
+        right: 0,
+        height: '280px',
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 280'%3E%3Cpath fill='%233b82f6' d='M0 280V200h40v-30h20v-40h15v40h25v-60h20v-30h15v30h20v60h30v-80h15v-20h10v20h15v80h40v-50h20v-30h10v30h20v50h50v-100h15v-20h15v20h15v100h40v-40h20v-20h10v20h20v40h60v-70h20v-40h15v40h20v70h50v-90h10v-30h20v30h10v90h40v-50h15v-20h10v20h15v50h30v-120h20v-20h10v20h20v120h50v-60h15v-30h10v30h15v60h60v-40h20v-30h15v30h20v40h30v-70h10v-20h20v20h10v70h40v-40h20v40h60V280z'/%3E%3C/svg%3E")`,
+        backgroundSize: '100% 100%',
+        backgroundRepeat: 'no-repeat',
+        opacity: 0.06,
+        animation: 'skylinePulse 8s ease-in-out infinite',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
+
+      {/* ── Floating particles ── */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+        {particles.map(p => (
+          <div key={p.id} style={{
             position: 'absolute',
-            left: `${s.x}%`,
-            top: `${s.y}%`,
-            width: `${s.size}px`,
-            height: `${s.size}px`,
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
             borderRadius: '50%',
-            background: '#94a3b8',
-            boxShadow: '0 0 10px rgba(148, 163, 184, 0.5)',
-            '--op': s.opacity,
-            opacity: s.opacity,
-            animation: `starTwinkle ${s.duration}s ${s.delay}s ease-in-out infinite`,
+            background: 'rgba(59,130,246,0.5)',
+            boxShadow: '0 0 8px rgba(59,130,246,0.3)',
+            '--p-op': p.opacity,
+            opacity: p.opacity,
+            animation: `particleFloat ${p.dur}s ${p.delay}s ease-in-out infinite`,
           }} />
         ))}
       </div>
 
+      {/* ── Ambient glow blobs ── */}
       <div style={{
-        position: 'relative',
-        width: '100%',
-        minHeight: '110vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        paddingTop: '80px',
-        zIndex: 2,
-      }}>
+        position: 'absolute', top: '-100px', left: '-100px', width: '500px', height: '500px',
+        background: 'radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)',
+        borderRadius: '50%', pointerEvents: 'none', zIndex: 0,
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '-80px', right: '-80px', width: '400px', height: '400px',
+        background: 'radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%)',
+        borderRadius: '50%', pointerEvents: 'none', zIndex: 0,
+      }} />
 
+      {/* ────────── CONTENT ────────── */}
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: '1300px', margin: '0 auto' }}>
+
+        {/* Top label */}
         <div style={{
-          position: 'absolute',
-          top: '120px',
-          left: 0, right: 0,
-          display: 'flex',
-          justifyContent: 'center',
-          pointerEvents: 'none',
-          animation: visible ? 'floatInUp 1s ease both' : 'none',
-          zIndex: 10,
+          textAlign: 'center',
+          marginBottom: '16px',
+          opacity: visible ? 1 : 0,
+          animation: visible ? 'fadeSlideUp 0.6s 0s ease both' : 'none',
         }}>
           <span style={{
-            color: '#3b82f6',
-            fontSize: '0.85rem',
-            fontWeight: 800,
-            letterSpacing: '5px',
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            letterSpacing: '4px',
             textTransform: 'uppercase',
-            textShadow: '0 0 10px rgba(59,130,246,0.1)',
+            color: '#3b82f6',
+            fontFamily: "'Outfit', sans-serif",
           }}>
-            ✦ Discover Premium Real Estate ✦
+            ✦&nbsp;&nbsp; DISCOVER PREMIUM REAL ESTATE &nbsp;&nbsp;✦
           </span>
         </div>
 
-        <div
-          style={{ position: 'relative', width: '100%', height: '85vh' }}
-          onMouseEnter={() => setTextOnTop(true)}
-          onMouseLeave={() => setTextOnTop(false)}
-        >
-
-          {/* EXPLORE GANDHINAGAR text - Light Theme */}
-          <div style={{
-            position: 'absolute',
-            left: 0, right: 0,
-            bottom: '22%', 
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            pointerEvents: 'none',
-            userSelect: 'none',
-            /* Dynamic 3D Text Depth Logic */
-            zIndex: hoveredBuilding === buildings[1]?.id ? 30 : hoveredBuilding === buildings[2]?.id ? 15 : 50,
+        {/* Main heading */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '12px',
+          opacity: visible ? 1 : 0,
+          animation: visible ? 'fadeSlideUp 0.7s 0.15s ease both' : 'none',
+        }}>
+          <h2 style={{
+            fontFamily: "'Outfit', sans-serif",
+            fontSize: 'clamp(3rem, 7vw, 6rem)',
+            fontWeight: 900,
+            lineHeight: 0.95,
+            margin: 0,
+            letterSpacing: '-2px',
           }}>
-            <div style={{
-              fontFamily: "'Outfit', sans-serif",
-              fontSize: 'clamp(30px, 6vw, 90px)', /* Slightly smaller font to fit longer word */
-              fontWeight: 900,
-              letterSpacing: '-1px',
-              lineHeight: 0.85,
-              textAlign: 'center',
-              color: 'transparent',
-              WebkitTextStroke: textOnTop
-                ? '3px rgba(120, 190, 255, 1)'
-                : '2px rgba(120, 190, 255, 0.7)',
-              textShadow: textOnTop
-                ? '0 0 40px rgba(120, 190, 255, 0.8), 0 0 20px rgba(120, 190, 255, 0.5)'
-                : '0 0 15px rgba(120, 190, 255, 0.3)',
-              transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-              transform: 'perspective(1200px) rotateX(10deg)',
+            <span style={{ color: '#0f172a', display: 'block' }}>EXPLORE</span>
+            <span style={{
+              display: 'block',
+              background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 40%, #60a5fa 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
             }}>
-              <div>EXPLORE</div>
-              <div style={{ letterSpacing: '-1px' }}>GANDHINAGAR</div>
-            </div>
-          </div>
-
-          {/* Buildings row */}
-          <div style={{
-            position: 'absolute',
-            bottom: 0, left: 0, right: 0,
-            height: '100%',
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'space-around',
-            padding: '0 5%',
-            zIndex: 30,
-          }}>
-            {buildings.map((b, idx) => {
-              const isHovered = hoveredBuilding === b.id;
-              
-              // Dynamic 3D Building Depth Logic
-              let dynamicZIndex = b.isCenter ? 25 : 20;
-              if (hoveredBuilding === buildings[1]?.id) {
-                if (idx === 1) dynamicZIndex = 40; // 2nd building OVER text
-                if (idx === 2) dynamicZIndex = 20; // 3rd building UNDER text
-              } else if (hoveredBuilding === buildings[2]?.id) {
-                if (idx === 2) dynamicZIndex = 40; // 3rd building OVER text
-                if (idx === 1) dynamicZIndex = 25; // 2nd building OVER text
-              }
-
-              return (
-                <div
-                  key={b.id}
-                  className="explore-building-wrap"
-                  style={{
-                    position: 'relative',
-                    flexShrink: 0,
-                    width: b.widthPct,
-                    height: b.heightPct,
-                    animation: visible
-                      ? `buildingRise 1.5s ease ${idx * 0.15}s both`
-                      : 'none',
-                    filter: isHovered
-                      ? `drop-shadow(0 0 20px rgba(59,130,246,0.15))`
-                      : 'none',
-                    zIndex: dynamicZIndex,
-                  }}
-                  onMouseEnter={() => setHoveredBuilding(b.id)}
-                  onMouseLeave={() => setHoveredBuilding(null)}
-                  onClick={() => navigate(`/explore?city=${b.city}&search=${b.label}`)}
-                >
-                  <img
-                    src={b.image}
-                    alt={b.label}
-                    className="building-img"
-                    style={{
-                      transform: b.mirror ? 'scaleX(-1)' : 'none',
-                      mixBlendMode: 'multiply', // Crucial for white background if images have dark silhouette
-                    }}
-                  />
-
-                  {/* Hover tooltip */}
-                  {isHovered && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '10%',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      background: 'rgba(255,255,255,0.95)',
-                      backdropFilter: 'blur(10px)',
-                      color: '#1e40af',
-                      fontSize: '0.85rem',
-                      fontWeight: 900,
-                      padding: '10px 24px',
-                      borderRadius: '15px',
-                      whiteSpace: 'nowrap',
-                      border: '2px solid rgba(59,130,246,0.3)',
-                      zIndex: 150,
-                      animation: 'floatInUp 0.3s ease both',
-                      boxShadow: '0 15px 40px rgba(59,130,246,0.1)',
-                    }}>
-                      📍 {b.label}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Ground fade - White variant */}
-          <div style={{
-            position: 'absolute',
-            bottom: 0, left: 0, right: 0,
-            height: '180px',
-            background: 'linear-gradient(0deg, #FFFFFF 40%, transparent 100%)',
-            zIndex: 10,
-            pointerEvents: 'none',
-          }} />
+              GANDHINAGAR
+            </span>
+          </h2>
         </div>
 
+        {/* Decorative diamond */}
         <div style={{
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          padding: '50px 0 60px',
-          background: '#FFFFFF',
-          zIndex: 20,
+          textAlign: 'center',
+          marginBottom: '8px',
+          opacity: visible ? 1 : 0,
+          animation: visible ? 'fadeSlideUp 0.6s 0.25s ease both' : 'none',
         }}>
-          <div style={{
-            color: 'rgba(59,130,246,0.4)',
-            fontSize: '0.9rem',
-            letterSpacing: '8px',
-            textTransform: 'uppercase',
-            fontWeight: 700,
-            animation: 'scrollBounce 2s ease-in-out infinite',
+          <span style={{ color: '#3b82f6', fontSize: '1rem' }}>✦</span>
+        </div>
+
+        {/* Subtext */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '64px',
+          opacity: visible ? 1 : 0,
+          animation: visible ? 'fadeSlideUp 0.7s 0.3s ease both' : 'none',
+        }}>
+          <p style={{
+            fontSize: '1.05rem',
+            fontWeight: 400,
+            color: '#64748b',
+            fontFamily: "'Outfit', sans-serif",
+            margin: 0,
+            fontStyle: 'italic',
           }}>
-            ↓ scroll for more ↓
+            Find exceptional properties in prime locations.
+          </p>
+        </div>
+
+        {/* ── Stats Grid ── */}
+        <style>{`
+          .ea-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 48px;
+          }
+          @media (max-width: 1024px) {
+            .ea-stats-grid { grid-template-columns: repeat(2, 1fr); }
+          }
+          @media (max-width: 600px) {
+            .ea-stats-grid { grid-template-columns: 1fr; }
+          }
+        `}</style>
+        <div className="ea-stats-grid">
+          {stats.map((s, i) => (
+            <StatCard key={i} stat={s} visible={visible} delay={0.35 + i * 0.08} />
+          ))}
+        </div>
+
+        {/* ── Bottom Feature Bar ── */}
+        <div style={{
+          opacity: visible ? 1 : 0,
+          animation: visible ? 'fadeSlideUp 0.8s 1s ease both' : 'none',
+        }}>
+          <div className="ea-feature-bar" style={{
+            background: 'rgba(255,255,255,0.8)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderRadius: '24px',
+            border: '1px solid rgba(59,130,246,0.08)',
+            boxShadow: '0 4px 30px rgba(0,0,0,0.04)',
+            padding: '24px 40px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '16px',
+          }}>
+            <style>{`
+              @media (max-width: 768px) {
+                .ea-feature-bar {
+                  flex-direction: column !important;
+                  align-items: flex-start !important;
+                  padding: 24px !important;
+                }
+              }
+            `}</style>
+            {features.map((f, i) => (
+              <div key={i} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                flex: '1 1 200px',
+                borderRight: i < features.length - 1 ? '1px solid rgba(59,130,246,0.1)' : 'none',
+                paddingRight: i < features.length - 1 ? '24px' : '0',
+              }}>
+                <div style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '14px',
+                  background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.03))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid rgba(59,130,246,0.1)',
+                  flexShrink: 0,
+                }}>
+                  {f.icon}
+                </div>
+                <div>
+                  <div style={{
+                    fontSize: '0.92rem',
+                    fontWeight: 700,
+                    color: '#0f172a',
+                    fontFamily: "'Outfit', sans-serif",
+                    marginBottom: '2px',
+                  }}>
+                    {f.title}
+                  </div>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 400,
+                    color: '#94a3b8',
+                    fontFamily: "'Outfit', sans-serif",
+                  }}>
+                    {f.sub}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

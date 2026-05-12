@@ -5,14 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import ValuationModal from './ValuationModal';
 import './Header.css';
 import logo from '../assets/logo.jpg';
+import { supabase } from '../supabase';
 
-const ALL_LOCALITIES = [
-    'Thaltej', 'Bodakdev', 'Prahlad Nagar', 'Sindhu Bhavan Road', 'Ambli', 'Satellite', 'Science City Road', 'Vastrapur', 'Judges Bungalow Road',
-    'Nikol', 'Vastral', 'Naroda', 'Maninagar', 'Makarba', 'Sanand', 'Bakrol', 'Ognaj', 'Vadsar', 'Ranip', 'Shahibaug', 'Sabarmati',
-    'Chandlodiya', 'Narol', 'Vatva', 'Danilimda', 'Asarwa', 'Bapunagar', 'Odhav', 'Piplaj', 'Bopal', 'South Bopal', 'Gota', 'Chandkheda',
-    'Motera', 'Shilaj', 'Shela', 'Ghuma', 'New Ranip', 'Jagatpur', 'Vaishnodevi Circle', 'Tragad', 'Zundal', 'Vasna', 'Paldi', 'Ambawadi',
-    'Navrangpura', 'Memnagar', 'Sola'
-].sort();
 
 const navItems = [
     {
@@ -61,6 +55,23 @@ const Header = () => {
     const [hoveredArea, setHoveredArea] = useState(null);
     const [hoveredBHK, setHoveredBHK] = useState(null);
     const [localitySearch, setLocalitySearch] = useState('');
+    const [allLocalities, setAllLocalities] = useState([]);
+    const [allCities, setAllCities] = useState(['AHMEDABAD', 'GANDHINAGAR']);
+
+    React.useEffect(() => {
+        const fetchDictionary = async () => {
+            const { data } = await supabase.from('locations_dictionary').select('city, area');
+            if (data) {
+                const uniqueAreas = [...new Set(data.map(d => d.area).filter(Boolean))].sort();
+                const uniqueCities = [...new Set(data.map(d => d.city).filter(Boolean))].map(c => c.toUpperCase()).sort();
+                setAllLocalities(uniqueAreas);
+                if (uniqueCities.length > 0) {
+                    setAllCities(uniqueCities);
+                }
+            }
+        };
+        fetchDictionary();
+    }, []);
 
     const resetCascading = () => {
         setHoveredRentOption(null);
@@ -123,7 +134,7 @@ const Header = () => {
                                                     <div className="cascading-column">
                                                         <h4>City</h4>
                                                         <ul>
-                                                            {['AHMEDABAD', 'GANDHINAGAR'].map(city => (
+                                                            {allCities.map(city => (
                                                                 <li key={city} onMouseEnter={() => { setHoveredCity(city); setHoveredArea(null); setHoveredBHK(null); }} className={hoveredCity === city ? 'active' : ''}>
                                                                     {city} <ChevronRight size={14} />
                                                                 </li>
@@ -145,7 +156,7 @@ const Header = () => {
                                                             />
                                                         </div>
                                                         <ul className="scrollable-list">
-                                                            {ALL_LOCALITIES.filter(loc => loc.toLowerCase().includes(localitySearch.toLowerCase())).map(loc => (
+                                                            {allLocalities.filter(loc => loc.toLowerCase().includes(localitySearch.toLowerCase())).map(loc => (
                                                                 <li key={loc} onMouseEnter={() => { setHoveredArea(loc); setHoveredBHK(null); }} className={hoveredArea === loc ? 'active' : ''}>
                                                                     {loc} <ChevronRight size={14} />
                                                                 </li>
@@ -218,7 +229,7 @@ const Header = () => {
                                                             <div className="cascading-column">
                                                                 <h4>City</h4>
                                                                 <ul>
-                                                                    {['AHMEDABAD', 'GANDHINAGAR'].map(city => (
+                                                                    {allCities.map(city => (
                                                                         <li key={city} onMouseEnter={() => { setHoveredCity(city); setHoveredArea(null); setHoveredBHK(null); }} className={hoveredCity === city ? 'active' : ''}>
                                                                             {city} <ChevronRight size={14} />
                                                                         </li>
@@ -239,7 +250,7 @@ const Header = () => {
                                                                     />
                                                                 </div>
                                                                 <ul className="scrollable-list">
-                                                                    {ALL_LOCALITIES.filter(loc => loc.toLowerCase().includes(localitySearch.toLowerCase())).map(loc => (
+                                                                    {allLocalities.filter(loc => loc.toLowerCase().includes(localitySearch.toLowerCase())).map(loc => (
                                                                         <li key={loc} onMouseEnter={() => { setHoveredArea(loc); setHoveredBHK(null); }} className={hoveredArea === loc ? 'active' : ''}>
                                                                             {loc} <ChevronRight size={14} />
                                                                         </li>

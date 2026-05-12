@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import ValuationModal from '../components/ValuationModal';
 import ExploreAhmedabad from '../components/ExploreAhmedabad';
 import ExploreGandhinagar from '../components/ExploreGandhinagar';
+import LatestLaunches from '../components/LatestLaunches';
+import PremiumHero from '../components/PremiumHero';
 import FooterFilters from '../components/FooterFilters';
 import logo from '../assets/logo.jpg';
 import './Home.css';
@@ -167,17 +169,13 @@ const Home = () => {
 
             if (projectsData && !projError) {
                 setRealProjects(projectsData.map(p => {
-                    // Build config label from bedrooms field across all 3 config arrays
                     let configText = p.property_type || 'Residential';
-
                     const bhkNums = [];
                     const extras = [];
 
-                    // Regular configs: use 'bedrooms' count or 'bhk_type' for villas
                     if (Array.isArray(p.configurations) && p.configurations.length > 0) {
                         p.configurations.forEach(c => {
                             if (c?.bhk_type) {
-                                // Villa style e.g. "4 BHK"
                                 const n = parseInt(c.bhk_type);
                                 if (!isNaN(n)) bhkNums.push(n);
                             } else if (c?.bedrooms) {
@@ -186,12 +184,10 @@ const Home = () => {
                         });
                     }
 
-                    // Penthouse configs
                     if (Array.isArray(p.penthouse_configurations) && p.penthouse_configurations.length > 0) {
                         extras.push('Penthouse');
                     }
 
-                    // Duplex Penthouse configs
                     if (Array.isArray(p.duplex_penthouse_configurations) && p.duplex_penthouse_configurations.length > 0) {
                         extras.push('Duplex Penthouse');
                     }
@@ -213,7 +209,7 @@ const Home = () => {
                         city: p.city,
                         type: p.property_type?.toLowerCase(),
                         config: configText,
-                        price: p.configurations?.[0]?.price || 'Call for Price',
+                        price: p.price_range || p.configurations?.[0]?.price || 'Call for Price',
                         isProject: true
                     };
                 }));
@@ -243,25 +239,9 @@ const Home = () => {
             setActiveSearchDropdown(null);
         } else {
             setActiveSearchDropdown(name);
-            setBudgetOpen(null); // Reset sub-dropdowns
+            setBudgetOpen(null);
         }
     };
-
-    // Slideshow logic
-    useEffect(() => {
-        if (homeSlides.length === 0) return;
-        const timer = setInterval(() => {
-            setCurrentSlide((prev) => {
-                const next = (prev + 1) % homeSlides.length;
-                console.log('Slide transition:', prev, '->', next);
-                return next;
-            });
-        }, 4000);
-        return () => {
-            console.log('Slideshow cleanup');
-            clearInterval(timer);
-        };
-    }, []);
 
     useEffect(() => {
         if (realProjects.length > 0) {
@@ -293,431 +273,18 @@ const Home = () => {
 
     return (
         <div className="home-page-root">
-            <div className="homepage-wrapper-fullscreen">
-                {/* Split Hero */}
-                <div className="split-hero-container">
-
-
-                    {/* Right Visuals */}
-                    <div className="hero-right-visual">
-                        <div className="diagonal-overlay"></div>
-
-                        {/* Slideshow */}
-                        <div className="fullscreen-slideshow">
-                            {homeSlides.map((slide, idx) => (
-                                <div
-                                    key={idx}
-                                    className={`hero-slide ${idx === currentSlide ? 'active' : ''}`}
-                                    data-slide-index={idx}
-                                    data-is-active={idx === currentSlide}
-                                >
-                                    <img src={slide.image} alt={slide.title} loading={idx === 0 ? "eager" : "lazy"} />
-                                    <div className="slide-hero-text">
-                                        <h2 style={{ marginBottom: '4px' }}>{slide.title}</h2>
-                                        <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: '1.2rem', margin: '0 0 16px 0', fontWeight: '500', letterSpacing: '0.5px' }}>{slide.developer || 'NestDeal'}</p>
-                                        <div className="hero-tag" style={{ color: '#FFFFFF', opacity: 1, fontSize: '1rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '8px', width: 'fit-content' }}>{slide.tag}</div>
-                                        <p style={{ marginTop: '20px', fontSize: '1.8rem', fontWeight: '700' }}>{slide.price}</p>
-                                    </div>
-                                </div>
-                            ))}
-
-                            {/* Navigation Dots */}
-                            <div className="slide-indicators">
-                                {homeSlides.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        className={`indicator ${index === currentSlide ? 'active' : ''}`}
-                                        onClick={() => setCurrentSlide(index)}
-                                    ></button>
-                                ))}
-                            </div>
-                        </div>
-
-                    </div>
-
-                    {/* Search Bar - Moved OUTSIDE hero-right-visual to sit on top of everything */}
-                    <div className="hero-bottom-filter">
-                        <div className="search-type-toggle-wrapper">
-                            <div className="search-type-toggle">
-                                <button className={searchType === 'buy' ? 'active' : ''} onClick={() => { setSearchType('buy'); setSelectedBudget({ min: '', max: '' }); }}>BUY</button>
-                                <button className={searchType === 'rent' ? 'active' : ''} onClick={() => { setSearchType('rent'); setSelectedBudget({ min: '', max: '' }); }}>RENT</button>
-                            </div>
-                        </div>
-                        <div className="advanced-search-container">
-                            {/* City */}
-                            <div className="search-field-group" onClick={() => toggleSearchDropdown('city')}>
-                                <label>Select City</label>
-                                <div className="field-control">
-                                    <span>{activeLocation}</span>
-                                    <ChevronDown size={14} className={activeSearchDropdown === 'city' ? 'rotate-180' : ''} />
-                                </div>
-                                {activeSearchDropdown === 'city' && (
-                                    <div className="dropdown-menu-search city-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        <div className={`dd-item ${activeLocation === 'Ahmedabad' ? 'selected' : ''}`} onClick={() => { setActiveLocation('Ahmedabad'); toggleSearchDropdown(null); }}>Ahmedabad</div>
-                                        <div className={`dd-item ${activeLocation === 'Gandhinagar' ? 'selected' : ''}`} onClick={() => { setActiveLocation('Gandhinagar'); toggleSearchDropdown(null); }}>Gandhinagar</div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="search-divider-v"></div>
-
-                            {/* Text Search */}
-                            <div className="search-field-group wide">
-                                <label>Search By Area</label>
-                                <input
-                                    type="text"
-                                    placeholder="Area / project / builder"
-                                    value={searchText}
-                                    onChange={(e) => setSearchText(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                />
-                            </div>
-
-                            <div className="search-divider-v"></div>
-
-                            {/* BHK */}
-                            <div className="search-field-group" onClick={() => toggleSearchDropdown('bhk')}>
-                                <label>Select BHK</label>
-                                <div className="field-control">
-                                    <span>{selectedBHK.length > 0 ? `${selectedBHK.join(', ')} BHK` : 'BHK'}</span>
-                                    <ChevronDown size={14} className={activeSearchDropdown === 'bhk' ? 'rotate-180' : ''} />
-                                </div>
-                                {activeSearchDropdown === 'bhk' && (
-                                    <div className="dropdown-menu-search bhk-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        <div className="bhk-options-grid" style={{ maxHeight: '250px', overflowY: 'auto' }}>
-                                            {BHK_OPTIONS.map(bhk => (
-                                                <div
-                                                    key={bhk}
-                                                    className={`bhk-option-btn ${selectedBHK.includes(bhk) ? 'active' : ''}`}
-                                                    onClick={() => {
-                                                        const newSel = selectedBHK.includes(bhk)
-                                                            ? selectedBHK.filter(b => b !== bhk)
-                                                            : [...selectedBHK, bhk];
-                                                        setSelectedBHK(newSel);
-                                                    }}
-                                                    style={{ fontSize: '0.75rem', padding: '8px 4px' }}
-                                                >
-                                                    {bhk}
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="bhk-footer" onClick={() => setSelectedBHK([])}>Clear All</div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="search-divider-v"></div>
-
-                            {/* Budget */}
-                            <div className="search-field-group" onClick={() => toggleSearchDropdown('budget')}>
-                                <label>Select Budget</label>
-                                <div className="field-control">
-                                    <span>{selectedBudget.min || 'Min'} - {selectedBudget.max || 'Max'}</span>
-                                    <ChevronDown size={14} className={activeSearchDropdown === 'budget' ? 'rotate-180' : ''} />
-                                </div>
-                                {activeSearchDropdown === 'budget' && (
-                                    <div className="dropdown-menu-search budget-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        <div className="budget-range-wrapper">
-                                            {/* Min Selector */}
-                                            <div className="budget-select-box" onClick={() => setBudgetOpen(budgetOpen === 'min' ? null : 'min')}>
-                                                <span>{selectedBudget.min || 'Min'}</span>
-                                                <ChevronDown size={14} />
-                                                {budgetOpen === 'min' && (
-                                                    <div className="price-dropdown-list">
-                                                        {(searchType === 'rent' ? RENT_PRICE_OPTIONS : PRICE_OPTIONS).map(price => (
-                                                            <div key={price} className="price-option" onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setSelectedBudget({ ...selectedBudget, min: price });
-                                                                setBudgetOpen(null);
-                                                            }}>{price}</div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <span>-</span>
-                                            {/* Max Selector */}
-                                            <div className="budget-select-box" onClick={() => setBudgetOpen(budgetOpen === 'max' ? null : 'max')}>
-                                                <span>{selectedBudget.max || 'Max'}</span>
-                                                <ChevronDown size={14} />
-                                                {budgetOpen === 'max' && (
-                                                    <div className="price-dropdown-list">
-                                                        {(searchType === 'rent' ? RENT_PRICE_OPTIONS : PRICE_OPTIONS).map(price => (
-                                                            <div key={price} className="price-option" onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setSelectedBudget({ ...selectedBudget, max: price });
-                                                                setBudgetOpen(null);
-                                                            }}>{price}</div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="search-divider-v"></div>
-
-                            {searchType === 'buy' ? (
-                                <>
-                                    {/* Amenities */}
-                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('amenities')}>
-                                        <label>Amenities</label>
-                                        <div className="field-control">
-                                            <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                {selectedAmenities.length > 0 ? `${selectedAmenities.length} selected` : 'Any'}
-                                            </span>
-                                            <ChevronDown size={14} className={activeSearchDropdown === 'amenities' ? 'rotate-180' : ''} />
-                                        </div>
-                                        {activeSearchDropdown === 'amenities' && (
-                                            <div className="dropdown-menu-search amenities-dropdown" onClick={(e) => e.stopPropagation()} style={{ width: '280px', maxHeight: '320px', overflowY: 'auto' }}>
-                                                <div style={{ padding: '8px 12px', borderBottom: '1px solid #eee' }}>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Search amenity..."
-                                                        value={amenitySearch}
-                                                        onChange={(e) => setAmenitySearch(e.target.value)}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        style={{ width: '100%', border: '1px solid #ddd', borderRadius: '6px', padding: '6px 10px', fontSize: '0.85rem', outline: 'none' }}
-                                                    />
-                                                </div>
-                                                <div style={{ padding: '8px' }}>
-                                                    {ALL_AMENITY_NAMES.filter(a => a.toLowerCase().includes(amenitySearch.toLowerCase())).map(name => (
-                                                        <div key={name} className={`amenity-item-check ${selectedAmenities.includes(name) ? 'active' : ''}`} onClick={() => toggleAmenity(name)}>
-                                                            <div className="check-box">{selectedAmenities.includes(name) && <Check size={12} />}</div>
-                                                            <span>{name}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="search-divider-v"></div>
-
-                                    {/* Construction */}
-                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('construction')}>
-                                        <label>Construction</label>
-                                        <div className="field-control">
-                                            <span>{selectedConstruction.length > 0 ? `${selectedConstruction.length} selected` : 'Any Status'}</span>
-                                            <ChevronDown size={14} className={activeSearchDropdown === 'construction' ? 'rotate-180' : ''} />
-                                        </div>
-                                        {activeSearchDropdown === 'construction' && (
-                                            <div className="dropdown-menu-search simple-dropdown" onClick={(e) => e.stopPropagation()}>
-                                                {['READY TO MOVE', 'UNDER CONSTRUCTION'].map(status => (
-                                                    <div
-                                                        key={status}
-                                                        className={`dd-item ${selectedConstruction.includes(status) ? 'selected' : ''}`}
-                                                        onClick={() => {
-                                                            const newSel = selectedConstruction.includes(status)
-                                                                ? selectedConstruction.filter(s => s !== status)
-                                                                : [...selectedConstruction, status];
-                                                            setSelectedConstruction(newSel);
-                                                        }}
-                                                    >
-                                                        {status}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    {/* Property Type */}
-                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('propType')}>
-                                        <label>Property Type</label>
-                                        <div className="field-control">
-                                            <span style={{ fontSize: '0.75rem' }}>{rentPropertyType}</span>
-                                            <ChevronDown size={14} className={activeSearchDropdown === 'propType' ? 'rotate-180' : ''} />
-                                        </div>
-                                        {activeSearchDropdown === 'propType' && (
-                                            <div className="dropdown-menu-search simple-dropdown" onClick={(e) => e.stopPropagation()}>
-                                                {['Apartment', 'Villa', 'Studio', 'Builder Floor', 'PG / Co-living'].map(t => (
-                                                    <div key={t} className={`dd-item ${rentPropertyType === t ? 'selected' : ''}`} onClick={() => { setRentPropertyType(t); toggleSearchDropdown(null); }}>{t}</div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="search-divider-v"></div>
-
-                                    {/* Furnishing */}
-                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('furnishing')}>
-                                        <label>Furnishing</label>
-                                        <div className="field-control">
-                                            <span style={{ fontSize: '0.75rem' }}>{furnishingStatus}</span>
-                                            <ChevronDown size={14} className={activeSearchDropdown === 'furnishing' ? 'rotate-180' : ''} />
-                                        </div>
-                                        {activeSearchDropdown === 'furnishing' && (
-                                            <div className="dropdown-menu-search simple-dropdown" onClick={(e) => e.stopPropagation()}>
-                                                {['Unfurnished', 'Semi-furnished', 'Fully furnished'].map(t => (
-                                                    <div key={t} className={`dd-item ${furnishingStatus === t ? 'selected' : ''}`} onClick={() => { setFurnishingStatus(t); toggleSearchDropdown(null); }}>{t}</div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="search-divider-v"></div>
-
-                                    {/* Availability */}
-                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('avail')}>
-                                        <label>Availability</label>
-                                        <div className="field-control">
-                                            <span style={{ fontSize: '0.75rem' }}>{availability === 'Ready to move' ? 'Ready' : (availableDate || 'Select Date')}</span>
-                                            <ChevronDown size={14} className={activeSearchDropdown === 'avail' ? 'rotate-180' : ''} />
-                                        </div>
-                                        {activeSearchDropdown === 'avail' && (
-                                            <div className="dropdown-menu-search simple-dropdown" onClick={(e) => e.stopPropagation()} style={{ width: '200px' }}>
-                                                <div className={`dd-item ${availability === 'Ready to move' ? 'selected' : ''}`} onClick={() => { setAvailability('Ready to move'); setAvailableDate(''); toggleSearchDropdown(null); }}>Ready to move</div>
-                                                <div className="dd-item" style={{ padding: '10px' }}>
-                                                    <label style={{ fontSize: '0.7rem', color: '#666', marginBottom: '4px' }}>Available from:</label>
-                                                    <input 
-                                                        type="date" 
-                                                        value={availableDate} 
-                                                        onChange={(e) => { setAvailableDate(e.target.value); setAvailability('Date'); }}
-                                                        style={{ width: '100%', border: '1px solid #ddd', borderRadius: '4px', padding: '4px' }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="search-divider-v"></div>
-
-                                    {/* Tenant */}
-                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('tenant')}>
-                                        <label>Tenant</label>
-                                        <div className="field-control">
-                                            <span style={{ fontSize: '0.75rem' }}>{preferredTenant}</span>
-                                            <ChevronDown size={14} className={activeSearchDropdown === 'tenant' ? 'rotate-180' : ''} />
-                                        </div>
-                                        {activeSearchDropdown === 'tenant' && (
-                                            <div className="dropdown-menu-search simple-dropdown" onClick={(e) => e.stopPropagation()}>
-                                                {['Family', 'Bachelor', 'Anyone'].map(t => (
-                                                    <div key={t} className={`dd-item ${preferredTenant === t ? 'selected' : ''}`} onClick={() => { setPreferredTenant(t); toggleSearchDropdown(null); }}>{t}</div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="search-divider-v"></div>
-
-                                    {/* Age */}
-                                    <div className="search-field-group" onClick={() => toggleSearchDropdown('age')}>
-                                        <label>Age</label>
-                                        <div className="field-control">
-                                            <span style={{ fontSize: '0.75rem' }}>{propertyAge}</span>
-                                            <ChevronDown size={14} className={activeSearchDropdown === 'age' ? 'rotate-180' : ''} />
-                                        </div>
-                                        {activeSearchDropdown === 'age' && (
-                                            <div className="dropdown-menu-search simple-dropdown" onClick={(e) => e.stopPropagation()}>
-                                                {['New', '0–5 yrs', '5–10 yrs', '10+ yrs'].map(t => (
-                                                    <div key={t} className={`dd-item ${propertyAge === t ? 'selected' : ''}`} onClick={() => { setPropertyAge(t); toggleSearchDropdown(null); }}>{t}</div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </>
-                            )}
-
-                            <button className="main-search-btn" onClick={handleSearch}>
-                                <Search size={20} />
-                                <span>Search</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Full Screen Filter Modal */}
-                    {activeSearchDropdown === 'filter-modal' && (
-                        <div className="filter-modal-overlay" onClick={() => toggleSearchDropdown(null)}>
-                            <div className="filter-modal-container" onClick={(e) => e.stopPropagation()}>
-                                <div className="filter-modal-header">
-                                    <button onClick={() => toggleSearchDropdown(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><ChevronDown size={20} style={{ transform: 'rotate(90deg)' }} /></button>
-                                    <h2>Filters</h2>
-                                </div>
-                                <div className="filter-modal-body">
-                                    {/* City Tabs */}
-                                    <div className="filter-section-modal">
-                                        <h3>Search City</h3>
-                                        <div className="modal-city-tabs">
-                                            <button className={`modal-city-tab ${activeLocation === 'Ahmedabad' ? 'active' : ''}`} onClick={() => setActiveLocation('Ahmedabad')}>Ahmedabad</button>
-                                            <button className={`modal-city-tab ${activeLocation === 'Gandhinagar' ? 'active' : ''}`} onClick={() => setActiveLocation('Gandhinagar')}>Gandhinagar</button>
-                                        </div>
-                                    </div>
-
-                                    {/* Locality Search */}
-                                    <div className="filter-section-modal">
-                                        <h3>Search Locality / Project / Builder</h3>
-                                        <div className="modal-search-input">
-                                            <Search size={18} />
-                                            <input type="text" placeholder="Search Locality / Project / Builder" />
-                                        </div>
-                                    </div>
-
-                                    {/* Property Type */}
-                                    <div className="filter-section-modal">
-                                        <h3>Property Type <span className="clear-btn">Clear All</span></h3>
-                                        <div className="chip-group">
-                                            {['Flat', 'Duplex', 'Penthouse', 'Villa', 'Plot'].map(type => (
-                                                <button key={type} className="chip-btn"><span>+</span> {type}</button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* BHK */}
-                                    <div className="filter-section-modal">
-                                        <h3>BHK <span className="clear-btn" onClick={() => setSelectedBHK([])}>Clear All</span></h3>
-                                        <div className="chip-group" style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                            {BHK_OPTIONS.map(bhk => (
-                                                <button 
-                                                    key={bhk} 
-                                                    className={`chip-btn ${selectedBHK.includes(bhk) ? 'active' : ''}`}
-                                                    onClick={() => {
-                                                        const newSel = selectedBHK.includes(bhk)
-                                                            ? selectedBHK.filter(b => b !== bhk)
-                                                            : [...selectedBHK, bhk];
-                                                        setSelectedBHK(newSel);
-                                                    }}
-                                                >
-                                                    {selectedBHK.includes(bhk) ? <Check size={14} /> : <span>+</span>} {bhk}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Budget */}
-                                    <div className="filter-section-modal">
-                                        <h3>Budget <span className="clear-btn">Clear All</span></h3>
-                                        <div className="budget-range-wrapper">
-                                            <div className="budget-select-box"><span>Min</span> <ChevronDown size={14} /></div>
-                                            <span>-</span>
-                                            <div className="budget-select-box"><span>Max</span> <ChevronDown size={14} /></div>
-                                        </div>
-                                    </div>
-
-                                    {/* Possession */}
-                                    <div className="filter-section-modal">
-                                        <h3>Possession <span className="clear-btn">Clear All</span></h3>
-                                        <div className="chip-group">
-                                            {['Ready to Move', 'Upto 1 Year', 'Upto 2 Years', '2+ Years'].map(p => (
-                                                <button key={p} className="chip-btn"><span>+</span> {p}</button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="filter-modal-footer">
-                                    <button className="btn-clear">Clear All</button>
-                                    <button className="btn-apply" onClick={() => toggleSearchDropdown(null)}>Apply</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+            {/* Premium Hero Section */}
+            <PremiumHero 
+                slides={homeSlides} 
+                currentSlide={currentSlide} 
+                setCurrentSlide={setCurrentSlide} 
+            />
 
             {/* Interactive Explore Ahmedabad Section */}
             <ExploreAhmedabad />
+
+            {/* Trending Projects Section */}
+            <LatestLaunches />
 
             {/* Explore Ahmedabad Section */}
             <div className="explore-ahmedabad-section">
@@ -727,106 +294,110 @@ const Home = () => {
                     <div className="prop-listing-column left-projects">
                         <h2 className="new-col-header">Popular Projects</h2>
 
-                        <div className="prop-tabs">
-                            {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
-                                <button
-                                    key={tab}
-                                    className={`prop-tab-btn ${activeAhdProjectTab === tab.toLowerCase() ? 'active' : ''}`}
-                                    onClick={() => setActiveAhdProjectTab(tab.toLowerCase())}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="prop-grid-2x2">
-                            {getProjectsForTab(activeAhdProjectTab, 'Ahmedabad').slice(0, 4).map((item) => (
-                                <Link to={`/project/${item.id}`} key={item.id} className="premium-prop-card">
-                                    <div className="premium-img-section">
-                                        <img src={item.image} alt={item.listingTitle} loading="lazy" />
-                                        <div className="premium-gradient-overlay"></div>
-                                        <div className="premium-img-text">
-                                            <h4 className="premium-title">{item.listingTitle}</h4>
-                                            <div className="premium-developer">
-                                                <Building2 size={14} /> by {item.developer || 'NestDeal'}
+                        <div className="glass-folder-content">
+                            <div className="prop-tabs">
+                                {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
+                                    <button
+                                        key={tab}
+                                        className={`prop-tab-btn ${activeAhdProjectTab === tab.toLowerCase() ? 'active' : ''}`}
+                                        onClick={() => setActiveAhdProjectTab(tab.toLowerCase())}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="prop-grid-2x2">
+                                {getProjectsForTab(activeAhdProjectTab, 'Ahmedabad').slice(0, 4).map((item) => (
+                                    <Link to={`/project/${item.id}`} key={item.id} className="premium-prop-card">
+                                        <div className="premium-img-section">
+                                            <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                            <div className="premium-gradient-overlay"></div>
+                                            <div className="premium-img-text">
+                                                <h4 className="premium-title">{item.listingTitle}</h4>
+                                                <div className="premium-developer">
+                                                    <Building2 size={14} /> by {item.developer || 'NestDeal'}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="premium-details-section">
-                                        <div className="detail-line">
-                                            <Bed size={16} /> <span>{item.config || item.type || 'Residential'}</span>
-                                        </div>
-                                        <div className="detail-line">
-                                            <MapPin size={16} /> <span>{item.location}, {item.city}</span>
-                                        </div>
-                                        <div className="price-row">
-                                            <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
-                                            <div className="view-details-btn">
-                                                Enquire Now <ArrowRight size={14} />
+                                        <div className="premium-details-section">
+                                            <div className="detail-line">
+                                                <Bed size={16} /> <span>{item.config || item.type || 'Residential'}</span>
+                                            </div>
+                                            <div className="detail-line">
+                                                <MapPin size={16} /> <span>{item.location}, {item.city}</span>
+                                            </div>
+                                            <div className="price-row">
+                                                <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
+                                                <div className="view-details-btn">
+                                                    Enquire Now <ArrowRight size={14} />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            ))}
+                                    </Link>
+                                ))}
+                            </div>
+                            <Link to="/explore?city=Ahmedabad" className="new-see-all-btn">See All</Link>
                         </div>
-
-                        <Link to="/explore?city=Ahmedabad" className="new-see-all-btn">See All</Link>
                     </div>
 
                     {/* RIGHT CONTAINER: Popular Owner Property (Ahmedabad) */}
                     <div className="prop-listing-column right-owners">
                         <h2 className="new-col-header">Popular Owner Property</h2>
 
-                        <div className="prop-tabs">
-                            {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
-                                <button
-                                    key={tab}
-                                    className={`prop-tab-btn ${activeAhdOwnerTab === tab.toLowerCase() ? 'active' : ''}`}
-                                    onClick={() => setActiveAhdOwnerTab(tab.toLowerCase())}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="prop-grid-2x2">
-                            {getPropertiesForTab(activeAhdOwnerTab, 'Ahmedabad').slice(0, 4).map((item) => (
-                                <Link to={`/property/${item.id}`} key={item.id} className="premium-prop-card">
-                                    <div className="premium-img-section">
-                                        <img src={item.image} alt={item.listingTitle} loading="lazy" />
-                                        <div className="premium-gradient-overlay"></div>
-                                        <div className="premium-img-text">
-                                            <h4 className="premium-title">{item.listingTitle}</h4>
-                                            <div className="premium-developer">
-                                                <User size={14} /> by {item.developer || 'Individual'}
+                        <div className="glass-folder-content">
+                            <div className="prop-tabs">
+                                {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
+                                    <button
+                                        key={tab}
+                                        className={`prop-tab-btn ${activeAhdOwnerTab === tab.toLowerCase() ? 'active' : ''}`}
+                                        onClick={() => setActiveAhdOwnerTab(tab.toLowerCase())}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="prop-grid-2x2">
+                                {getPropertiesForTab(activeAhdOwnerTab, 'Ahmedabad').slice(0, 4).map((item) => (
+                                    <Link to={`/property/${item.id}`} key={item.id} className="premium-prop-card">
+                                        <div className="premium-img-section">
+                                            <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                            <div className="premium-gradient-overlay"></div>
+                                            <div className="premium-img-text">
+                                                <h4 className="premium-title">{item.listingTitle}</h4>
+                                                <div className="premium-developer">
+                                                    <User size={14} /> by {item.developer || 'Individual'}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="premium-details-section">
-                                        <div className="detail-line">
-                                            <Bed size={16} /> <span>{item.config || item.type || 'Property'}</span>
-                                        </div>
-                                        <div className="detail-line">
-                                            <MapPin size={16} /> <span>{item.location}, {item.city}</span>
-                                        </div>
-                                        <div className="price-row">
-                                            <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
-                                            <div className="view-details-btn">
-                                                Enquire Now <ArrowRight size={14} />
+                                        <div className="premium-details-section">
+                                            <div className="detail-line">
+                                                <Bed size={16} /> <span>{item.config || item.type || 'Property'}</span>
+                                            </div>
+                                            <div className="detail-line">
+                                                <MapPin size={16} /> <span>{item.location}, {item.city}</span>
+                                            </div>
+                                            <div className="price-row">
+                                                <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
+                                                <div className="view-details-btn">
+                                                    Enquire Now <ArrowRight size={14} />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            ))}
+                                    </Link>
+                                ))}
+                            </div>
+                            <Link to="/explore?city=Ahmedabad" className="new-see-all-btn">See All</Link>
                         </div>
-
-                        <Link to="/explore?city=Ahmedabad" className="new-see-all-btn">See All</Link>
                     </div>
                 </div>
             </div>
 
+
             {/* Interactive Explore Gandhinagar Section */}
             <ExploreGandhinagar />
+
+            {/* Trending Projects Section - Gandhinagar */}
+            <LatestLaunches city="Gandhinagar" />
 
             {/* Explore Gandhinagar Section */}
             <div className="explore-gandhinagar-section">
@@ -836,100 +407,100 @@ const Home = () => {
                     <div className="prop-listing-column left-projects">
                         <h2 className="new-col-header">Popular Projects</h2>
 
-                        <div className="prop-tabs">
-                            {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
-                                <button
-                                    key={tab}
-                                    className={`prop-tab-btn ${activeGnrProjectTab === tab.toLowerCase() ? 'active' : ''}`}
-                                    onClick={() => setActiveGnrProjectTab(tab.toLowerCase())}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="prop-grid-2x2">
-                            {getProjectsForTab(activeGnrProjectTab, 'Gandhinagar').slice(0, 4).map((item) => (
-                                <Link to={`/project/${item.id}`} key={item.id} className="premium-prop-card">
-                                    <div className="premium-img-section">
-                                        <img src={item.image} alt={item.listingTitle} loading="lazy" />
-                                        <div className="premium-gradient-overlay"></div>
-                                        <div className="premium-img-text">
-                                            <h4 className="premium-title">{item.listingTitle}</h4>
-                                            <div className="premium-developer">
-                                                <Building2 size={14} /> by {item.builder || 'NestDeal'}
+                        <div className="glass-folder-content">
+                            <div className="prop-tabs">
+                                {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
+                                    <button
+                                        key={tab}
+                                        className={`prop-tab-btn ${activeGnrProjectTab === tab.toLowerCase() ? 'active' : ''}`}
+                                        onClick={() => setActiveGnrProjectTab(tab.toLowerCase())}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="prop-grid-2x2">
+                                {getProjectsForTab(activeGnrProjectTab, 'Gandhinagar').slice(0, 4).map((item) => (
+                                    <Link to={`/project/${item.id}`} key={item.id} className="premium-prop-card">
+                                        <div className="premium-img-section">
+                                            <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                            <div className="premium-gradient-overlay"></div>
+                                            <div className="premium-img-text">
+                                                <h4 className="premium-title">{item.listingTitle}</h4>
+                                                <div className="premium-developer">
+                                                    <Building2 size={14} /> by {item.builder || 'NestDeal'}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="premium-details-section">
-                                        <div className="detail-line">
-                                            <Bed size={16} /> <span>{item.config || item.type || 'Residential'}</span>
-                                        </div>
-                                        <div className="detail-line">
-                                            <MapPin size={16} /> <span>{item.location}, {item.city}</span>
-                                        </div>
-                                        <div className="price-row">
-                                            <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
-                                            <div className="view-details-btn">
-                                                Enquire Now <ArrowRight size={14} />
+                                        <div className="premium-details-section">
+                                            <div className="detail-line">
+                                                <Bed size={16} /> <span>{item.config || item.type || 'Residential'}</span>
+                                            </div>
+                                            <div className="detail-line">
+                                                <MapPin size={16} /> <span>{item.location}, {item.city}</span>
+                                            </div>
+                                            <div className="price-row">
+                                                <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
+                                                <div className="view-details-btn">
+                                                    Enquire Now <ArrowRight size={14} />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            ))}
+                                    </Link>
+                                ))}
+                            </div>
+                            <Link to="/explore?city=Gandhinagar" className="new-see-all-btn">See All</Link>
                         </div>
-
-                        <Link to="/explore?city=Gandhinagar" className="new-see-all-btn">See All</Link>
                     </div>
 
                     {/* RIGHT CONTAINER: Popular Owner Property (Gandhinagar) */}
                     <div className="prop-listing-column right-owners">
                         <h2 className="new-col-header">Popular Owner Property</h2>
 
-                        <div className="prop-tabs">
-                            {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
-                                <button
-                                    key={tab}
-                                    className={`prop-tab-btn ${activeGnrOwnerTab === tab.toLowerCase() ? 'active' : ''}`}
-                                    onClick={() => setActiveGnrOwnerTab(tab.toLowerCase())}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="prop-grid-2x2">
-                            {getPropertiesForTab(activeGnrOwnerTab, 'Gandhinagar').slice(0, 4).map((item) => (
-                                <Link to={`/property/${item.id}`} key={item.id} className="premium-prop-card">
-                                    <div className="premium-img-section">
-                                        <img src={item.image} alt={item.listingTitle} loading="lazy" />
-                                        <div className="premium-gradient-overlay"></div>
-                                        <div className="premium-img-text">
-                                            <h4 className="premium-title">{item.listingTitle}</h4>
-                                            <div className="premium-developer">
-                                                <User size={14} /> by {item.builder || 'Individual'}
+                        <div className="glass-folder-content">
+                            <div className="prop-tabs">
+                                {['Flats', 'Bungalows', 'Commercial', 'Plots'].map((tab) => (
+                                    <button
+                                        key={tab}
+                                        className={`prop-tab-btn ${activeGnrOwnerTab === tab.toLowerCase() ? 'active' : ''}`}
+                                        onClick={() => setActiveGnrOwnerTab(tab.toLowerCase())}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="prop-grid-2x2">
+                                {getPropertiesForTab(activeGnrOwnerTab, 'Gandhinagar').slice(0, 4).map((item) => (
+                                    <Link to={`/property/${item.id}`} key={item.id} className="premium-prop-card">
+                                        <div className="premium-img-section">
+                                            <img src={item.image} alt={item.listingTitle} loading="lazy" />
+                                            <div className="premium-gradient-overlay"></div>
+                                            <div className="premium-img-text">
+                                                <h4 className="premium-title">{item.listingTitle}</h4>
+                                                <div className="premium-developer">
+                                                    <User size={14} /> by {item.builder || 'Individual'}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="premium-details-section">
-                                        <div className="detail-line">
-                                            <Bed size={16} /> <span>{item.config || item.type || 'Property'}</span>
-                                        </div>
-                                        <div className="detail-line">
-                                            <MapPin size={16} /> <span>{item.location}, {item.city}</span>
-                                        </div>
-                                        <div className="price-row">
-                                            <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
-                                            <div className="view-details-btn">
-                                                Enquire Now <ArrowRight size={14} />
+                                        <div className="premium-details-section">
+                                            <div className="detail-line">
+                                                <Bed size={16} /> <span>{item.config || item.type || 'Property'}</span>
+                                            </div>
+                                            <div className="detail-line">
+                                                <MapPin size={16} /> <span>{item.location}, {item.city}</span>
+                                            </div>
+                                            <div className="price-row">
+                                                <div className="premium-price-value">₹ {item.price} <sup style={{ fontSize: '0.7rem', verticalAlign: 'super', color: '#FF0000' }}>*</sup></div>
+                                                <div className="view-details-btn">
+                                                    Enquire Now <ArrowRight size={14} />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            ))}
+                                    </Link>
+                                ))}
+                            </div>
+                            <Link to="/explore?city=Gandhinagar" className="new-see-all-btn">See All</Link>
                         </div>
-
-                        <Link to="/explore?city=Gandhinagar" className="new-see-all-btn">See All</Link>
                     </div>
                 </div>
             </div>
@@ -986,4 +557,3 @@ const Home = () => {
 };
 
 export default Home;
-

@@ -85,6 +85,7 @@ const PostProject = () => {
     const [step, setStep] = useState(0);
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
+    const [locationsDict, setLocationsDict] = useState([]);
     const hasFetchedRef = React.useRef(false);
 
     const fetchUserProfile = async () => {
@@ -110,6 +111,13 @@ const PostProject = () => {
         }
     };
 
+    const fetchDictionary = async () => {
+        const { data } = await supabase.from('locations_dictionary').select('city, area');
+        if (data) {
+            setLocationsDict(data);
+        }
+    };
+
     useEffect(() => {
         if (!user) {
             navigate('/login', { state: { from: '/post-project' } });
@@ -119,6 +127,7 @@ const PostProject = () => {
         if (!hasFetchedRef.current) {
             hasFetchedRef.current = true;
             fetchUserProfile();
+            fetchDictionary();
             if (editId) {
                 fetchProjectForEdit();
             }
@@ -655,15 +664,35 @@ const PostProject = () => {
                             
 
 
-                            {renderInput("Area / Locality", "locality", "e.g., Shela", "text", errors.locality)}
+                            <div style={{ marginBottom: '20px' }}>
+                                <label style={{ display: 'block', color: THEME.muted, fontSize: '0.85rem', marginBottom: '8px' }}>Area / Locality</label>
+                                <select value={formData.locality} onChange={(e) => updateForm('locality', e.target.value)} style={{ width: '100%', padding: '12px 15px', background: THEME.inputBg, border: `1px solid ${errors.locality ? THEME.red : THEME.border}`, borderRadius: '8px', color: THEME.text, outline: 'none' }}>
+                                    <option value="">Select Area</option>
+                                    {[...new Set(locationsDict.filter(d => d.city === formData.city && d.area).map(d => d.area))].sort().map(area => (
+                                        <option key={area} value={area}>{area}</option>
+                                    ))}
+                                </select>
+                                {errors.locality && <span style={{ color: THEME.red, fontSize: '0.75rem' }}>{errors.locality}</span>}
+                            </div>
                             
                             {['Villa', 'Bunglows'].includes(formData.property_type) && renderInput("Landmark", "landmark", "e.g., Near Apollo Hospital")}
 
                             <div style={{ marginBottom: '20px' }}>
                                 <label style={{ display: 'block', color: THEME.muted, fontSize: '0.85rem', marginBottom: '8px' }}>City</label>
-                                <select value={formData.city} onChange={(e) => updateForm('city', e.target.value)} style={{ width: '100%', padding: '12px 15px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text, outline: 'none' }}>
-                                    <option>Ahmedabad</option>
-                                    <option>Gandhinagar</option>
+                                <select value={formData.city} onChange={(e) => {
+                                    updateForm('city', e.target.value);
+                                    updateForm('locality', ''); // Reset locality on city change
+                                }} style={{ width: '100%', padding: '12px 15px', background: THEME.inputBg, border: `1px solid ${THEME.border}`, borderRadius: '8px', color: THEME.text, outline: 'none' }}>
+                                    {[...new Set(locationsDict.map(d => d.city).filter(Boolean))].map(city => (
+                                        <option key={city} value={city}>{city}</option>
+                                    ))}
+                                    {/* Fallbacks if dict is empty */}
+                                    {locationsDict.length === 0 && (
+                                        <>
+                                            <option>Ahmedabad</option>
+                                            <option>Gandhinagar</option>
+                                        </>
+                                    )}
                                 </select>
                             </div>
                         </div>
@@ -869,6 +898,7 @@ const PostProject = () => {
                                             <div style={{ color: THEME.muted, fontSize: '0.75rem', marginBottom: '15px', letterSpacing: '1px' }}>DETAILED LAYOUT</div>
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
                                                 {[
+                                                    { label: 'Kitchen', key: 'kitchens' },
                                                     { label: 'Balcony', key: 'balcony' },
                                                     { label: 'Personal Foyer', key: 'foyer' },
                                                     { label: 'Drawing/Living', key: 'drawing_living_dining' },
@@ -878,8 +908,8 @@ const PostProject = () => {
                                                     { label: 'Store Room', key: 'store_room' },
                                                     { label: 'Washyard', key: 'washyard' },
                                                     { label: 'Servant Room', key: 'servant_room' },
-                                                    { label: 'General Toilet', key: 'general_toilet' },
-                                                    { label: 'Personal Toilet', key: 'personal_toilet' },
+                                                    { label: 'Common Washroom', key: 'general_toilet' },
+                                                    { label: 'Attach Washroom', key: 'personal_toilet' },
                                                     { label: 'Dressing Room', key: 'dressing_room' },
                                                     { label: 'Vestibule', key: 'vestibule' },
                                                     { label: 'Balcony', key: 'sky_patio_balcony' },
@@ -1016,14 +1046,15 @@ const PostProject = () => {
                                             <div style={{ color: THEME.muted, fontSize: '0.75rem', marginBottom: '15px', letterSpacing: '1px' }}>DETAILED LAYOUT (PENTHOUSE)</div>
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
                                                 {[
+                                                    { label: 'Kitchen', key: 'kitchens' },
                                                     { label: 'Balcony', key: 'balcony' },
                                                     { label: 'Personal Foyer', key: 'foyer' },
                                                     { label: 'Drawing/Living', key: 'drawing_living_dining' },
                                                     { label: 'Store Room', key: 'store_room' },
                                                     { label: 'Washyard', key: 'washyard' },
                                                     { label: 'Servant Room', key: 'servant_room' },
-                                                    { label: 'General Toilet', key: 'general_toilet' },
-                                                    { label: 'Personal Toilet', key: 'personal_toilet' },
+                                                    { label: 'Common Washroom', key: 'general_toilet' },
+                                                    { label: 'Attach Washroom', key: 'personal_toilet' },
                                                     { label: 'Dressing Room', key: 'dressing_room' },
                                                     { label: 'Vestibule', key: 'vestibule' },
                                                     { label: 'Sky Patio/Balcony', key: 'sky_patio_balcony' },
@@ -1178,8 +1209,8 @@ const PostProject = () => {
                                                 { label: 'Store Room', key: 'store_room' },
                                                 { label: 'Washyard', key: 'washyard' },
                                                 { label: 'Servant Rm', key: 'servant_room' },
-                                                { label: 'General Toilet', key: 'general_toilet' },
-                                                { label: 'Pers. Toilet', key: 'personal_toilet' },
+                                                { label: 'Common Washroom', key: 'general_toilet' },
+                                                { label: 'Attach Washroom', key: 'personal_toilet' },
                                                 { label: 'Dressing Rm', key: 'dressing_room' },
                                                 { label: 'Vestibule', key: 'vestibule' },
                                                 { label: 'Sky Patio', key: 'sky_patio_balcony' },
