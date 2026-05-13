@@ -1,79 +1,212 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-/* ───── icon SVGs (electric-blue outline style) ───── */
+/* ───── icon SVGs (blue outline + green accent style) ───── */
 const icons = {
+  /* Total Projects — two buildings with green windows */
   totalProjects: (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="9" width="7" height="12" rx="1"/><rect x="14" y="4" width="7" height="17" rx="1"/><path d="M10 15h4"/><path d="M10 19h4"/>
+    <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+      {/* Tall building right */}
+      <rect x="24" y="6" width="16" height="36" rx="2" stroke="#3b82f6" strokeWidth="2" />
+      {/* Short building left */}
+      <rect x="6" y="16" width="14" height="26" rx="2" stroke="#3b82f6" strokeWidth="2" />
+      {/* Green windows - left building */}
+      <rect x="9" y="20" width="3" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="14" y="20" width="3" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="9" y="28" width="3" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="14" y="28" width="3" height="5" rx="0.5" fill="#ffdd00ff" />
+      {/* Green windows - right building */}
+      <rect x="27" y="10" width="3" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="33" y="10" width="3" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="27" y="18" width="3" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="33" y="18" width="3" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="27" y="26" width="3" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="33" y="26" width="3" height="5" rx="0.5" fill="#ffdd00ff" />
+      {/* Door */}
+      <rect x="30" y="34" width="5" height="8" rx="1" stroke="#3b82f6" strokeWidth="1.5" />
+      {/* Ground line */}
+      <line x1="2" y1="42" x2="46" y2="42" stroke="#3b82f6" strokeWidth="2" />
     </svg>
   ),
+
+  /* Ongoing Projects — cement mixer truck */
   ongoing: (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="6" width="16" height="14" rx="2"/><path d="M4 10h16"/><path d="M8 6V3"/><path d="M16 6V3"/><circle cx="12" cy="15" r="2"/>
+    <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+      {/* Truck body */}
+      <rect x="4" y="24" width="20" height="12" rx="2" stroke="#3b82f6" strokeWidth="2" />
+      {/* Cabin */}
+      <path d="M24 28h8a2 2 0 0 1 2 2v6H24V28z" stroke="#3b82f6" strokeWidth="2" />
+      {/* Cabin window */}
+      <rect x="26" y="30" width="5" height="3" rx="0.5" fill="#ffdd00ff" opacity="0.5" />
+      {/* Mixer drum */}
+      <path d="M8 24V14a8 8 0 0 1 12-6.9L22 8" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+      <ellipse cx="14" cy="14" rx="7" ry="5" stroke="#3b82f6" strokeWidth="2" transform="rotate(-20 14 14)" />
+      {/* Green cement in drum */}
+      <ellipse cx="14" cy="15" rx="4" ry="2.5" fill="#ffdd00ff" opacity="0.4" transform="rotate(-20 14 15)" />
+      {/* Drum stripes */}
+      <path d="M9 11l10 5" stroke="#3b82f6" strokeWidth="1" opacity="0.5" />
+      <path d="M9 14l10 5" stroke="#3b82f6" strokeWidth="1" opacity="0.5" />
+      {/* Wheels */}
+      <circle cx="11" cy="38" r="3" stroke="#3b82f6" strokeWidth="2" />
+      <circle cx="11" cy="38" r="1" fill="#3b82f6" />
+      <circle cx="29" cy="38" r="3" stroke="#3b82f6" strokeWidth="2" />
+      <circle cx="29" cy="38" r="1" fill="#3b82f6" />
+      {/* Ground */}
+      <line x1="2" y1="42" x2="46" y2="42" stroke="#3b82f6" strokeWidth="1.5" />
     </svg>
   ),
+
+  /* Ready To Move — completed building with grid windows */
   completed: (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6"/><path d="M9 11h6"/><path d="M9 15h4"/><path d="M5 7h-1"/><path d="M5 11h-1"/><path d="M5 15h-1"/>
+    <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+      {/* Building */}
+      <rect x="10" y="8" width="28" height="34" rx="2" stroke="#3b82f6" strokeWidth="2" />
+      {/* Roof accent */}
+      <rect x="10" y="8" width="28" height="4" rx="2" fill="#3b82f6" opacity="0.15" />
+      {/* Window grid - row 1 */}
+      <rect x="14" y="14" width="4" height="4" rx="0.5" fill="#ffdd00ff" />
+      <rect x="22" y="14" width="4" height="4" rx="0.5" fill="#ffdd00ff" />
+      <rect x="30" y="14" width="4" height="4" rx="0.5" fill="#ffdd00ff" />
+      {/* Window grid - row 2 */}
+      <rect x="14" y="22" width="4" height="4" rx="0.5" fill="#ffdd00ff" />
+      <rect x="22" y="22" width="4" height="4" rx="0.5" fill="#ffdd00ff" />
+      <rect x="30" y="22" width="4" height="4" rx="0.5" fill="#ffdd00ff" />
+      {/* Window grid - row 3 */}
+      <rect x="14" y="30" width="4" height="4" rx="0.5" fill="#ffdd00ff" />
+      <rect x="22" y="30" width="4" height="4" rx="0.5" fill="#ffdd00ff" />
+      <rect x="30" y="30" width="4" height="4" rx="0.5" fill="#ffdd00ff" />
+      {/* Door */}
+      <rect x="20" y="36" width="8" height="6" rx="1" stroke="#3b82f6" strokeWidth="1.5" />
+      {/* Checkmark badge */}
+      <circle cx="38" cy="10" r="5" fill="#ffdd00ff" />
+      <path d="M35.5 10l1.8 1.8 3.2-3.2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Ground */}
+      <line x1="6" y1="42" x2="42" y2="42" stroke="#3b82f6" strokeWidth="2" />
     </svg>
   ),
-  upcoming: (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4h6v4"/><path d="M9 10h1"/><path d="M14 10h1"/><path d="M9 14h1"/><path d="M14 14h1"/>
+
+  /* Apartments — multi-floor building */
+  apartments: (
+    <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+      {/* Main building */}
+      <rect x="8" y="6" width="32" height="36" rx="2" stroke="#3b82f6" strokeWidth="2" />
+      {/* Floor lines */}
+      <line x1="8" y1="16" x2="40" y2="16" stroke="#3b82f6" strokeWidth="1" opacity="0.3" />
+      <line x1="8" y1="26" x2="40" y2="26" stroke="#3b82f6" strokeWidth="1" opacity="0.3" />
+      {/* Windows - floor 1 */}
+      <rect x="12" y="8" width="5" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="21" y="8" width="5" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="30" y="8" width="5" height="5" rx="0.5" fill="#ffdd00ff" />
+      {/* Windows - floor 2 */}
+      <rect x="12" y="18" width="5" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="21" y="18" width="5" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="30" y="18" width="5" height="5" rx="0.5" fill="#ffdd00ff" />
+      {/* Windows - floor 3 */}
+      <rect x="12" y="28" width="5" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="21" y="28" width="5" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="30" y="28" width="5" height="5" rx="0.5" fill="#ffdd00ff" />
+      {/* Entrance */}
+      <rect x="19" y="36" width="10" height="6" rx="1.5" stroke="#3b82f6" strokeWidth="1.5" />
+      {/* Ground */}
+      <line x1="4" y1="42" x2="44" y2="42" stroke="#3b82f6" strokeWidth="2" />
     </svg>
   ),
-  sqftDelivered: (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 8h6"/><path d="M8 11h6"/><path d="M8 14h3"/>
+
+  /* Villas — house with pitched roof */
+  villas: (
+    <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+      {/* Roof */}
+      <path d="M6 22L24 8l18 14" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 20L24 10l14 10" fill="#ffdd00ff" opacity="0.2" />
+      {/* House body */}
+      <rect x="10" y="22" width="28" height="18" rx="1" stroke="#3b82f6" strokeWidth="2" />
+      {/* Chimney */}
+      <rect x="32" y="12" width="4" height="10" stroke="#3b82f6" strokeWidth="1.5" />
+      {/* Windows */}
+      <rect x="14" y="25" width="6" height="5" rx="0.5" fill="#ffdd00ff" />
+      <rect x="28" y="25" width="6" height="5" rx="0.5" fill="#ffdd00ff" />
+      {/* Door */}
+      <rect x="21" y="30" width="6" height="10" rx="1" stroke="#3b82f6" strokeWidth="1.5" />
+      <circle cx="25.5" cy="36" r="0.8" fill="#3b82f6" />
+      {/* Garden */}
+      <circle cx="8" cy="38" r="3" fill="#ffdd00ff" opacity="0.3" />
+      <circle cx="40" cy="38" r="3" fill="#ffdd00ff" opacity="0.3" />
+      {/* Ground */}
+      <line x1="4" y1="40" x2="44" y2="40" stroke="#3b82f6" strokeWidth="2" />
     </svg>
   ),
-  sqftDev: (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="6" width="20" height="14" rx="2"/><path d="M12 6V4"/><path d="M7 12h2"/><path d="M15 12h2"/><path d="M7 16h10"/><circle cx="12" cy="12" r="2"/>
+
+  /* Commercial — office building with briefcase */
+  commercial: (
+    <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+      {/* Building */}
+      <rect x="12" y="4" width="24" height="34" rx="2" stroke="#3b82f6" strokeWidth="2" />
+      {/* Top accent bar */}
+      <rect x="12" y="4" width="24" height="3" fill="#3b82f6" opacity="0.2" />
+      {/* Windows */}
+      <rect x="16" y="10" width="5" height="4" rx="0.5" fill="#ffdd00ff" />
+      <rect x="27" y="10" width="5" height="4" rx="0.5" fill="#ffdd00ff" />
+      <rect x="16" y="18" width="5" height="4" rx="0.5" fill="#ffdd00ff" />
+      <rect x="27" y="18" width="5" height="4" rx="0.5" fill="#ffdd00ff" />
+      <rect x="16" y="26" width="5" height="4" rx="0.5" fill="#ffdd00ff" />
+      <rect x="27" y="26" width="5" height="4" rx="0.5" fill="#ffdd00ff" />
+      {/* Door */}
+      <rect x="20" y="33" width="8" height="5" rx="1" stroke="#3b82f6" strokeWidth="1.5" />
+      {/* Briefcase icon at bottom */}
+      <rect x="17" y="40" width="14" height="6" rx="1.5" stroke="#3b82f6" strokeWidth="1.5" />
+      <path d="M21 40v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" stroke="#3b82f6" strokeWidth="1.5" />
+      <line x1="24" y1="42" x2="24" y2="44" stroke="#3b82f6" strokeWidth="1" />
     </svg>
   ),
-  homes: (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 9.5 12 4l9 5.5"/><path d="M19 9.5V19a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V9.5"/><rect x="9" y="14" width="6" height="6"/>
+
+  /* Plots — land with boundary markers */
+  plots: (
+    <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+      {/* Land area with green fill */}
+      <path d="M6 38L12 20h24l6 18H6z" fill="#ffdd00ff" opacity="0.15" />
+      <path d="M6 38L12 20h24l6 18H6z" stroke="#3b82f6" strokeWidth="2" strokeLinejoin="round" />
+      {/* Fence posts */}
+      <line x1="12" y1="20" x2="12" y2="14" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+      <line x1="24" y1="20" x2="24" y2="14" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+      <line x1="36" y1="20" x2="36" y2="14" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+      {/* Fence horizontal bars */}
+      <line x1="12" y1="15" x2="24" y2="15" stroke="#3b82f6" strokeWidth="1.5" />
+      <line x1="24" y1="15" x2="36" y2="15" stroke="#3b82f6" strokeWidth="1.5" />
+      <line x1="12" y1="18" x2="24" y2="18" stroke="#3b82f6" strokeWidth="1.5" />
+      <line x1="24" y1="18" x2="36" y2="18" stroke="#3b82f6" strokeWidth="1.5" />
+      {/* Area measurement marks */}
+      <path d="M10 42h28" stroke="#ffdd00ff" strokeWidth="1.5" strokeDasharray="3 2" />
+      <path d="M10 42v-2M38 42v-2" stroke="#ffdd00ff" strokeWidth="1.5" />
+      {/* Tree */}
+      <circle cx="20" cy="28" r="3" fill="#ffdd00ff" opacity="0.5" />
+      <line x1="20" y1="31" x2="20" y2="34" stroke="#ffdd00ff" strokeWidth="1.5" />
+      {/* Ground */}
+      <line x1="2" y1="38" x2="46" y2="38" stroke="#3b82f6" strokeWidth="2" />
     </svg>
   ),
-  units: (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 4v16"/><path d="M15 4v16"/><path d="M4 9h16"/><path d="M4 15h16"/>
-    </svg>
-  ),
+
+  /* Feature bar icons (kept smaller) */
   location: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 9.5 12 4l9 5.5"/><path d="M19 9.5V19a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V9.5"/><rect x="9" y="14" width="6" height="6"/>
+      <path d="M3 9.5 12 4l9 5.5" /><path d="M19 9.5V19a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V9.5" /><rect x="9" y="14" width="6" height="6" />
     </svg>
   ),
   verified: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2l2.4 4.8L20 7.6l-4 3.9.9 5.5-4.9-2.6L7.1 17l.9-5.5-4-3.9 5.6-.8z"/><path d="m9 12 2 2 4-4"/>
+      <path d="M12 2l2.4 4.8L20 7.6l-4 3.9.9 5.5-4.9-2.6L7.1 17l.9-5.5-4-3.9 5.6-.8z" /><path d="m9 12 2 2 4-4" />
     </svg>
   ),
   quality: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2a10 10 0 1 0 0 20 10 10 0 1 0 0-20z"/><path d="M12 6v6l4 2"/>
+      <path d="M12 2a10 10 0 1 0 0 20 10 10 0 1 0 0-20z" /><path d="M12 6v6l4 2" />
     </svg>
   ),
   support: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 16v2a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+      <path d="M18 16v2a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2" /><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" /><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
     </svg>
   ),
 };
 
-const stats = [
-  { num: '97', suffix: '+', label: 'Total Projects', sub: 'Across Ahmedabad', icon: icons.totalProjects },
-  { num: '9',  suffix: '+', label: 'Ongoing Projects', sub: 'Building Today', icon: icons.ongoing },
-  { num: '81', suffix: '+', label: 'Completed Projects', sub: 'Successfully Delivered', icon: icons.completed },
-  { num: '7',  suffix: '+', label: 'Upcoming Projects', sub: 'Future Ready', icon: icons.upcoming },
-  { num: '43', suffix: 'M+', label: 'Sq.ft Delivered', sub: 'Quality Delivered', icon: icons.sqftDelivered },
-  { num: '9',  suffix: 'M+', label: 'Sq.ft Under Development', sub: 'Building The Future', icon: icons.sqftDev },
-  { num: '30', suffix: 'K+', label: 'Homes Delivered', sub: 'Happy Families', icon: icons.homes },
-  { num: '4',  suffix: 'K+', label: 'Units Under Development', sub: 'Expanding Horizons', icon: icons.units },
-];
 
 const features = [
   { icon: icons.location, title: 'Prime Locations', sub: 'Best neighborhoods in Ahmedabad' },
@@ -193,10 +326,54 @@ function StatCard({ stat, visible, delay }) {
 }
 
 /* ───── Main Component ───── */
+import { supabase } from '../supabase';
+
 export default function ExploreAhmedabad() {
   const sectionRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const [particles, setParticles] = useState([]);
+  const [dynamicStats, setDynamicStats] = useState({
+    total: 0,
+    ongoing: 0,
+    ready: 0,
+    apartments: 0,
+    villas: 0,
+    commercial: 0,
+    plots: 0,
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('property_type, construction_status')
+        .eq('status', 'approved')
+        .ilike('city', 'ahmedabad');
+
+      if (data && !error) {
+        const total = data.length;
+        const ongoing = data.filter(p => p.construction_status === 'Under Construction' || p.construction_status === 'New Launch').length;
+        const ready = data.filter(p => p.construction_status === 'Ready to Move').length;
+        const apartments = data.filter(p => p.property_type === 'Flat' || p.property_type === 'Apartment').length;
+        const villas = data.filter(p => p.property_type === 'Villa' || p.property_type === 'Bunglows' || p.property_type === 'Weekend Homes').length;
+        const commercial = data.filter(p => p.property_type === 'Commercial').length;
+        const plots = data.filter(p => p.property_type === 'Plots').length;
+
+        setDynamicStats({ total, ongoing, ready, apartments, villas, commercial, plots });
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const currentStats = [
+    { num: dynamicStats.total.toString(), suffix: '', label: 'Total Projects', sub: 'Across Ahmedabad', icon: icons.totalProjects },
+    { num: dynamicStats.ongoing.toString(), suffix: '', label: 'Ongoing Projects', sub: 'Building Today', icon: icons.ongoing },
+    { num: dynamicStats.ready.toString(), suffix: '', label: 'Ready To Move Projects', sub: 'Successfully Delivered', icon: icons.completed },
+    { num: dynamicStats.apartments.toString(), suffix: '', label: 'APARTMENTS', sub: 'Premium Flats', icon: icons.apartments },
+    { num: dynamicStats.villas.toString(), suffix: '', label: 'VILLAS', sub: 'Luxury Living', icon: icons.villas },
+    { num: dynamicStats.commercial.toString(), suffix: '', label: 'COMMERCIAL', sub: 'Business Spaces', icon: icons.commercial },
+    { num: dynamicStats.plots.toString(), suffix: '', label: 'PLOTS', sub: 'Land & Investment', icon: icons.plots },
+  ];
 
   useEffect(() => {
     setParticles(
@@ -373,24 +550,42 @@ export default function ExploreAhmedabad() {
           </p>
         </div>
 
-        {/* ── Stats Grid ── */}
+        {/* ── Stats Grid - Pyramid Layout ── */}
         <style>{`
-          .ea-stats-grid {
+          .ea-stats-row-top {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+          }
+          .ea-stats-row-bottom {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 20px;
             margin-bottom: 48px;
           }
           @media (max-width: 1024px) {
-            .ea-stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .ea-stats-row-top { grid-template-columns: repeat(3, 1fr); max-width: 100%; }
+            .ea-stats-row-bottom { grid-template-columns: repeat(2, 1fr); }
           }
           @media (max-width: 600px) {
-            .ea-stats-grid { grid-template-columns: 1fr; }
+            .ea-stats-row-top { grid-template-columns: 1fr; }
+            .ea-stats-row-bottom { grid-template-columns: 1fr; }
           }
         `}</style>
-        <div className="ea-stats-grid">
-          {stats.map((s, i) => (
+        {/* Top Row - 3 items centered */}
+        <div className="ea-stats-row-top">
+          {currentStats.slice(0, 3).map((s, i) => (
             <StatCard key={i} stat={s} visible={visible} delay={0.35 + i * 0.08} />
+          ))}
+        </div>
+        {/* Bottom Row - 4 items */}
+        <div className="ea-stats-row-bottom">
+          {currentStats.slice(3).map((s, i) => (
+            <StatCard key={i + 3} stat={s} visible={visible} delay={0.6 + i * 0.08} />
           ))}
         </div>
 
