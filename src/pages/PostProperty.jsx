@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Upload, Check, ChevronRight, MapPin, Home, Building, Building2, Trees, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { ArrowLeft, Upload, Check, ChevronRight, MapPin, Home, Building, Building2, Trees, ChevronDown, ChevronUp, X, Video } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase';
@@ -660,7 +660,7 @@ const PostProperty = () => {
             
             <ChipGroup
                 id="sourceProfession" label="YOUR PROFESSION"
-                options={[{ label: 'BROKER', value: 'BROKER' }, { label: 'OWNER', value: 'OWNER' }]}
+                options={[{ label: 'BROKER', value: 'BROKER' }, { label: 'OWNER', value: 'OWNER' }, { label: 'COWORKER', value: 'COWORKER' }]}
                 value={formData.sourceProfession} onChange="sourceProfession" error={errors.sourceProfession}
                 updateForm={updateForm} toggleSelection={toggleSelection}
             />

@@ -1255,7 +1255,7 @@ export default function ProjectDetails() {
                                                 </div>
                                                 <div>
                                                     <h3 style={{ fontSize: '2rem', margin: '0 0 10px 0', color: THEME.text }}>Premium {project.villa_config[activeVillaIndex].bhk_type} Villa</h3>
-                                                    <div style={{ color: THEME.gold, fontSize: '2.2rem', fontWeight: '800', marginBottom: '10px' }}>{project.villa_config[activeVillaIndex].price}</div>
+                                                    <div style={{ color: THEME.gold, fontSize: '2.2rem', fontWeight: '800', marginBottom: '10px' }}>₹ {project.villa_config[activeVillaIndex].price}</div>
                                                     <p style={{ color: THEME.muted, fontSize: '1.1rem', marginBottom: '25px' }}>Built-up Area: {project.villa_config[activeVillaIndex].built_up} Sq.ft</p>
                                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                                         <div style={{ background: THEME.dark, padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
@@ -1373,9 +1373,9 @@ export default function ProjectDetails() {
                                                     )}
                                                 </div>
                                                 <p style={{ color: THEME.cardMuted, fontSize: '1.1rem', margin: 0 }}>{activeConfig.area} Sq.ft • {activeConfig.isPenthouse ? `Floor ${activeConfig.floor_number}` : 'Carpet Area'}</p>
-                                                <div style={{ color: activeConfig.isPenthouse ? THEME.cardText : THEME.gold, fontSize: '1.6rem', fontWeight: 'bold', marginTop: '10px' }}>{activeConfig.price}</div>
+                                                <div style={{ color: activeConfig.isPenthouse ? THEME.cardText : THEME.gold, fontSize: '1.6rem', fontWeight: 'bold', marginTop: '10px' }}>₹ {activeConfig.price}</div>
                                                 {activeConfig.price_range && (
-                                                    <div style={{ color: THEME.muted, fontSize: '1rem', fontWeight: '500', marginTop: '4px' }}>Range: {activeConfig.price_range}</div>
+                                                    <div style={{ color: THEME.muted, fontSize: '1rem', fontWeight: '500', marginTop: '4px' }}>Range: ₹ {activeConfig.price_range}</div>
                                                 )}
                                             </div>
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>

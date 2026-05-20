@@ -124,7 +124,10 @@ const PropertyDetails = () => {
                                 { icon: <div className="amenity-icon-box"><ShieldCheck size={20} /></div>, name: "Verified Property" },
                                 { icon: <div className="amenity-icon-box"><School size={20} /></div>, name: "Schools Nearby" }
                             ],
-                            gallery: data.images && data.images.length > 0 ? data.images : demoProperty.gallery
+                            gallery: data.images && data.images.length > 0 ? data.images : demoProperty.gallery,
+                            source_profession: data.source_profession,
+                            source_name: data.source_name || data.contact_name,
+                            source_number: data.source_number || data.contact_phone
                         };
                         console.log('Setting mapped property:', mappedProperty);
                         setProperty(mappedProperty);
@@ -947,9 +950,9 @@ const PropertyDetails = () => {
                                         <img src={logo} alt="Nest Deal Realty" className="seller-logo-img" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                     </div>
                                     <div className="seller-info">
-                                        <h3 className="cs-title">Contact Seller</h3>
-                                        <div className="seller-name">NEST DEAL REALTY</div>
-                                        <div className="seller-phone">+91 84696 30555</div>
+                                        <h3 className="cs-title">Contact {property.source_profession === 'OWNER' ? 'Owner' : (property.source_profession === 'BROKER' ? 'Broker' : (property.source_profession === 'COWORKER' ? 'Coworker' : 'Seller'))}</h3>
+                                        <div className="seller-name">{property.source_name || 'NEST DEAL REALTY'}</div>
+                                        <div className="seller-phone">{property.source_number || '+91 84696 30555'}</div>
                                     </div>
                                 </div>
                             </div>
